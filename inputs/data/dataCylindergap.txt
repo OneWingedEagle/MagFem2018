@@ -1,0 +1,40 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 0
+
+dimension : 2
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical): 0
+
+Analysis mode  (0. static1   1. eddy-A. 2. eddy-A-phi):0
+
+motor:false
+
+Number_of_Regions:5
+
+(name, material, nonlinear, murx mury, Jz,Mx, My [sigz], [stranded])
+
+air,air, false,1 1, 0, 0 0,0
+
+core,iron,f,1000 1000, 0 0,0
+
+air2,air, false,1 1, 0, 0 0,0
+
+coil, copper,f,1 1, 0 0,t,1,0,0,1,100
+
+core,iron,f,800 800, 0 0,0
+
+boundary condition:
+Boundary 1:D
+Boundary 2:D
+Boundary 3:D
+Boundary 4:D
+
+frequency:0
+dt:5e-3
+rotStep=0
+meshAngStep=0
+temporal:0,0,1
+eddytimeIntegMode:0
+
+transfer2DTo3D:f
+magAnalysis:t
+axiSym:t

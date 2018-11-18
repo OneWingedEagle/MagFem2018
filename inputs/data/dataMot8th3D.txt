@@ -1,0 +1,31 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 0
+
+dimension : 3
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical): 1
+
+Analysis mode  (0. static1   1. eddy-A. 2. eddy-A-phi):0
+
+motor:true
+
+Number_of_Regions:2
+
+(name, material,nonlinear, murx mury, Mx, My,[ Jz/sigma,freq,phase ,stranded sigz/R,nloop]
+
+ironS,50H400,f,1 1 1
+
+frame,steel,f,1 1 1
+
+boundary condition:
+Boundary 1:D
+Boundary 2:D
+Boundary 3:PS,4
+Boundary 4:
+Boundary 5:D
+Boundary 6:D
+
+frequency:100
+dt:5.55555e-5
+rotStep=.1
+temporal:0,1800,1
+eddytimeIntegMode:0

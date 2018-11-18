@@ -1,0 +1,74 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 0
+
+dimension : 2
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical):1
+
+Analysis mode  (0. static1   1. eddy-A. 2. eddy-A-phi):0
+
+motor:true
+
+Number_of_Regions:17
+
+(name, material,[E,] nonlinear, murx mury, Mx, My,[ Jz/sigma,freq,phase ,stranded sigz/R,nloop]
+
+ironR,50H400,t,100 100, 0 0,f,0,0
+
+PM1, magnet,f,1.05 1.05, 1.11789  0.4630,0
+
+PM2, magnet,f,1.05 1.05, -0.4630 -1.11789,0
+
+shaft,steel,f,1 1, 0 0, 0
+
+bolts,steel,f,1 1,0 0,0
+
+gapPM,air,f,1.0 1.0, 0 0,0
+
+gapR,air,f,1.0 1.0, 0 0, 0
+
+ironS,50H400,t,1000 1000, 0 0, 0,0
+
+coilU+, copper,f,1 1, 0 0,t,1.272,100,0,0.3,93
+
+coilU-, copper,f,1 1, 0 0,t,1.272,100,180,0.3,93
+
+coilV+, copper,f,1 1, 0 0,t,1.272,100,-120,0.3,93
+
+coilV-, copper,f,1 1, 0 0,t,1.272,100,60,0.3,93
+
+coilW+, copper,f,1 1, 0 0,t,1.272,100,120,0.3,93
+
+coilW-, copper,f,1 1, 0 0,t,1.272,100,300,0.3,93
+
+airGapS,air,f ,1 1, 0, 0 0,0
+
+frame,steel,t,1 1, 0, 0 0
+
+airOut,air,false,1 1, 0, 0 0,0
+
+boundary condition:
+Bound0ary 1:D
+Boundary 2:D
+Boundary 3:PS,4
+Boundary 4:PS,3
+
+frequency:100
+dt:5.55555e-6
+rotStep=.05
+meshAngStep=.5
+temporal:0,1800,20
+eddytimeIntegMode:0
+
+MS,1,1.9E11,0.3
+MS,8,1.9E11,0.3
+
+POD 1
+snapShot 90
+loadFlux:f
+saveFlux:f
+saveForce=f
+transfer2DTo3D:f
+magAnalysis:t
+rotate=t;
+forceCalcMode=1;
+height=0.05

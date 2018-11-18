@@ -1,0 +1,36 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 1
+
+dimension : 2
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) : 1
+
+motor:false
+
+Number_of_Regions:2
+
+(name, density, E, v, [alpha,dT])
+
+stator,t,7800, 1.9e11, .3
+
+frame,t,7800, 2.0e11, .3
+
+boundary condition:
+b1:
+b2:
+b3:PS,4
+b4:
+r,.0919,1,t,-.001,.001,0,0,1,0
+
+force folder:
+C:\JavaProjects\proj8\forcesStatFrame2D
+
+force files:0,1799,30
+
+intm:3
+
+dt:5.55555e-6
+
+mechAnalysis:true
+saveDisp:false
+rayAlpha=1e-3
+rayBeta=1e-3

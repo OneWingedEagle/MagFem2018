@@ -1,0 +1,40 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 1
+
+dimension : 3
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) : 0
+
+motor:false
+
+Number_of_Regions:1
+
+(name, density, E, v, [alpha,dT])
+
+stator,t,7850,2e11,.3
+
+boundary condition:
+b1:
+b2:
+b3:
+b4:
+b5:
+b6:
+x,-1,.4,0,0,1,0,2,0
+x,-1,1,0,0,1,0
+
+force folder:
+C:\JavaProjects\proj8\forcesReactMag
+
+force files:0,0,10
+
+intm:3
+
+dt:5.55555e-6
+
+transfer2DTo3D:f
+mechAnalysis:t
+modalAnalysis:t
+saveDisp:f
+loadPrev:f
+rayAlpha=1e-3
+rayBeta=1e-3

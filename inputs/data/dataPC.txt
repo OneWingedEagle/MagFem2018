@@ -1,0 +1,13 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled, 3. seepage, 4. wavePC) : 4
+
+dimension : 2
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) : 0
+
+Number_of_Regions:2
+
+(name, epsilonr, mur)
+
+sub,5 5, 1 1
+
+rots,1 1,6 6

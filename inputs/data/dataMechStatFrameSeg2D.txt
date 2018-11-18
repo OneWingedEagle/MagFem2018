@@ -1,0 +1,35 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 1
+
+dimension : 2
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) : 1
+
+motor:false
+
+Number_of_Regions:2
+
+(name, density, E, v)
+
+ironS,t,7600,1.92E11,.3 
+
+frame,t,7850, 2e11, .3
+
+boundary condition:
+b1:
+b2:
+b3:PS,4
+b4:
+
+force folder:
+D:\JavaFEM\proj8\forces2DTotPS
+
+force files:0,0,1
+
+intm:0
+
+dt:5.55555e-6
+
+mechAnalysis:true
+saveForce:t
+saveDisp:t
+saveStress:t

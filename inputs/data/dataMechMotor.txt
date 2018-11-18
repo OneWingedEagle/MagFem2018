@@ -1,0 +1,57 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 1
+
+dimension : 3
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) : 0
+
+motor:false
+
+Number_of_Regions:8
+
+(name, density, E, v, [alpha,dT])
+
+stator,f,7472, 1.9e11,1.9e11,1.02e11, .3,.3,.3,.73e11,.39e11,.39e11
+
+frame,t,7800, 2e11, .3
+
+front,t,7800, 2e11, .3
+
+rear,t,7800, 2e11, .3
+
+bolts,t,7800, 2e11, .3
+
+frontBearing,t,7800, 2e11, .3
+
+rearBearing,t,7800, 2e11, .3
+
+legs,t,7800, 2e11, .3
+
+deformation: true
+
+defMode: 1
+
+boundary condition:
+b1:
+b2:
+b3:
+b4:
+b5:
+b6:
+y,-1,-.093,0,0,1,0,2,0
+
+force folder:
+C:\JavaProjects\proj8\forces2DTotPS
+
+force files:0,1799,10
+
+intm:3
+
+dt:5.55555e-6
+
+transfer2DTo3D:t
+mechAnalysis:true
+modalAnalysis:f
+saveForce:f
+saveDisp:t	
+rayAlpha=1e-3
+rayBeta=1e-3

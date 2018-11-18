@@ -1,0 +1,76 @@
+//data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 
+0
+//dimension : 
+3
+//coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical): 
+1
+//Analysis mode  (0. static1   1. eddy-A. 2. eddy-A-phi):
+0
+//nonlinear
+t
+//AC
+f
+//Number_of_Regions:
+17
+//REG_ID,BH_ID,mu,sigma,M
+1,1,1000,0 
+2,0,1.05,0,1.11789  0.4630,0
+3,0,1.05,0,-0.4630 -1.11789,0
+4,0,1,0
+5,0,1,0
+6,0,1,0 
+7,0,1,0 
+8,1,1000,0
+9,0,1,0
+10,0,1,0 
+11,0,1,0 
+12,0,1,0 
+13,0,1,0
+14,0,1,0
+15,0,1,0 
+16,0,1,0 
+17,0,1,0 
+//boundary condition:
+D
+D
+PS,4
+PS,3
+D
+D
+//numb of regs with current/voltage
+0
+//9,0,0,1e-6
+//10,0,0,-1e-6 
+//11,0,0,1e-6 
+//12,0,0,-1e-6
+//13,0,0,1e-6
+//14,0,0,-1e-6
+// unif
+f
+//eddytimeIntegMode:
+0
+//dt:
+5.555555e-5
+//rotSpeed
+9000
+//meshAngStep
+0.5
+//temporal:
+0,1799,10
+//No. BH Data
+1
+//Mat ID, Mat name(file)
+1	50H400
+
+POD -1
+snapShot 180
+loadFlux:f
+//fluxFolder
+//C:\Works\MagFem\fluxes3DD
+saveFlux:f
+saveForce=f
+transfer2DTo3D:f
+magAnalysis:t
+rotate=t;
+forceCalcMode=1;
+height=0.05

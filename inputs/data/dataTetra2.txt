@@ -1,0 +1,50 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 1
+
+dimension : 3
+
+isot:t
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) : 0
+
+motor:false
+
+Number_of_Regions:1
+
+(name, density, E, v, [alpha,dT])
+
+beam,7800, 2e11,.3
+
+deformation: true
+
+defMode: 1
+
+boundary condition:
+b1:
+b2:
+b3:
+b4:
+b5:
+b6:
+x,-.2,.001,0,0,1,0,2,0
+x,.49,1,z,-1,0.001,0,0,1,.0,2,-.1
+
+force folder:
+C:\JavaProjects\proj8\forceMot8thMag-0-900SPWMp1
+
+force files:0,0,1
+
+intm:0
+
+dt:10e-5
+
+mechAnalysis:true
+loadFlux:false
+loadForce:false
+loadDisp:false
+magAnalysis:false
+saveFlux:false
+saveDisp:true	
+transfer2Dto3D:false
+modalAnalysis:true
+rayAlpha=0e-6
+rayBeta=0e-6

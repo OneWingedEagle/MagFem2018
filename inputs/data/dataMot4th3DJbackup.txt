@@ -1,0 +1,72 @@
+//data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 
+0
+//dimension : 
+3
+//coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical): 
+0
+//Analysis mode  (0. static1   1. eddy-A. 2. eddy-A-phi):
+0
+//nonlinear
+t
+//AC
+f
+//Number_of_Regions:
+17
+//REG_ID,BH_ID,mu,sigma,M
+1,1,1000,0 
+2,0,1.05,0 
+3,0,1.05,0,
+4,0,1,0
+5,0,1,0
+6,0,1,0 
+7,0,1,0 
+8,1,1000,0
+9,0,1,0
+10,0,1,0 
+11,0,1,0 
+12,0,1,0 
+13,0,1,0
+14,0,1,0
+15,0,1,0 
+16,0,1,0 
+17,0,1,0 
+//boundary condition:
+D
+D
+D
+D
+D
+D
+//numb of regs with current
+6
+9,0,0,1e6
+10,0,0,-1e6 
+11,0,0,1e6 
+12,0,0,-1e6
+13,0,0,1e6
+14,0,0,-1e6
+// unif
+f
+//eddytimeIntegMode:
+0
+//dt:
+5.55555e-5
+//rotStep
+0.5
+//meshAngStep
+0.5
+//temporal:
+0,0,1
+//No. BH Data
+1
+//Mat ID, Mat name(file)
+1	50H400
+
+loadFlux:f
+saveFlux:f
+saveForce=f
+transfer2DTo3D:f
+magAnalysis:t
+rotate=0;
+forceCalcMode=1;
+height=0.05

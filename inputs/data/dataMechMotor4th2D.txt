@@ -1,0 +1,68 @@
+data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) : 1
+
+dimension : 2
+
+coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) : 1
+
+motor:false
+
+Number_of_Regions:17
+
+(name, density, E, v, [alpha,dT])
+
+ironR,t,7800, 0e11, .3
+
+PM1,t,7800, 0e11, .3
+
+PM2,t,7800, 0e11, .3
+
+shaft,t,7800, 0e11, .3
+
+bolts,t,7800, 0e11, .3
+
+gapPM,t,7800, 0e11, .3
+
+gapR,t,7800, 0e11, .3
+
+ironS,t,7472, 1.92e11,.3
+
+coilU+,t,7800, 0e11, .3
+
+coilU-,t,7800, 0e11, .3
+
+coilV+,t,7800, 0e11, .3
+
+coilV-,t,7800, 0e11, .3
+
+coilW+,t,7800, 0e11, .3
+
+coilW-,t,7800, 0e11, .3
+
+airGapS,t,7800, 0e11, .3
+
+frame,t,7800, 2e11, .3
+
+airOut,t,7800, 0e11, .3
+
+boundary condition:
+b1:
+b2:
+b3:PS,4
+b4:
+x,.0918,1,1,0
+
+force folder:
+C:\JavaProjects\proj8\forcesLam1Strshr
+
+force files:0,1799,1
+
+intm:3
+
+dt:5.55555e-6
+
+transfer2DTo3D:f
+mechAnalysis:true
+modalAnalysis:f
+saveDisp:t	
+rayAlpha=1e-5
+rayBeta=1e-5

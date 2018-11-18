@@ -1,0 +1,43 @@
+//0. Magnetic, 1. Mechanical, 2. coupled)
+0
+//dimension :
+ 3
+//coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical): 
+0
+//Analysis mode  (0. static1   1. eddy-A. 2. eddy-A-phi  3. AC):
+1
+//nonlinear
+f
+//motor:
+f
+//Number_of_Regions:
+2
+//REG_ID,BH_ID,mu,sigma
+1,0,1,1e5 
+2,0,1,0
+//Boundary conditions
+N
+D
+D
+D
+D
+D
+//numb of regs with current
+0
+//has Uniform B
+t
+// Unif B Vect
+1.2 0 0
+//eddytimeIntegMode:
+0
+//dt:
+1e0
+//rotStep
+//0
+//
+//0
+//temporal:
+0,20,1
+
+saveFlux:t
+magAnalysis:t
