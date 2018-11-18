@@ -29,15 +29,16 @@ public class RunCLN {
 		model.hasJ =true;
 		model.setMagBC();
 		
+		//boolean openVPS=false; // not working with false
+		
 		magsolver.setMagMat(model);
 		
 		boolean tog=true;
 		
 		StaticElectricSolver phiSolver= new StaticElectricSolver();
+		phiSolver.open_vps=true;
 		
 		if(tog){
-		
-
 		phiSolver.setBoundaryCondition(model);
 		phiSolver.setMatrix(model);
 		}
@@ -85,7 +86,7 @@ public class RunCLN {
 			elecAtemp=magModes[kstage-1].times(-1./inductances.el[kstage-1]);
 
 			
-			if (kstage > 1){
+			if (kstage > 1 ||(kstage>0 &&!phiSolver.open_vps)){
 				elecAtemp=elecAtemp.add(elecAModes[kstage - 1]);
 			}
 			
@@ -103,16 +104,18 @@ public class RunCLN {
 		}
 		
 		Vect x=null;
-		
 		if(tog){
 			 x=phiSolver.solve(model);
-			 if(kstage==0) phiSolver.openVPS(model);
+			 if(kstage==0 && phiSolver.open_vps) phiSolver.openVPS(model);
 		}
 		else x=coil.solve(model);
 		
-		if (kstage > 1){
+
+		if (kstage > 1  ||(kstage>0 &&!phiSolver.open_vps)){
 			x=x.add(elecPhiModes[kstage - 1]);
 		}
+		
+		util.pr("current: "+x.el[x.length-1]);
 		
 		elecPhiModes[kstage]=x.deepCopy();
 		elecAModes[kstage]=elecAtemp.deepCopy();

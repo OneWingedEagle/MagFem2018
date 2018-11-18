@@ -22,10 +22,13 @@ public class StaticElectricSolver{
 	private int[] phiVarIndex;
 	private boolean byCircuit;
 	private int numberOfUnknownPhis;
-
+	double vps_volatge;
+	public boolean open_vps;
+	
 	public StaticElectricSolver(){
 
 		byCircuit=true;	
+		vps_volatge=1;
 	}
 
 	public void setMatrix(Model model){
@@ -57,11 +60,16 @@ public class StaticElectricSolver{
 
 		Vect Ci=Ks.scale(RHS);
 
+		if(open_vps)
+			L=Ks.ichol(1.);
+		else
+			L=Ks.ichol();
+		
+		double errMax=1e-11;
+		if(open_vps) errMax=1e-10;
 
-		L=Ks.ichol(1.);
 
-
-		x=model.solver.ICCG(Ks,L, RHS,1e-10,model.iterMax);
+		x=model.solver.ICCG(Ks,L, RHS,errMax,model.iterMax);
 
 
 		x.timesVoid(Ci);
@@ -256,10 +264,11 @@ public class StaticElectricSolver{
 
 
 		if(byCircuit){
-			for(int ic=0;ic<model.phiCoils.length;ic++){
-				PhiCoil coil=model.phiCoils[ic];	
-				RHS.el[RHS.length-model.phiCoils.length+ic]=-coil.current;
-			}
+		//	for(int ic=0;ic<model.phiCoils.length;ic++){
+			//	PhiCoil coil=model.phiCoils[ic];	
+				
+		//}
+			RHS.el[RHS.length-1]=-vps_volatge;
 		}
 	}
 
@@ -307,7 +316,7 @@ public class StaticElectricSolver{
 
 				elemRHS=this.calc.elemPhiVect(model,i);
 
-				elemRHS=elemRHS.times(conductivity*factor);
+				elemRHS=elemRHS.times(conductivity);
 
 
 				for(int k=0;k<model.nElVert;k++){
@@ -325,7 +334,10 @@ public class StaticElectricSolver{
 
 
 		}
-
+		
+		if(!open_vps)
+			RHS.el[RHS.length-1]=-vps_volatge;
+//RHS.show();
 
 	}
 
