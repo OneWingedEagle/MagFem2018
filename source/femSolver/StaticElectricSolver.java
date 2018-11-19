@@ -9,6 +9,7 @@ import fem.Model;
 import fem.PhiCoil;
 import math.Mat;
 import math.SpMat;
+import math.SpVect;
 import math.Vect;
 import math.util;
 
@@ -16,12 +17,14 @@ import math.util;
 public class StaticElectricSolver{
 	int stepNumb;
 
-	private SpMat phiMat;
-	private Vect RHS;
+	public SpMat phi_matrix;
+	public SpMat t_matrix;
+	public SpMat conductiveMat;
+	public Vect RHS;
 	private Calculator calc;
 	private int[] phiVarIndex;
 	private boolean byCircuit;
-	private int numberOfUnknownPhis;
+	private int numberOfUnknownPhis,numberOfUnknowns,nCurrents;
 	double vps_volatge;
 	public boolean open_vps;
 	
@@ -36,15 +39,17 @@ public class StaticElectricSolver{
 		this.calc=new Calculator(model);
 
 		setPhiMat(model);
+		setTmat(model);
+		AnnexTmat();
 
 
 	}
 
 	public Vect solve(Model model ){
 
-		Vect x=new Vect(numberOfUnknownPhis);
+		Vect x=new Vect(numberOfUnknowns);
 
-		if(numberOfUnknownPhis==0) return x;
+		if(numberOfUnknowns==0) return x;
 
 		SpMat L=new SpMat();
 
@@ -52,7 +57,7 @@ public class StaticElectricSolver{
 		model.solver.terminate(false);
 
 		//RHS.show();
-		SpMat Ks=phiMat.deepCopy();
+		SpMat Ks=conductiveMat.deepCopy();
 
 		//	Ks.diag().show();
 
@@ -95,7 +100,7 @@ public class StaticElectricSolver{
 		int m,nodeNumber,columnIndex=0,matrixRow;
 		int[] nz=new int[numberOfUnknownPhis];
 
-		phiMat=new SpMat(numberOfUnknownPhis, numberOfUnknownPhis,model.nNodNod);
+		phi_matrix=new SpMat(numberOfUnknownPhis, numberOfUnknownPhis,model.nNodNod);
 
 		for(int ir=1;ir<=model.numberOfRegions;ir++){
 
@@ -124,152 +129,131 @@ public class StaticElectricSolver{
 						if(columnIndex==-1 || columnIndex>matrixRow) continue;	
 
 
-						m=util.search(phiMat.row[matrixRow].index,nz[matrixRow]-1,columnIndex);
+						m=util.search(phi_matrix.row[matrixRow].index,nz[matrixRow]-1,columnIndex);
 						if(m<0)
 						{	
 
 							if(abs(Ke.el[j][k])>eps ){
 
 								//===========================
-								if(nz[matrixRow]==phiMat.row[matrixRow].nzLength-1){
-									phiMat.row[matrixRow].extend(ext);
+								if(nz[matrixRow]==phi_matrix.row[matrixRow].nzLength-1){
+									phi_matrix.row[matrixRow].extend(ext);
 								}
 								//===========================
 
-								phiMat.row[matrixRow].index[nz[matrixRow]]=columnIndex;
-								phiMat.row[matrixRow].el[nz[matrixRow]++]=Ke.el[j][k];
+								phi_matrix.row[matrixRow].index[nz[matrixRow]]=columnIndex;
+								phi_matrix.row[matrixRow].el[nz[matrixRow]++]=Ke.el[j][k];
 							}
 
 						}
 
 						else{
 
-							phiMat.row[matrixRow].addToNz(Ke.el[j][k],m);
+							phi_matrix.row[matrixRow].addToNz(Ke.el[j][k],m);
 						}
 
 					}			
 				}
 			}
 		}
-		if(byCircuit){
+/*		if(byCircuit){
 			double Rext=1e-10;
-			matrixRow=numberOfUnknownPhis-1;
+			util.pr(numberOfUnknownPhis+" "+numberOfUnknowns);
+			matrixRow=numberOfUnknowns-1;
 			nz[matrixRow]=model.phiCoils.length+1;
 			for(int ic=0;ic<model.phiCoils.length;ic++){
-				phiMat.row[matrixRow].index[ic]=matrixRow-model.phiCoils.length+ic;
-				phiMat.row[matrixRow].el[ic]=-1;
+				phi_matrix.row[matrixRow].index[ic]=matrixRow-model.phiCoils.length+ic;
+				phi_matrix.row[matrixRow].el[ic]=-1;
 			}
-				phiMat.row[matrixRow].index[model.phiCoils.length]=matrixRow;
-				phiMat.row[matrixRow].el[model.phiCoils.length]=-Rext;
+				phi_matrix.row[matrixRow].index[model.phiCoils.length]=matrixRow;
+				phi_matrix.row[matrixRow].el[model.phiCoils.length]=-Rext;
 		}
 
+*/
+		phi_matrix.sortAndTrim(nz);
 
-		phiMat.sortAndTrim(nz);
+	}
+	
+	
+	public  void setTmat(Model model){
 
-		//	util.pr("PHIMAT");
+		if(nCurrents>1) {
+			setTmat2(model);
+			return;
+		}
+			t_matrix=new SpMat(nCurrents,numberOfUnknowns);
+			double Rext=1e-10;
+			int matrixRow=0;
+			t_matrix.row[matrixRow]=new SpVect(numberOfUnknowns,model.phiCoils.length+1);
+
+			for(int ic=0;ic<model.phiCoils.length;ic++){
+				t_matrix.row[matrixRow].index[ic]=numberOfUnknownPhis-model.phiCoils.length+ic;
+				t_matrix.row[matrixRow].el[ic]=-1;
+			}
+			
+			t_matrix.row[matrixRow].index[model.phiCoils.length]=numberOfUnknowns-1;
+			t_matrix.row[matrixRow].el[model.phiCoils.length]=-Rext;
+	
+	}
+	public  void setTmat2(Model model){
+
+	
+			t_matrix=new SpMat(nCurrents,numberOfUnknowns);
+			double Rext=1e-10;
+			int matrixRow=0;
+			t_matrix.row[matrixRow]=new SpVect(numberOfUnknowns,model.phiCoils.length);
+
+			for(int ic=0;ic<model.phiCoils.length-1;ic++){
+				t_matrix.row[matrixRow].index[ic]=numberOfUnknownPhis-model.phiCoils.length+ic;
+				t_matrix.row[matrixRow].el[ic]=-1;
+			}
+			
+			
+			t_matrix.row[matrixRow].index[model.phiCoils.length-1]=numberOfUnknowns-2;
+			t_matrix.row[matrixRow].el[model.phiCoils.length-1]=-Rext;
+			
+			matrixRow=1;
+			t_matrix.row[matrixRow]=new SpVect(numberOfUnknowns,1);
+			t_matrix.row[matrixRow].index[0]=numberOfUnknowns-1;
+			t_matrix.row[matrixRow].el[0]=-5;
+			t_matrix.shownz();
+	
+	}
+	
+	private void AnnexTmat(){
+
+		conductiveMat=new SpMat(numberOfUnknowns);
 		
-	//	Vect v=phiMat.diag();
+		for(int i=0;i<numberOfUnknownPhis;i++){
+			conductiveMat.row[i]=new SpVect(numberOfUnknowns,phi_matrix.row[i].nzLength);
+
+			conductiveMat.row[i].index=phi_matrix.row[i].index;
+			conductiveMat.row[i].el=phi_matrix.row[i].el;
+		}
+
+		for(int i=0;i<t_matrix.nRow;i++){
+			int matrixRow=i+numberOfUnknownPhis;
+			util.pr(t_matrix.row[i].nzLength);
+		conductiveMat.row[matrixRow]=new SpVect(numberOfUnknowns,t_matrix.row[i].nzLength);
+		for(int j=0;j<t_matrix.row[i].nzLength;j++){
+			conductiveMat.row[matrixRow].index=t_matrix.row[i].index;
+			
+			conductiveMat.row[matrixRow].el=t_matrix.row[i].el;
 		
-	////	for(int k=v.length-5;k<v.length;k++)
-	//		util.pr(v.el[k]);
-		//		phiMat.shownz();
+		}
+	}
+		//conductiveMat.size();
+
 	}
 
 
 	public void setRHS(Model model){		
 
-		Mat Ke;
 
-		int[] coilIndices=new int[model.numberOfRegions+1];
+		RHS=new Vect(numberOfUnknowns);
 
-		for(int ir=1;ir<=model.numberOfRegions;ir++)
-			coilIndices[ir]=-1;
-
-		for(int ic=0;ic<model.phiCoils.length;ic++){
-			int nr=model.phiCoils[ic].regNo;
-			coilIndices[nr]=ic;
-		}
-
-		RHS=new Vect(numberOfUnknownPhis);
-
-		Vect elemPhiVec=new Vect(model.nElVert);
-
-		Vect elemRHS=new Vect(model.nElVert);
-
-		int matrixRow=0, columnIndex;
-
-		boolean isConductive;
-		double conductivity;
-
-		if(!byCircuit)
-			for(int ir=1;ir<=model.numberOfRegions;ir++){
-
-				if(!model.region[ir].isConductor) continue;
-
-				conductivity=model.region[ir].getSigma().el[0];
-
-				for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
-
-					isConductive=model.element[i].isConductor();
-
-
-					if(!isConductive) continue;
-
-					int[] vertNumb=model.element[i].getVertNumb();
-
-
-					boolean elemHasKnownPhi=false;
-					for(int k=0;k<model.nElVert;k++){
-						int nodeNumber=vertNumb[k];
-						if(model.node[nodeNumber].isPhiVar() && model.node[nodeNumber].isPhiKnown() ){
-							elemHasKnownPhi=true;
-							break;
-						}
-					}
-
-					if(!elemHasKnownPhi) continue;
-
-					Ke=this.calc.elemPhiMat(model,i);
-
-					Ke=Ke.times(conductivity);
-
-					elemPhiVec.timesVoid(0);
-
-
-					for(int k=0;k<model.nElVert;k++){
-						int nodeNumber=vertNumb[k];
-						if(model.node[nodeNumber].isPhiVar() && model.node[nodeNumber].isPhiKnown() ){
-							elemPhiVec.el[k]=model.node[nodeNumber].getPhi();
-						}
-					}
-
-					elemRHS=Ke.mul(elemPhiVec);
-
-					for(int k=0;k<model.nElVert;k++){
-						int nodeNumber=vertNumb[k];
-
-						if(model.node[nodeNumber].isPhiVar() && !model.node[nodeNumber].isPhiKnown() ){
-
-							matrixRow=phiVarIndex[nodeNumber]-1;
-							RHS.el[matrixRow]+=-elemRHS.el[k];
-						}
-					}
-
-
-
-				}
-
-
-			}
-
-
-		if(byCircuit){
-		//	for(int ic=0;ic<model.phiCoils.length;ic++){
-			//	PhiCoil coil=model.phiCoils[ic];	
-				
-		//}
 			RHS.el[RHS.length-1]=-vps_volatge;
-		}
+		
 	}
 
 
@@ -277,7 +261,7 @@ public class StaticElectricSolver{
 
 
 
-		RHS=new Vect(numberOfUnknownPhis);
+		RHS=new Vect(numberOfUnknowns);
 
 		Vect elemRHS=new Vect(model.nElVert);
 
@@ -427,6 +411,8 @@ public class StaticElectricSolver{
 
 
 		setPhiIndices(model);
+		
+		setCurrentIndices(model);
 	}
 
 
@@ -475,7 +461,7 @@ public class StaticElectricSolver{
 				}
 			}
 		}
-		if(byCircuit){
+
 			for(int ic=0;ic<model.phiCoils.length;ic++){
 				PhiCoil coil=model.phiCoils[ic];	
 
@@ -488,23 +474,29 @@ public class StaticElectricSolver{
 
 			
 			}
-			ix++; // for current
-			
-		}
+			numberOfUnknownPhis=ix-1;
+				
 
 		
-		numberOfUnknownPhis=ix-1;
 	//	util.pr("------->>>     "+numberOfUnknownPhis);
 	}
 
+	public void setCurrentIndices(Model model){
+		
+		nCurrents=1;
+		numberOfUnknowns=numberOfUnknownPhis;
+		for(int i=0;i<nCurrents;i++)
+			numberOfUnknowns++;
+		
+	}
 
 	
 	public void openVPS(Model model){
 
-		if(byCircuit){
-				int row=numberOfUnknownPhis-1;
-				phiMat.row[row].el[model.phiCoils.length]=-1e12;
-		}
+				//for(int row=0;row<t_matrix.nRow;row++)
+					int row=0;
+				t_matrix.row[row].el[t_matrix.row[row].nzLength-1]=-1e12;
+
 	}
 
 
