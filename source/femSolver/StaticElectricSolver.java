@@ -6,6 +6,8 @@ import java.util.Arrays;
 
 import fem.Calculator;
 import fem.Model;
+import fem.Network;
+import fem.Network.ElemType;
 import fem.PhiCoil;
 import math.Mat;
 import math.SpMat;
@@ -167,11 +169,40 @@ public class StaticElectricSolver{
 
 	}
 	
-	
 	public  void setTmat(Model model){
+
+		Network network=model.network;
+			t_matrix=new SpMat(nCurrents,numberOfUnknowns);
+	
+			for(int i=0;i<nCurrents;i++){
+			t_matrix.row[i]=new SpVect(numberOfUnknowns,model.phiCoils.length+i+1);
+
+			int jx=0;
+			int ic=0;
+			for(int j=0;j<network.numElements;j++){
+				if(network.elems[j].type==ElemType.FEM){
+				if(network.tiesetMat.el[i][j]!=0){
+				t_matrix.row[i].index[jx]=numberOfUnknownPhis-model.phiCoils.length+ic;
+				t_matrix.row[i].el[jx]=-network.tiesetMat.el[i][j];
+				jx++;
+				}
+				ic++;			
+				}
+				
+			}
+			for(int j=0;j<=i;j++){
+			t_matrix.row[i].index[model.phiCoils.length+j]=numberOfUnknownPhis+j;
+			t_matrix.row[i].el[model.phiCoils.length+j]=-network.PRPt.el[i][j];
+			}
+			}
+			t_matrix.show();;
+	}
+	
+	public  void setTmatzz(Model model){
 
 		if(nCurrents>1) {
 			setTmat2(model);
+
 			return;
 		}
 			t_matrix=new SpMat(nCurrents,numberOfUnknowns);
@@ -208,8 +239,7 @@ public class StaticElectricSolver{
 			matrixRow=1;
 			t_matrix.row[matrixRow]=new SpVect(numberOfUnknowns,1);
 			t_matrix.row[matrixRow].index[0]=numberOfUnknowns-1;
-			t_matrix.row[matrixRow].el[0]=-5;
-			t_matrix.shownz();
+			t_matrix.row[matrixRow].el[0]=-Rext;
 	
 	}
 	
@@ -476,7 +506,8 @@ public class StaticElectricSolver{
 
 	public void setCurrentIndices(Model model){
 		
-		nCurrents=1;
+		nCurrents=model.network.no_unknown_currents;
+
 		numberOfUnknowns=numberOfUnknownPhis;
 		for(int i=0;i<nCurrents;i++)
 			numberOfUnknowns++;

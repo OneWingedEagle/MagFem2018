@@ -112,10 +112,10 @@ public void run(Model model, Main main){
 				elecAtemp=elecAtemp.add(elecAModes[kstage - 1]);
 			}
 			
-			for(int n=1;n<=model.numberOfNodes;n++) {
+/*			for(int n=1;n<=model.numberOfNodes;n++) {
 				if(model.node[n].isPhiVar()&& model.node[n].isPhiKnown())
 				model.node[n].setPhi(0);
-			}
+			}*/
 						
 			model.setSolution(elecAtemp);
 
@@ -167,8 +167,8 @@ public void run(Model model, Main main){
 		
 		util.pr("norma of magSolve deltaA--------------> "+x.norm());
 		
-	//	if (kstage > 0)
-	//		x=x.add(magModes[kstage - 1]);
+		if (kstage > 0)
+			x=x.add(magModes[kstage - 1]);
 
 		
 		magModes[kstage]=x.deepCopy();
@@ -177,6 +177,361 @@ public void run(Model model, Main main){
 		
 		//util.pr("L"+kstage+"="+inductances.el[kstage]);
 			
+		//========
+		
+		//model.setSolution(x);
+		//model.setB();
+		//model.writeB(model.resultFolder+"\\B"+kstage+".txt");
+
+		}
+		
+		for(int kstage=0;kstage<nStages;kstage++){
+		util.pr(String.format("%12.5E",resistances.el[kstage]));
+		util.pr(String.format("%12.5E",inductances.el[kstage]));
+
+		}
+		
+		WriteCLN(resistances,inductances);
+		//resistance.show();
+		//inductances.show();
+		//model.writePhi(model.resultFolder+"\\phi.txt");
+		
+		
+		WriteImpedance(resistances,inductances,1e-1,1e3,21);
+		
+		double f0=1e2;
+	//	Complex imp=ObtainImpedance(resistance,inductances,1e2);
+		
+		Complex vs=new Complex(1,0);
+		
+		VectComp ee=new VectComp(nStages);
+		VectComp hh=new VectComp(nStages);
+		
+		Complex impedance =SolveCLN(vs,resistances, inductances,ee,hh,f0);
+	//	SolveCLNCurrentGiven(vs,resistances, inductances,ee,hh,f0);
+
+		VectComp A=new VectComp(magModes[0].length);
+		
+		for(int i=0; i<nStages;i++){
+			VectComp temp=new VectComp(magModes[i]);
+			A=A.add(temp.times(hh.el[i]));
+		}
+		
+
+		Vect Ar=new Vect(A.length);
+		Vect Am=new Vect(A.length);
+		
+		for(int i=0; i<A.length;i++){
+			Ar.el[i]=A.el[i].re;
+			Am.el[i]=A.el[i].im;
+		}
+		
+		//	Ar.times(1e6).hshow();
+		//	Am.times(1e6).hshow();
+		
+		util.pr("Ar. norm=====>  "+Ar.norm());
+		util.pr("Am norm=====>  "+Am.norm());
+
+			model.setSolution(Ar);
+			model.setB();
+			model.writeB(model.resultFolder+"\\Br.txt");
+		
+			model.setSolution(Am);
+			model.setB();
+			model.writeB(model.resultFolder+"\\Bm.txt");
+		
+	}
+
+
+
+public void run2(Model model, Main main){
+	
+	numStages=model.nCLNstages;
+	
+	
+	outputFolder=model.resultFolder;
+	
+		CLNStaticMagSolver magsolver= new CLNStaticMagSolver(model);
+		
+		model.hasJ =true;
+		model.setMagBC();
+		
+		magsolver.setMagMat(model);
+			
+		StaticElectricSolver phiSolver= new StaticElectricSolver();
+		phiSolver.open_vps=true;
+		
+
+		phiSolver.setBoundaryCondition(model);
+		phiSolver.setMatrix(model);
+
+		
+		int nStages=model.nCLNstages;
+		
+		double[] losses=new double[1];
+		
+		Vect resistances=new Vect(nStages);
+		Vect inductances=new Vect(nStages);
+		
+		Vect[] magModes=new Vect[nStages];
+		Vect[] elecAModes=new Vect[nStages];
+		Vect[] elecPhiModes=new Vect[nStages];
+
+		Vect elecAtemp=new Vect(magsolver.magMat.getnCol());
+					
+		for(int kstage=0;kstage<nStages;kstage++){
+			
+	//====== Elec
+
+		if(kstage==0){
+			phiSolver.setRHS(model);
+			
+		}
+		else{
+			elecAtemp=magModes[kstage-1].times(-1./inductances.el[kstage-1]);
+
+			
+			if (kstage > 1 ||(kstage>0 &&!phiSolver.open_vps)){
+				elecAtemp=elecAtemp.add(elecAModes[kstage - 1]);
+			}
+			
+						
+			model.setSolution(elecAtemp);
+
+			phiSolver.setRHS(model,1.);
+
+
+		}
+		
+		
+		Vect x=phiSolver.solve(model);
+
+		phiSolver.setSolution(model,x);
+		
+		 
+		if(kstage==0 && phiSolver.open_vps) phiSolver.openVPS(model);
+	
+		
+
+		if (kstage > 1  ||(kstage>0 &&!phiSolver.open_vps)){
+			x=x.add(elecPhiModes[kstage - 1]);
+		}
+	
+		
+		util.pr("current: "+x.el[x.length-1]);
+		
+		elecPhiModes[kstage]=x.deepCopy();
+		elecAModes[kstage]=elecAtemp.deepCopy();
+
+
+		model.setSolution(elecAtemp);
+
+		model.setJStatic();
+		model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
+		//model.writePhi(model.resultFolder+"\\phi"+kstage+".txt");
+		
+
+		magsolver.setRHS(model,losses);
+		
+		resistances.el[kstage]=1./losses[0];
+		//util.pr("R"+kstage+"="+		resistance.el[kstage]);
+		
+		//======
+
+		//====== Mag
+		//magsolver.RHS=magsolver.RHS.times(resistances.el[kstage]);
+		
+		Vect rhs1=magsolver.RHS.deepCopy();
+		
+		x=magsolver.solve(model);
+		
+		
+		util.pr("norma of magSolve deltaA--------------> "+x.norm());
+		
+		//if (kstage > 0)
+		//	x=x.add(magModes[kstage - 1]);
+
+		
+		magModes[kstage]=x.deepCopy();
+		
+		inductances.el[kstage]=rhs1.dot(x);
+		
+		//util.pr("L"+kstage+"="+inductances.el[kstage]);
+			
+		//========
+		
+		//model.setSolution(x);
+		//model.setB();
+		//model.writeB(model.resultFolder+"\\B"+kstage+".txt");
+
+		}
+		
+		for(int kstage=0;kstage<nStages;kstage++){
+		util.pr(String.format("%12.5E",resistances.el[kstage]));
+		util.pr(String.format("%12.5E",inductances.el[kstage]));
+
+		}
+		
+		WriteCLN(resistances,inductances);
+		//resistance.show();
+		//inductances.show();
+		//model.writePhi(model.resultFolder+"\\phi.txt");
+		
+		
+		WriteImpedance(resistances,inductances,1e-1,1e3,21);
+		
+		double f0=1e2;
+	//	Complex imp=ObtainImpedance(resistance,inductances,1e2);
+		
+		Complex vs=new Complex(1,0);
+		
+		VectComp ee=new VectComp(nStages);
+		VectComp hh=new VectComp(nStages);
+		
+		Complex impedance =SolveCLN(vs,resistances, inductances,ee,hh,f0);
+	//	SolveCLNCurrentGiven(vs,resistances, inductances,ee,hh,f0);
+
+		VectComp A=new VectComp(magModes[0].length);
+		
+		for(int i=0; i<nStages;i++){
+			VectComp temp=new VectComp(magModes[i]);
+			//A=A.add(temp.times(hh.el[i]));
+			A=A.add(temp.times(1));
+		}
+		
+
+		Vect Ar=new Vect(A.length);
+		Vect Am=new Vect(A.length);
+		
+		for(int i=0; i<A.length;i++){
+			Ar.el[i]=A.el[i].re;
+			Am.el[i]=A.el[i].im;
+		}
+		// Am=magModes[1];
+		util.pr("Ar. norm=====>  "+Ar.norm());
+		util.pr("Am norm=====>  "+Am.norm());
+		//	Ar.times(1e6).hshow();
+		//	Am.times(1e6).hshow();
+
+			model.setSolution(Ar);
+			model.setB();
+			model.writeB(model.resultFolder+"\\Br.txt");
+		
+			model.setSolution(Am);
+			model.setB();
+			model.writeB(model.resultFolder+"\\Bm.txt");
+		
+	}
+
+public void runNoDifferential(Model model, Main main){
+	util.pr("run2 ++++++++++++++++++++++++++++++++++++++++++++++++");
+
+	
+	outputFolder=model.resultFolder;
+	
+		CLNStaticMagSolver magsolver= new CLNStaticMagSolver(model);
+		
+		model.hasJ =true;
+		model.setMagBC();
+		
+		magsolver.setMagMat(model);
+			
+		StaticElectricSolver phiSolver= new StaticElectricSolver();
+		phiSolver.open_vps=true;
+		
+
+		phiSolver.setBoundaryCondition(model);
+		phiSolver.setMatrix(model);
+
+		
+		int nStages=model.nCLNstages;
+		
+		double[] losses=new double[1];
+		
+		Vect resistances=new Vect(nStages);
+		Vect inductances=new Vect(nStages);
+		
+		Vect[] magModes=new Vect[nStages];
+		Vect[] elecAModes=new Vect[nStages];
+		Vect[] elecPhiModes=new Vect[nStages];
+
+		Vect elecAtemp=new Vect(magsolver.magMat.getnCol());
+		
+		Vect magRhs1=null;
+		Vect elecRhs1=null;
+		
+		for(int kstage=0;kstage<nStages;kstage++){
+			
+	//====== Elec
+
+		if(kstage==0){
+			phiSolver.setRHS(model);
+		}
+		else{
+			elecAtemp=magModes[kstage-1].times(-1./inductances.el[kstage-1]);
+
+			model.setSolution(elecAtemp);
+
+			phiSolver.setRHS(model,1.);
+		
+			if (kstage > 1 ||(kstage>0 &&!phiSolver.open_vps)){
+				elecAtemp=elecAtemp.add(elecAModes[kstage - 1]);
+				phiSolver.RHS=phiSolver.RHS.add(elecRhs1);
+				}
+
+		}
+		
+		//=======
+		
+		elecRhs1=phiSolver.RHS.deepCopy();
+	
+		Vect x=phiSolver.solve(model);
+		
+		if (kstage > 1 ||(kstage>0 &&!phiSolver.open_vps)){
+		//	x=x.add(elecPhiModes[kstage - 1]);
+		}
+		phiSolver.setSolution(model,x);
+		
+		 
+		if(kstage==0 && phiSolver.open_vps) phiSolver.openVPS(model);
+			
+		
+		elecPhiModes[kstage]=x.deepCopy();
+		elecAModes[kstage]=elecAtemp.deepCopy();
+
+
+		model.setSolution(elecAtemp);
+
+		//model.setJStatic();
+	//	model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
+		//model.writePhi(model.resultFolder+"\\phi"+kstage+".txt");	
+
+		magsolver.setRHS(model,losses);
+		
+		resistances.el[kstage]=1./losses[0];
+		
+		
+		//====== Mag
+		magsolver.RHS=magsolver.RHS.times(resistances.el[kstage]);
+		
+		//if(magRhs1!=null) magsolver.RHS=magsolver.RHS.add(magRhs1);
+		
+		magRhs1=magsolver.RHS.deepCopy();
+		
+		util.pr("norma of magRhs1-------------> "+magRhs1.norm());
+		x=magsolver.solve(model);
+		
+		if (kstage > 0)
+			x=x.add(magModes[kstage - 1]);
+
+
+		//util.pr("norma of magSolve deltaA--------------> "+x.norm());
+		
+	
+		magModes[kstage]=x.deepCopy();
+		
+		inductances.el[kstage]=magRhs1.dot(x);
+					
 		//========
 		
 		//model.setSolution(x);
@@ -226,24 +581,25 @@ public void run(Model model, Main main){
 			Am.el[i]=A.el[i].im;
 		}
 		
-			Ar.times(1e6).hshow();
-			Am.times(1e6).hshow();
+		//	Ar.times(1e6).hshow();
+		//	Am.times(1e6).hshow();
+		
+		util.pr("Ar. norm=====>  "+Ar.norm());
+		util.pr("Am norm=====>  "+Am.norm());
 
 			model.setSolution(Ar);
 			model.setB();
 			model.writeB(model.resultFolder+"\\Br.txt");
 		
-			model.setSolution(magModes[1]);
+			model.setSolution(Am);
 			model.setB();
 			model.writeB(model.resultFolder+"\\Bm.txt");
 		
 	}
 
 
-
-
 	
-	public void run2(Model model, Main main){
+	public void run3(Model model, Main main){
 		
 		
 		double w0=2*PI*1e0;

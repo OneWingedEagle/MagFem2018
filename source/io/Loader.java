@@ -36,7 +36,7 @@ import fem.*;
 public class Loader {
 
 	private String regex="[:; ,=\\t]+";
-	private String regex2="[\\[\\]\\s: )(,=\\t]+";
+	public String regex2="[\\[\\]\\s: )(,=\\t]+";
 
 	
 public static void main2(String[] args){
@@ -843,7 +843,7 @@ public static void main2(String[] args){
 				}
 				
 			}
-	
+
 			line=getNextDataLine(br);
 			model.hasBunif=getBooleanData(line);
 			if(model.hasBunif){
@@ -853,6 +853,17 @@ public static void main2(String[] args){
 				model.unifB=new Vect(array);
 			}
 			
+			
+
+		line=getNextDataLine(br);
+		line=util.dropLeadingSpaces(line);
+		if(line.equals("NETWORK")){
+			Network network=new Network();
+			network.read(this, br);
+			
+			model.network=network;
+		}
+	
 
 
 	if(model.axiSym) model.height=2*Math.PI;

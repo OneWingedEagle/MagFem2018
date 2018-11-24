@@ -101,6 +101,7 @@ public class Model{
 	public int[] mapnr;
 	public boolean hasBunif;
 	public int nCLNstages;
+	public Network network;
 
 
 	public Model(){}

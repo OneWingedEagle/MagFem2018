@@ -277,7 +277,7 @@ public class GUI extends JFrame implements ActionListener{
 	}
 	else if (tag==22){
 
-		String folder="D:\\Works\\2018\\MagFemElectrost\\3D\\3coils\\roughmesh\\newmethod";
+		String folder="D:\\Works\\2018\\MagFemElectrost\\3D\\3coils\\roughmesh\\series-para";
 	
 		meshFile= folder + "\\bun.txt";
 	

@@ -1047,7 +1047,7 @@ x2.hshow();
 		J=this.nCol;
 		for(int i=0;i<I;i++){
 			for(int j=0;j<J;j++)
-				System.out.format("%15.4f",el[i][j]);
+				System.out.format("%6.6e \t",el[i][j]);
 			System.out.println();
 		}
 		System.out.println();
