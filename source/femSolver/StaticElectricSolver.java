@@ -25,7 +25,7 @@ public class StaticElectricSolver{
 	private int[] phiVarIndex;
 	private boolean byCircuit;
 	private int numberOfUnknownPhis,numberOfUnknowns,nCurrents;
-	double vps_volatge;
+	public double vps_volatge;
 	public boolean open_vps;
 	
 	public StaticElectricSolver(){
@@ -64,14 +64,14 @@ public class StaticElectricSolver{
 		//Ks.shownz();
 
 		Vect Ci=Ks.scale(RHS);
-
+		
 		if(open_vps)
 			L=Ks.ichol(1.);
 		else
 			L=Ks.ichol();
 		
-		double errMax=1e-11;
-		if(open_vps) errMax=1e-10;
+		double errMax=1e-12;
+		if(open_vps) errMax=1e-12;
 
 
 		x=model.solver.ICCG(Ks,L, RHS,errMax,model.iterMax);
@@ -79,13 +79,6 @@ public class StaticElectricSolver{
 
 		x.timesVoid(Ci);
 
-		for(int i=1;i<=model.numberOfNodes;i++){
-			int index=phiVarIndex[i]-1;	
-
-			if(index>=0){
-				model.node[i].setPhi(x.el[index]);	
-			}
-		}
 
 		return x;
 
@@ -93,7 +86,7 @@ public class StaticElectricSolver{
 
 	public  void setPhiMat(Model model){
 
-		double eps=1e-8;
+		double eps=1e-12;
 
 		int ext=10;
 		Mat Ke;
@@ -499,6 +492,16 @@ public class StaticElectricSolver{
 
 	}
 
+	public void setSolution(Model model, Vect x){
+
+		for(int i=1;i<=model.numberOfNodes;i++){
+			int index=phiVarIndex[i]-1;	
+
+			if(index>=0){
+				model.node[i].setPhi(x.el[index]);	
+			}
+		}
+	}
 
 }
 

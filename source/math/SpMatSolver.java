@@ -610,8 +610,8 @@ public class SpMatSolver {
 	}
 	
 	public Vect ICCG(SpMat A,SpMat L,Vect b,double errMax,int N,Vect x,int errType, boolean echo){
-	/*	if(1>0)
-		return AICCG(A,L,b,errMax,N,x,errType,echo);*/
+
+		
 		int I=A.getnRow();
 		int J=A.getnCol();
 		int Lb=b.length;

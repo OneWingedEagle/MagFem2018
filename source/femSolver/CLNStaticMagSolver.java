@@ -37,7 +37,7 @@ public class CLNStaticMagSolver{
 
 		L=Ks.ichol();
 
-		if(RHS.abs().max()>1e-8){
+		if(RHS.abs().max()>1e-10){
 			x=model.solver.ICCG(Ks,L, RHS,model.errCGmax,model.iterMax);
 		}
 

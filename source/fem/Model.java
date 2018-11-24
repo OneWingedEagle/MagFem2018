@@ -100,6 +100,7 @@ public class Model{
 	public Vect[][] forceLamin;
 	public int[] mapnr;
 	public boolean hasBunif;
+	public int nCLNstages;
 
 
 	public Model(){}

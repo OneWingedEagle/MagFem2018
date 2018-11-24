@@ -733,8 +733,10 @@ public static void main2(String[] args){
 				System.err.println("Mesh and Data do not match in the number of regions: "+model.numberOfRegions+" and "+nRegions);
 			}
 	
-
-
+			line=getNextDataLine(br);;
+			int nStage =getIntData(line);		
+			
+			model.nCLNstages=nStage;
 			
 			for(int ir=1;ir<=model.numberOfRegions;ir++){
 				line=getNextDataLine(br);
