@@ -103,6 +103,7 @@ public void run(Model model, Main main){
 
 		if(kstage==0){
 			phiSolver.setRHS(model);
+		
 		}
 		else{
 			elecAtemp=magModes[kstage-1].times(-1./inductances.el[kstage-1]);
@@ -123,15 +124,19 @@ public void run(Model model, Main main){
 
 
 		}
-		
+		phiSolver.RHS.show();
 		
 		Vect x=phiSolver.solve(model);
+
+		//if(model.dim==2 && kstage>0) x.timesVoid(0);
+		
 		phiSolver.setSolution(model,x);
 		
 		 
 		if(kstage==0 && phiSolver.open_vps) phiSolver.openVPS(model);
 	
-		
+		phiSolver.conductiveMat.show();
+		x.show();
 
 		if (kstage > 1  ||(kstage>0 &&!phiSolver.open_vps)){
 			x=x.add(elecPhiModes[kstage - 1]);
@@ -144,10 +149,10 @@ public void run(Model model, Main main){
 		elecAModes[kstage]=elecAtemp.deepCopy();
 
 
-		model.setSolution(elecAtemp);
+	//	model.setSolution(elecAtemp);
 
-		model.setJStatic();
-		model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
+	//	model.setJStatic();
+	//	model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
 		//model.writePhi(model.resultFolder+"\\phi"+kstage+".txt");
 		
 
@@ -179,9 +184,9 @@ public void run(Model model, Main main){
 			
 		//========
 		
-		//model.setSolution(x);
-		//model.setB();
-		//model.writeB(model.resultFolder+"\\B"+kstage+".txt");
+		model.setSolution(x);
+		model.setB();
+		model.writeB(model.resultFolder+"\\B"+kstage+".txt");
 
 		}
 		
