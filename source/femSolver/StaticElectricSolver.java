@@ -42,7 +42,7 @@ public class StaticElectricSolver{
 
 		setPhiMat(model);
 		setTmat(model);
-		AnnexTmat();
+		annexTmat();
 
 
 	}
@@ -51,7 +51,7 @@ public class StaticElectricSolver{
 
 		Vect x=new Vect(numberOfUnknowns);
 
-		if(numberOfUnknowns==0) return x;
+		if(numberOfUnknowns==0 || RHS.norm()<1e-12) return x;
 
 		SpMat L=new SpMat();
 
@@ -122,14 +122,13 @@ public class StaticElectricSolver{
 						columnIndex=phiVarIndex[nodeNumber]-1;								
 
 						if(columnIndex==-1 || columnIndex>matrixRow) continue;	
-
-
+				
 						m=util.search(phi_matrix.row[matrixRow].index,nz[matrixRow]-1,columnIndex);
 						if(m<0)
 						{	
 
 							if(abs(Ke.el[j][k])>eps ){
-
+		
 								//===========================
 								if(nz[matrixRow]==phi_matrix.row[matrixRow].nzLength-1){
 									phi_matrix.row[matrixRow].extend(ext);
@@ -145,28 +144,15 @@ public class StaticElectricSolver{
 						else{
 
 							phi_matrix.row[matrixRow].addToNz(Ke.el[j][k],m);
+
 						}
 
 					}			
 				}
 			}
 		}
-/*		if(byCircuit){
-			double Rext=1e-10;
-			util.pr(numberOfUnknownPhis+" "+numberOfUnknowns);
-			matrixRow=numberOfUnknowns-1;
-			nz[matrixRow]=model.phiCoils.length+1;
-			for(int ic=0;ic<model.phiCoils.length;ic++){
-				phi_matrix.row[matrixRow].index[ic]=matrixRow-model.phiCoils.length+ic;
-				phi_matrix.row[matrixRow].el[ic]=-1;
-			}
-				phi_matrix.row[matrixRow].index[model.phiCoils.length]=matrixRow;
-				phi_matrix.row[matrixRow].el[model.phiCoils.length]=-Rext;
-		}
 
-*/
 		phi_matrix.sortAndTrim(nz);
-
 	}
 	
 	public  void setTmat(Model model){
@@ -195,55 +181,11 @@ public class StaticElectricSolver{
 			t_matrix.row[i].el[model.phiCoils.length+j]=-network.PRPt.el[i][j];
 			}
 			}
-			t_matrix.show();;
+			//t_matrix.shownz();;
 	}
 	
-	public  void setTmatzz(Model model){
 
-		if(nCurrents>1) {
-			setTmat2(model);
-
-			return;
-		}
-			t_matrix=new SpMat(nCurrents,numberOfUnknowns);
-			double Rext=1e-10;
-			int matrixRow=0;
-			t_matrix.row[matrixRow]=new SpVect(numberOfUnknowns,model.phiCoils.length+1);
-
-			for(int ic=0;ic<model.phiCoils.length;ic++){
-				t_matrix.row[matrixRow].index[ic]=numberOfUnknownPhis-model.phiCoils.length+ic;
-				t_matrix.row[matrixRow].el[ic]=-1;
-			}
-			
-			t_matrix.row[matrixRow].index[model.phiCoils.length]=numberOfUnknowns-1;
-			t_matrix.row[matrixRow].el[model.phiCoils.length]=-Rext;
-	
-	}
-	public  void setTmat2(Model model){
-
-	
-			t_matrix=new SpMat(nCurrents,numberOfUnknowns);
-			double Rext=1e-10;
-			int matrixRow=0;
-			t_matrix.row[matrixRow]=new SpVect(numberOfUnknowns,model.phiCoils.length);
-
-			for(int ic=0;ic<model.phiCoils.length-1;ic++){
-				t_matrix.row[matrixRow].index[ic]=numberOfUnknownPhis-model.phiCoils.length+ic;
-				t_matrix.row[matrixRow].el[ic]=-1;
-			}
-			
-			
-			t_matrix.row[matrixRow].index[model.phiCoils.length-1]=numberOfUnknowns-2;
-			t_matrix.row[matrixRow].el[model.phiCoils.length-1]=-Rext;
-			
-			matrixRow=1;
-			t_matrix.row[matrixRow]=new SpVect(numberOfUnknowns,1);
-			t_matrix.row[matrixRow].index[0]=numberOfUnknowns-1;
-			t_matrix.row[matrixRow].el[0]=-Rext;
-	
-	}
-	
-	private void AnnexTmat(){
+	private void annexTmat(){
 
 		conductiveMat=new SpMat(numberOfUnknowns);
 		
@@ -256,8 +198,8 @@ public class StaticElectricSolver{
 
 		for(int i=0;i<t_matrix.nRow;i++){
 			int matrixRow=i+numberOfUnknownPhis;
-			util.pr(t_matrix.row[i].nzLength);
-		conductiveMat.row[matrixRow]=new SpVect(numberOfUnknowns,t_matrix.row[i].nzLength);
+
+			conductiveMat.row[matrixRow]=new SpVect(numberOfUnknowns,t_matrix.row[i].nzLength);
 		for(int j=0;j<t_matrix.row[i].nzLength;j++){
 			conductiveMat.row[matrixRow].index=t_matrix.row[i].index;
 			
@@ -265,22 +207,33 @@ public class StaticElectricSolver{
 		
 		}
 	}
+		//t_matrix.matForm().show();;
 		//conductiveMat.size();
 
 	}
 
 
-	public void setRHS(Model model){		
+	public void setRHS0(Model model){		
 
 
 		RHS=new Vect(numberOfUnknowns);
+		Network network=model.network;
 
-			RHS.el[RHS.length-1]=-vps_volatge;
+		int rowIndex=-1;
+		for(int j=0;j<network.indep_elems.length;j++){
+			if(network.indep_elems[j].type==ElemType.VPS){
+				 rowIndex=network.indep_elems[j].unknown_seq_no+numberOfUnknownPhis;
+				 break;
+			}
+		}
+			
+		if(rowIndex>=0)
+			RHS.el[rowIndex]=-vps_volatge;
 		
 	}
 
 
-	public void setRHS(Model model,double factor){		
+	public void setRHS(Model model){		
 
 
 
@@ -342,9 +295,32 @@ public class StaticElectricSolver{
 
 		}
 		
-		if(!open_vps)
-			RHS.el[RHS.length-1]=-vps_volatge;
-//RHS.show();
+		Network network=model.network;
+
+		if(!open_vps){
+
+			int rowIndex=-1;
+			for(int j=0;j<network.indep_elems.length;j++){
+
+				if(network.indep_elems[j].unknown_seq_no>=0 &&network.indep_elems[j].type==ElemType.VPS){
+					 rowIndex=network.indep_elems[j].unknown_seq_no+numberOfUnknownPhis;
+					 break;
+				}
+			}
+	
+				if(!open_vps && rowIndex>=0)
+					RHS.el[rowIndex]=-vps_volatge;
+					
+		}
+		
+/*		for(int j=0;j<-network.indep_elems.length;j++){
+			if(network.indep_elems[j].unknown_seq_no>=0){
+				int rowIndex=network.indep_elems[j].unknown_seq_no;
+			if(network.indep_elems[j].type==ElemType.L){
+				 rowIndex=network.indep_elems[j].unknown_seq_no+numberOfUnknownPhis;
+			}
+			}
+		}*/
 
 	}
 
@@ -366,7 +342,6 @@ public class StaticElectricSolver{
 
 
 		for(int ir=1;ir<=model.numberOfRegions;ir++){
-
 
 			if(!model.region[ir].isConductor) continue;
 
@@ -403,7 +378,7 @@ public class StaticElectricSolver{
 							coord.el[1]>=coil.faceBox[0][2] &&coord.el[1]<=coil.faceBox[0][3] &&
 							(model.dim==2 || coord.el[2]>=coil.faceBox[0][4] &&coord.el[2]<=coil.faceBox[0][5])){
 						model.node[nodeNumber].setPhiKnown(true);
-						model.node[nodeNumber].setPhi(1.);
+						model.node[nodeNumber].setPhi(1.0);
 						if(nc[nodeNumber]==false){
 							infaceNodes1[nx++]=nodeNumber;
 							nc[nodeNumber]=true;
@@ -427,7 +402,8 @@ public class StaticElectricSolver{
 			}
 
 			coil.infaceNodes=Arrays.copyOf(infaceNodes1, nx);
-			//	util.hshow(coil.infaceNodes);
+				//util.hshow(coil.infaceNodes);
+				//util.pr(coil.infaceNodes.length);
 		}
 
 
@@ -507,7 +483,7 @@ public class StaticElectricSolver{
 	public void setCurrentIndices(Model model){
 		
 		nCurrents=model.network.no_unknown_currents;
-
+;
 		numberOfUnknowns=numberOfUnknownPhis;
 		for(int i=0;i<nCurrents;i++)
 			numberOfUnknowns++;
@@ -517,21 +493,33 @@ public class StaticElectricSolver{
 	
 	public void openVPS(Model model){
 
-				//for(int row=0;row<t_matrix.nRow;row++)
-					int row=0;
-				t_matrix.row[row].el[t_matrix.row[row].nzLength-1]=-1e12;
+		Network network=model.network;
 
+		int rowIndex=-1;
+		for(int j=0;j<network.indep_elems.length;j++){
+
+			if(network.indep_elems[j].unknown_seq_no>=0 &&network.indep_elems[j].type==ElemType.VPS){
+				 rowIndex=network.indep_elems[j].unknown_seq_no;
+				 break;
+			}
+		}
+
+		if(rowIndex>=0)
+				t_matrix.row[rowIndex].el[t_matrix.row[rowIndex].nzLength-1]=-1e12;
+		
+		//t_matrix.show();;
 	}
 
 	public void setSolution(Model model, Vect x){
 
 		for(int i=1;i<=model.numberOfNodes;i++){
 			int index=phiVarIndex[i]-1;	
-
+		
 			if(index>=0){
 				model.node[i].setPhi(x.el[index]);	
 			}
 		}
+
 	}
 
 }

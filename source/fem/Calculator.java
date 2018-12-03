@@ -2008,56 +2008,7 @@ public class Calculator {
 		return gradN;
 	}
 
-/*	public  Vect divNe(Mat jac, Vect localCo){
 	
-		Vect  divNe=new Vect(this.nElEdge);
-		
-		double a=localCo.el[0];
-		double b=localCo.el[1];
-		double c=localCo.el[2];
-
-		Mat invJac=jac.inv3();
-
-		Vect[] grad=new Vect[3];
-
-		for(int j=0;j<3;j++)
-			grad[j]=invJac.getColVect(j);
-		
-		Vect[] localGradN=new Vect[this.nElEdge];
-		int ix=0;
-		localGradN[ix++]=new Vect(0,(1-c),(1-b)).times(.125);
-		localGradN[ix++]=new Vect(0,(1-c),(1+b)).times(.125);
-		localGradN[ix++]=new Vect(0,(1+c),(1-b)).times(.125);
-		localGradN[ix++]=new Vect(0,(1+c),(1+b)).times(.125);
-		
-		localGradN[ix++]=new Vect((1-c),0,(1-a)).times(.125);
-		localGradN[ix++]=new Vect((1-c),0,(1+a)).times(.125);
-		localGradN[ix++]=new Vect((1+c),0,(1-a)).times(.125);
-		localGradN[ix++]=new Vect((1+c),0,(1+a)).times(.125);
-		
-		localGradN[ix++]=new Vect((1-b),(1-a),0).times(.125);
-		localGradN[ix++]=new Vect((1-b),(1+a),0).times(.125);
-		localGradN[ix++]=new Vect((1+b),(1-a),0).times(.125);
-		localGradN[ix++]=new Vect((1+b),(1+a),0).times(.125);
-		
-		 ix=0;
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[0]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[0]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[0]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[0]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[1]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[1]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[1]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[1]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[2]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[2]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[2]);
-		divNe.el[ix]=invJac.mul(localGradN[ix++]).dot(grad[2]);
-		
-		
-		return divNe;
-		
-	}*/
 
 	public  Vect[] rotNe(Mat jac, Vect localCo){
 
@@ -3001,6 +2952,7 @@ public class Calculator {
 		Mat jac;
 
 		Vect[] gradN=new Vect[this.nElVert];
+		
 		Vect localCo=new Vect(3);
 		Vect[] Ne=new Vect[this.nElEdge];
 		
@@ -3027,10 +2979,8 @@ public class Calculator {
 
 					gradN=gradN(jac,localCo);
 
-
 					Ne=Ne(jac,localCo);
 					
-
 					for(int i=0;i<this.nElVert;i++)
 						for(int j=0;j<this.nElEdge;j++)	
 							elemVec.el[i]+=ws*gradN[i].dot(Ne[j].times(A[j]));
@@ -3053,7 +3003,7 @@ public class Calculator {
 		Mat jac;
 
 		Vect localCo=new Vect(model.dim);
-		double[] Ne=new double[this.nElEdge];
+		double[] N=new double[this.nElEdge];
 		
 		double[] A=new double[this.nElEdge];
 		for(int j=0;j<this.nElEdge;j++)	
@@ -3078,13 +3028,14 @@ public class Calculator {
 						ws=detJac;
 
 
-					Ne=NeQuad(localCo);
+					N=N(localCo);
 					
 
 					for(int i=0;i<this.nElVert;i++)
 						for(int j=0;j<this.nElEdge;j++)	
-									elemVec.el[i]+=ws*gradN*Ne[j]*A[j];
+									elemVec.el[i]+=ws*gradN*N[j]*A[j];
 				}	
+		
 
 		return elemVec;
 

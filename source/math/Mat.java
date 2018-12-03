@@ -1040,14 +1040,18 @@ x2.hshow();
 		return this.normRow().norm();
 	}
 
-
 	public void show(){
+		
+		show("%6.6e");
+	}
+
+	public void show(String format){
 		int I,J;
 		I=this.nRow;
 		J=this.nCol;
 		for(int i=0;i<I;i++){
 			for(int j=0;j<J;j++)
-				System.out.format("%6.6e \t",el[i][j]);
+				System.out.format(format+" \t",el[i][j]);
 			System.out.println();
 		}
 		System.out.println();

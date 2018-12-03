@@ -1827,8 +1827,8 @@ public class Writer {
 				pw.println(model.numberOfElements);
 				for(int i=1;i<=model.numberOfElements;i++){
 					Vect B=model.element[i].getB();
-					/*if(model.element[i].hasJ())
-						B=model.element[i].getJ();*/
+					/*if(model.element[i].hasJ())*/
+					//	B=new Vect(model.getElement2DA(i),0);
 							
 					
 				//B=new Vect(model.edge[model.element[i].getEdgeNumb(0)].A,0);
@@ -1912,7 +1912,7 @@ public class Writer {
 				if(model.element[n].isConductor()){
 
 					for(int k=0;k<3;k++)
-						pw.format("%20.4f",model.element[n].getJe().el[k]);
+						pw.format("%12.6e\t",model.element[n].getJe().el[k]);
 				}
 				else
 					for(int k=0;k<3;k++)
@@ -2120,6 +2120,7 @@ public class Writer {
 
 			for(int n=1;n<=model.numberOfNodes;n++)
 			{
+				if(!model.node[n].isPhiVar()) continue;
 				if(model.node[n].getPhi()==0) continue;
 
 				pw.format("%d\t%E",n,model.node[n].getPhi());

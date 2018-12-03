@@ -22,6 +22,16 @@ public class CLNStaticMagSolver{
 		this.calc=new Calculator(model);
 	}
 
+	public void setMatrix(Model model){
+
+
+		setMagMat(model);
+		//setTmat(model);
+		//annexTmat();
+
+
+	}
+
 
 	public Vect solve(Model model){
 		
@@ -35,11 +45,13 @@ public class CLNStaticMagSolver{
 
 	Vect Ci=Ks.scale(RHS);
 
-		L=Ks.ichol();
+		L=Ks.ichol(1.2);
 
-		if(RHS.abs().max()>1e-10){
+		if(RHS.norm()/RHS.length>.01){
 			x=model.solver.ICCG(Ks,L, RHS,model.errCGmax,model.iterMax);
-		}
+			
+		}else if(RHS.norm()>1e-6)
+			x=model.solver.ICCGr0max(Ks, L, RHS,model.errCGmax*1e-2,model.iterMax);
 
 		else
 			x=new Vect(x.length);

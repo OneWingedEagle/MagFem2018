@@ -961,19 +961,15 @@ public class SpMat  {
 	}
 
 
+	public void show(String format){
+		Mat M=matForm();
+		M.show(format);
+	}
 	public void show(){
 		Mat M=matForm();
 		M.show();
 	}
-	
-/*	public void plot(){
 
-
-		Mat M=matForm();
-
-		M.plot();
-		
-	}*/
 	
 	public void plot(){
 		int N=400;

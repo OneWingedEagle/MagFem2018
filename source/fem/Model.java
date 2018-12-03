@@ -99,7 +99,7 @@ public class Model{
 	public Model m2d;
 	public Vect[][] forceLamin;
 	public int[] mapnr;
-	public boolean hasBunif;
+	public boolean hasBunif,open_vps;
 	public int nCLNstages;
 	public Network network;
 
@@ -1741,6 +1741,10 @@ public class Model{
 
 	private void setElementJStatic(int i){
 
+		if(this.dim==2){
+			setElementJStaticJe2D(i);
+			return;
+		}
 		Node[] vertexNode=elementNodes(i);
 		Edge[] elemEdges=elementEdges(i);
 		
@@ -1774,7 +1778,6 @@ public class Model{
 			
 }
 
-
 	private void setElement2DJe(int i){
 
 		double rdt=1.0/dt;
@@ -1801,6 +1804,29 @@ public class Model{
 			element[i].setJe(new Vect(0,0,-(dA+gradPhiz)*element[i].getSigmaZ()*rdt));
 		}
 	}
+	
+	private void setElementJStaticJe2D(int i){
+
+		double rdt=1.0/this.height;
+
+		Edge[] edge=elementEdges(i);
+
+		double[] Ae=new double[nElEdge];
+		double A=0;
+
+		if(elCode==0)
+			A=getElement3angA(i);
+		else if(elCode==1)
+			A=getElementQuadA(i);
+	
+		
+			double gradPhiz=0;
+			if(elCode==0) gradPhiz=getElement3angPhi(i);
+			else if(elCode==1) gradPhiz=getElementQuadPhi(i);
+			element[i].setJe(new Vect(0,0,-(A+gradPhiz)*element[i].getSigmaZ()*rdt));
+			
+		}	
+
 
 	public Vect getElementA(int ie){
 

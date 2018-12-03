@@ -47,15 +47,15 @@ public class MeshFormatConverter {
 	//	mfc.convertToNeu();
 
 		//String file=System.getProperty("user.dir")+"\\ladder_current";
-		String file=System.getProperty("user.dir")+"\\magnetic";
+	//	String file=System.getProperty("user.dir")+"\\magnetic";
 		//mfc.getEMSolFlux(file,3,102700,"BMAG");
 		//mfc.getPostHexAtlasOrig();
 		//mfc.getPostHexaNeu();
 	//	mfc.getPostHexAtlas();
 		//	mfc.getNeuMeshQ();
 	//	mfc.getNeuMeshHexa();
-		//mfc.getPostHexaNeu(8);
-		mfc.get2DFormNeu(4);
+		mfc.getPostHexaNeu(8);
+	//	mfc.get2DFormNeu(4);
 		
 		//mfc.convertTetraNeu();
 /*int K=1000000;

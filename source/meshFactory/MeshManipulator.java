@@ -375,7 +375,7 @@ public class MeshManipulator {
 		//mf.modifyEMSolFlux(2);
 		
 			//	mf.rotate(PI/2);
-	//	mf.pileUpHexa(6, .005);
+		mf.pileUpHexa(1, 1);
 		
 	//	mf.pileHelic(6*8, PI/4, .0125*18);
 		
@@ -1373,7 +1373,8 @@ public class MeshManipulator {
 
 		prismModel.scaleFactor=	model.scaleFactor;
 
-		String prismMesh = System.getProperty("user.dir") + "//prismatic.txt";
+		String folder=new File(model.meshFilePath).getParentFile().getPath();
+		String prismMesh = folder+ "\\prismatic.txt";
 		prismModel.writeMesh(prismMesh);
 
 	}

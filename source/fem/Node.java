@@ -23,12 +23,11 @@ public class Node {
 	uKnown=new boolean[dim];
 	if(dim==2) onBound=new boolean[4];
 	}
-	
+
 	public void setPhi(double phi){
 		this.phi=phi;
-		
 	}
-	
+		
 	public double getPhi(){
 		return this.phi;
 		

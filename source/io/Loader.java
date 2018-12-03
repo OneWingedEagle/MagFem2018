@@ -38,87 +38,7 @@ public class Loader {
 	private String regex="[:; ,=\\t]+";
 	public String regex2="[\\[\\]\\s: )(,=\\t]+";
 
-	
-public static void main2(String[] args){
-		
-		Loader ld=new Loader();
-		String meshFile= System.getProperty("user.dir") + "\\inputs\\mesh\\mot4th2D.txt";
-		Model model=new Model(meshFile);
-		//String meshFileFine= System.getProperty("user.dir") + "\\inputs\\mesh\\mot4th2D.txt";
-		//Model modelFine=new Model(meshFileFine);
-	
-		
-		int N=200;
-		Vect flxErr=new Vect(N);
 
-		for(int i=0;i<N;i++){
-/*			double sf1=i*.1;
-			
-			double sf2=(i+1)*.1;
-			if(i==889) sf2=sf1;
-			
-			DecimalFormat df=new DecimalFormat("0.0");*/
-		//	String file1=System.getProperty("user.dir") + "\\fluxes200VeryAcc\\flux"+i+".txt";
-			String file1=System.getProperty("user.dir") + "\\fluxes200Acc\\flux"+i+".txt";
-			//String file2=System.getProperty("user.dir") + "\\fluxes200POD\\flux"+i+".txt";
-			String file2=System.getProperty("user.dir") + "\\fluxes200BlockMOR3\\flux"+i+".txt";
-			//modelFine.loadFlux(file1);
-			model.loadFlux(file1);
-
-			
-			Vect[] dB=ld.fluxSub(file2, file1);
-			//String file2=System.getProperty("user.dir") + "\\fluxp1\\flux"+df.format(sf2)+".txt";
-			//String file3=System.getProperty("user.dir") + "\\fluxAve\\flux"+df.format(sf1)+".txt";
-			//ld.average(file1,file2,file3);
-	/*		Vect BB1[]=new Vect[model.numberOfElements];
-			Vect BB2[]=new Vect[model.numberOfElements];
-			for(int k=0;k<model.numberOfElements;k++){
-				BB1[k]=new Vect(2);
-				BB2[k]=new Vect(2);
-			}*/
-			
-			double s1=0,s2=0;
-			int ix=0;
-/*			for(int ir=1;ir<=model.numberOfRegions;ir++){
-			for(int k=modelFine.region[ir].getFirstEl();k<=modelFine.region[ir].getLastEl();k++){
-			//	if(ir!=7 && ir!=15){
-
-				double area=modelFine.getElementArea(k);
-				BB1[ix]=modelFine.element[k].getB();
-				s1+=area*BB1[ix].dot(BB1[ix]);
-				ix++;
-		//	}
-			}
-			}*/
-			
-			ix=0;
-			for(int ir=1;ir<=model.numberOfRegions;ir++){
-			for(int k=model.region[ir].getFirstEl();k<=model.region[ir].getLastEl();k++){
-				//if(ir!=7 && ir!=15){
-				double area=model.getElementArea(k);
-				s1+=area*model.element[k].getB().dot(model.element[k].getB());
-				//BB2[ix]=model.element[k].getB();
-			//	Vect dBx=BB1[ix].sub(BB2[ix]);
-				s2+=area*dB[ix].dot(dB[ix]);
-			//	}
-				ix++;
-				
-			}
-			}
-			
-			
-			flxErr.el[i]=s2/s1;
-			
-			
-			for(int k=1;k<=model.numberOfElements;k++)
-				model.element[k].setB(dB[k-1]);
-			model.writeB(System.getProperty("user.dir") + "\\fluxes200BlockMOR3\\aadiffFlux"+i+".txt");
-			//for(int k=1;k<=model.numberOfElements;k++)
-			//	dB[k-1].hshow();
-		}
-		
-		flxErr.times(100).show();
-	}
 	
 
 	public void loadMesh(Model model, String bunFilePath){
@@ -853,9 +773,7 @@ public static void main2(String[] args){
 				
 				model.unifB=new Vect(array);
 			}
-			
-			
-
+		
 		line=getNextDataLine(br);
 		line=util.dropLeadingSpaces(line);
 		if(line.equals("NETWORK")){
@@ -864,7 +782,12 @@ public static void main2(String[] args){
 			
 			model.network=network;
 		}
-	
+		line=getNextDataLine(br);
+		if(line==null|| line.equals("")) 
+			model.open_vps=true;
+		else
+		model.open_vps=getBooleanData(line);
+		
 
 
 	if(model.axiSym) model.height=2*Math.PI;
@@ -2109,12 +2032,12 @@ public void average(String bun1, String bun2,String bun3){
 		model.region[ir].setMur(v);
 		
 		double sigma=Double.parseDouble(sp[ib++]);
-	
-		for(int k=0;k<v.length;k++){
-			v.el[k]=sigma;
+		Vect v3=new Vect(3);
+		for(int k=0;k<v3.length;k++){
+			v3.el[k]=sigma;
 		}
-	
-		model.region[ir].setSigma(v);
+
+		model.region[ir].setSigma(v3);
 
 		if(ib<sp.length){
 			Vect M=new Vect(model.dim);
@@ -2491,8 +2414,12 @@ public int[] getCSInt(String line){
 }
 
 public String getNextDataLine(BufferedReader br) throws IOException{
-	String line;
-	while((line=br.readLine()).startsWith("/")){}
+	String line="";
+	while(true){
+		line=br.readLine();
+		if(line==null) break;
+		if(!line.startsWith("/")) break;
+	}
 return line;
 }
 

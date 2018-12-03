@@ -52,7 +52,7 @@ public class Network {
 
 		 public boolean tree;
 		 private boolean passed=false;
-		 int unknown_seq_no;
+		public  int unknown_seq_no;
 
 	}
 	
@@ -208,7 +208,9 @@ public class Network {
 		SetElementDependency();
 
 		SetTiesetMatrix();
-		tiesetMat.show();
+		util.pr("\n Tieset Matrix:\n" );
+
+		tiesetMat.show("%1.0f");
 		
 	
 		SetPRPt();
@@ -454,10 +456,15 @@ void SetElementDependency() {
 		}
 	}
 	
+	util.pr("Dependent Network Elements:" );
+	
 	indep_elems=new Elem[ix];
-	for (int k = 0; k<ix; k++)
+	for (int k = 0; k<ix; k++){
 		indep_elems[k]=independent_elements[k];
+		
+		util.pr(k+" :  "+indep_elems[k].id);
 
+	}
 
 	for (int k = 0; k < numElements; k++)
 	{
