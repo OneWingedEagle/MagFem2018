@@ -99,7 +99,16 @@ public class RunCLN {
 		Vect x=phiSolver.solve(model);
 
 		phiSolver.setSolution(model,x);
-		//x.show();
+		x.show();
+		
+		Vect ii=new Vect(model.network.indep_elems.length);
+		
+		for(int i=0;i<ii.length;i++){
+			int index=model.network.indep_elems[i].unknown_seq_no;
+			if(index==-1) continue;
+			ii.el[i]=x.el[phiSolver.numberOfUnknownPhis+index];
+		}
+		double networkloss=ii.dot(model.network.PRPt.mul(ii));
 
 		if(phiSolver.open_vps) phiSolver.openVPS(model);
 
@@ -116,11 +125,17 @@ public class RunCLN {
 
 
 		magsolver.setRHS(model,losses);
+		
+		losses[0]+=networkloss;
 
+		if(phiSolver.byCPS)
+			resistances.el[0]=losses[0];
+		else
 		resistances.el[0]=1./losses[0];
-		//util.pr("R"+kstage+"="+		resistance.el[kstage]);
+		
+		util.pr("R"+0+"="+		resistances.el[0]);
 
-
+		if(!phiSolver.byCPS)
 		magsolver.RHS=magsolver.RHS.times(resistances.el[0]);
 
 		Vect rhs1=magsolver.RHS.deepCopy();
@@ -230,7 +245,7 @@ public class RunCLN {
 		//model.writePhi(model.resultFolder+"\\phi.txt");
 
 
-		WriteImpedance(resistances,inductances,1e-1,1e3,21);
+		WriteImpedance(resistances,inductances,1e0,1e2,11);
 
 		double f0=1e2;
 		//	Complex imp=ObtainImpedance(resistance,inductances,1e2);
@@ -411,7 +426,7 @@ public class RunCLN {
 		//model.writePhi(model.resultFolder+"\\phi.txt");
 
 
-		WriteImpedance(resistances,inductances,1e-1,1e3,21);
+		WriteImpedance(resistances,inductances,1e0,1e2,11);
 
 		double f0=1e2;
 		//	Complex imp=ObtainImpedance(resistance,inductances,1e2);
@@ -585,7 +600,7 @@ public class RunCLN {
 		//model.writePhi(model.resultFolder+"\\phi.txt");
 
 
-		WriteImpedance(resistances,inductances,1e-1,1e3,21);
+		WriteImpedance(resistances,inductances,1e0,1e2,11);
 
 		double f0=1e0;
 		//	Complex imp=ObtainImpedance(resistance,inductances,1e2);
@@ -1024,10 +1039,10 @@ public class RunCLN {
 			freq *= factor;
 		}
 
-		String type="Cauer";
-		if(networkType==1)type="Foster";
+		//String type="Cauer";
+	//	if(networkType==1)type="Foster";
 
-		String zFilePath=outputFolder+"\\impedance_freq"+type+".txt";
+		String zFilePath=outputFolder+"\\impedance_freq.txt";
 
 		try{
 			PrintWriter pw=new PrintWriter(new BufferedWriter(new FileWriter(zFilePath)));

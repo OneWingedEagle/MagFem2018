@@ -490,6 +490,7 @@ void SetElementDependency() {
 
 	no_unknown_currents = i;
 
+	if(no_unknown_currents>0){
 
 	unknownCurrentAddress = new int[no_unknown_currents];
 
@@ -502,6 +503,7 @@ void SetElementDependency() {
 		unknownCurrentAddress[jx++] = elem.index;
 	}
 
+	}
 }
 
 
@@ -629,7 +631,9 @@ for (int k = 0; k < numElements; k++)
 	if(elems[k].type==ElemType.R) R.el[k][k]=elems[k].R;
 }
 
+
 PRPt =tiesetMat.mul(R.mul(tiesetMat.transp()));
+PRPt.show("%2.2e");
 
 }
 
