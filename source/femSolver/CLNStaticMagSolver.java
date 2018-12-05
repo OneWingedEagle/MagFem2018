@@ -128,8 +128,6 @@ public class CLNStaticMagSolver{
 						m=util.search(magMat.row[matrixRow].index,nz[matrixRow]-1,columnIndex);
 						if(m<0)
 						{	
-
-
 							if(abs(H1[j][k])>eps  ){	
 
 								magMat.row[matrixRow].index[nz[matrixRow]]=columnIndex;
@@ -151,8 +149,6 @@ public class CLNStaticMagSolver{
 							magMat.row[matrixRow].addToNz(H1[j][k],m);
 						
 						}
-
-
 					}			
 				}
 			}

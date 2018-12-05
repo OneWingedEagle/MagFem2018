@@ -74,7 +74,6 @@ public class RunCLN {
 		StaticElectricSolver phiSolver= new StaticElectricSolver();
 		phiSolver.open_vps=true;
 
-
 		phiSolver.setBoundaryCondition(model);
 		phiSolver.setMatrix(model);
 
@@ -173,16 +172,25 @@ public class RunCLN {
 
 			model.setSolution(elecAtemp);
 			
-		//	model.setJStatic();
-		//	model.writeJe(model.resultFolder+"\\Je"+22+".txt");
+			model.setJStatic();
+			model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
 
 			phiSolver.setRHS(model);
 
 			//phiSolver.RHS.show();
 			//phiSolver.conductiveMat.show();
 			x=phiSolver.solve(model);
-			//x.show();
+			x.show();
 
+			ii=new Vect(model.network.indep_elems.length);
+			
+			for(int i=0;i<ii.length;i++){
+				int index=model.network.indep_elems[i].unknown_seq_no;
+				if(index==-1) continue;
+				ii.el[i]=x.el[phiSolver.numberOfUnknownPhis+index];
+			}
+			 networkloss=ii.dot(model.network.PRPt.mul(ii));
+			 
 			phiSolver.setSolution(model,x);
 
 			if (kstage > 1  ||(kstage>0 &&!phiSolver.open_vps)){
@@ -201,6 +209,8 @@ public class RunCLN {
 
 
 			magsolver.setRHS(model,losses);
+			
+			losses[0]+=networkloss;
 
 			resistances.el[kstage]=1./losses[0];
 			//util.pr("R"+kstage+"="+		resistance.el[kstage]);

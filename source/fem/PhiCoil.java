@@ -12,7 +12,7 @@ import math.util;
 
 public class PhiCoil {
 
-	public int regNo;
+	public int regNo,index;
 	public double conductivity;
 	private int numTurns;
 	public int constPotIndex;

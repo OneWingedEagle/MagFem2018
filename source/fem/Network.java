@@ -48,7 +48,8 @@ public class Network {
 		 public double R;
 		 public double V;
 		 public double L;
-		 public int fem_Id;
+		 public int fem_id;
+		 public int fem_index;
 
 		 public boolean tree;
 		 private boolean passed=false;
@@ -162,6 +163,7 @@ public class Network {
 				}	
 				else if(sp[0].equals("FEM")){
 					elems1[ie].type=ElemType.FEM;
+					elems1[ie].fem_id=Integer.parseInt(sp[4]);
 				}else{
 					elems1[ie].type=ElemType.XX;
 				}
@@ -575,6 +577,7 @@ void TraceLoop(Elem elem) {
 
 		loopLinks[ix++]=new ElemAndSign(connect.elem, -connect.sign*elemSign);
 	}
+	
 
 	elem.dependent_elements=new ElemAndSign[ix];
 	int jx=0;
@@ -611,6 +614,7 @@ void SetTiesetMatrix() {
 		for (int j = 0; j<row_elem.dependent_elements.length; ++j)
 		{
 			int col=row_elem.dependent_elements[j].elem.index;
+	
 			double sign=row_elem.dependent_elements[j].sign;
 			tiesetMat.el[i][col]=sign;
 

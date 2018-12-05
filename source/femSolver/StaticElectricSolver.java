@@ -172,6 +172,7 @@ public class StaticElectricSolver{
 				if(network.elems[j].type==ElemType.FEM){
 				if(network.tiesetMat.el[n][j]!=0){
 				t_matrix.row[i].index[jx]=numberOfUnknownPhis-model.phiCoils.length+ic;
+
 				t_matrix.row[i].el[jx]=-network.tiesetMat.el[n][j];
 				jx++;
 				}
@@ -182,11 +183,11 @@ public class StaticElectricSolver{
 			for(int j=0;j<=i;j++){
 		//	if(p>=i || p==-1) continue;
 			t_matrix.row[i].index[model.phiCoils.length+j]=numberOfUnknownPhis+j;
-			util.pr(j+"  KKKKKKKKk"+network.indep_elems[j].type.toString());
+
 			t_matrix.row[i].el[model.phiCoils.length+j]=-network.PRPt.el[n][j];
 			}
 			}
-			t_matrix.matForm().show();;
+		//	t_matrix.matForm().show();;
 
 			//t_matrix.shownz();;
 	}
@@ -208,6 +209,7 @@ public class StaticElectricSolver{
 
 			conductiveMat.row[matrixRow]=new SpVect(numberOfUnknowns,t_matrix.row[i].nzLength);
 		for(int j=0;j<t_matrix.row[i].nzLength;j++){
+			
 			conductiveMat.row[matrixRow].index=t_matrix.row[i].index;
 			
 			conductiveMat.row[matrixRow].el=t_matrix.row[i].el;
@@ -249,7 +251,7 @@ public class StaticElectricSolver{
 				if(network.indep_elems[i].type==ElemType.CPS){
 					for(int j=0;j<network.indep_elems.length;j++){
 						if(network.elems[j].type==ElemType.FEM &&network.tiesetMat.el[i][j]!=0){
-							PhiCoil coil=model.phiCoils[network.elems[j].fem_Id];
+							PhiCoil coil=model.phiCoils[network.elems[j].fem_index];
 							rowIndex=this.phiVarIndex[coil.infaceNodes[0]];
 							RHS.el[rowIndex]=vps_volatge;
 						}
@@ -512,7 +514,6 @@ public class StaticElectricSolver{
 	public void setCurrentIndices(Model model){
 		
 		nCurrents=model.network.no_unknown_currents;
-
 		numberOfUnknowns=numberOfUnknownPhis;
 		for(int i=0;i<nCurrents;i++)
 			numberOfUnknowns++;

@@ -54,7 +54,7 @@ public class MeshFormatConverter {
 	//	mfc.getPostHexAtlas();
 		//	mfc.getNeuMeshQ();
 	//	mfc.getNeuMeshHexa();
-		mfc.getPostHexaNeu(8);
+	//	mfc.getPostHexaNeu(8);
 	//	mfc.get2DFormNeu(4);
 		
 		//mfc.convertTetraNeu();

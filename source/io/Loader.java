@@ -26,6 +26,7 @@ import math.SpVect;
 import math.Vect;
 import math.util;
 import fem.*;
+import fem.Network.ElemType;
 
 /**
  * TODO Put here a description of what this class does.
@@ -712,7 +713,7 @@ public class Loader {
 				if(sp[0].equals("")) ib=1;
 				int nr=Integer.parseInt(sp[ib++]);
 				model.phiCoils[j]=new PhiCoil(nr);
-				
+				model.phiCoils[j].index=j;
 				double regSigma=0;
 				if(model.region[nr].getSigma()!=null )
 					regSigma=model.region[nr].getSigma().el[0];
@@ -781,6 +782,15 @@ public class Loader {
 			network.read(this, br);
 			
 			model.network=network;
+			
+			for(int j=0;j<network.numElements;j++){
+				if(network.elems[j].type==ElemType.FEM){
+					for(int k=0;k<model.phiCoils.length;k++){
+						if(model.phiCoils[k].regNo==network.elems[j].fem_id)
+							network.elems[j].fem_index=k;
+					}
+				}
+			}
 		}
 		line=getNextDataLine(br);
 		if(line==null|| line.equals("")) 
