@@ -87,7 +87,8 @@ public class EdgeSet {
 		model.edge=new Edge[model.numberOfEdges+1];
 
 		for(int i=1;i<=nEdge;i++){
-			model.edge[i]=new Edge(edgeNodes[0].el[i],edgeNodes[1].el[i]);
+		//	model.edge[i]=new Edge(edgeNodes[0].el[i],edgeNodes[1].el[i]);
+			model.edge[i]=new Edge(model.node[edgeNodes[0].el[i]],model.node[edgeNodes[1].el[i]]);
 			model.edge[i].setLength(model.edgeLength(i));
 		}
 
@@ -156,7 +157,8 @@ public class EdgeSet {
 		model.edge=new Edge[model.numberOfEdges+1];
 
 		for(int i=1;i<=nEdge;i++){
-			model.edge[i]=new Edge(edgeNodes[i][0],edgeNodes[i][1]);
+			model.edge[i]=new Edge(model.node[edgeNodes[i][0]],model.node[edgeNodes[i][1]]);
+		//	model.edge[i]=new Edge(edgeNodes[i][0],edgeNodes[i][1]);
 			model.edge[i].setLength(model.edgeLength(i));
 
 		}
@@ -207,7 +209,9 @@ public class EdgeSet {
 		model.edge=new Edge[model.numberOfEdges+1];
 
 		for(int i=1;i<=nEdge;i++){
-			model.edge[i]=new Edge(edgeNodes[i][0],edgeNodes[i][1]);
+			model.edge[i]=new Edge(model.node[edgeNodes[i][0]],model.node[edgeNodes[i][1]]);
+
+		//	model.edge[i]=new Edge(edgeNodes[i][0],edgeNodes[i][1]);
 			model.edge[i].setLength(model.edgeLength(i));
 
 		}
@@ -260,7 +264,9 @@ public class EdgeSet {
 		model.edge=new Edge[model.numberOfEdges+1];
 
 		for(int i=1;i<=nEdge;i++){
-			model.edge[i]=new Edge(edgeNodes[i][0],edgeNodes[i][1]);
+			model.edge[i]=new Edge(model.node[edgeNodes[i][0]],model.node[edgeNodes[i][1]]);
+
+		//	model.edge[i]=new Edge(edgeNodes[i][0],edgeNodes[i][1]);
 			model.edge[i].setLength(model.edgeLength(i));
 
 		}
@@ -316,8 +322,9 @@ public class EdgeSet {
 		for(int i=1;i<=model.numberOfNodes;i++){
 			int k=nodeCount[i];
 			if(k!=0){	
-				model.edge[k]=new Edge(i,i);
-		
+				//model.edge[k]=new Edge(i,i);
+				model.edge[k]=new Edge(model.node[i],model.node[i]);
+
 				model.edge[k].setLength(1.0);
 			}
 
@@ -350,7 +357,9 @@ public class EdgeSet {
 		{
 			int n1=edNode[i][0];
 			int n2=edNode[i][1];
-			model.edge[i+ned]=new Edge(n1,n2);
+
+			//model.edge[i+ned]=new Edge(n1,n2);
+			model.edge[i+ned]=new Edge(model.node[n1],model.node[n2]);
 			double length=model.node[n1].getCoord().sub(model.node[n2].getCoord()).norm();
 			model.edge[i+ned].setLength(length);
 		}

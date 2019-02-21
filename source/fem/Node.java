@@ -15,9 +15,11 @@ public class Node {
 	public boolean common,sPBC,aPBC,inUse,rotor;
 	private byte dim;
 	private int map;
+	public int id;
 
-	public Node(int dim)
+	public Node(int id1,int dim)
 	{
+		this.id=id1;
 	this.dim=(byte)dim;
 	coord=new Vect(dim);
 	uKnown=new boolean[dim];
@@ -297,4 +299,13 @@ public class Node {
 	public int getMap(){
 		return this.map;
 		}
+	
+	public double dist(Node n1){
+		return Math.sqrt(dist2(n1));
+		
+	}
+	public double dist2(Node n1){
+		return this.getCoord().sub(n1.getCoord()).norm2();
+		
+	}
 }

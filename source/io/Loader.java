@@ -84,7 +84,7 @@ public class Loader {
 			model.node=new Node[model.numberOfNodes+1];
 
 			for(int i=1;i<=model.numberOfNodes;i++)
-				model.node[i]=new Node(model.dim);
+				model.node[i]=new Node(i, model.dim);
 
 			br.readLine();		
 			line=br.readLine();
@@ -229,7 +229,7 @@ public class Loader {
 			
 			model.setFemCalc();
 
-				
+						
 				
 		}
 		catch(IOException e){
@@ -241,13 +241,11 @@ public class Loader {
 
 	public void loadData(Model model,String dataFilePath){
 		int dim0=model.dim;
-
-
+		
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
 			String line;
 			line=getNextDataLine(br);
-
 			int dataType =getIntData(line);
 			model.dataType=dataType;
 			
@@ -262,7 +260,7 @@ public class Loader {
 				System.err.println("Mesh and Data do not match in dimension: "+dim0+" and "+dim);
 			}
 		
-				
+		
 			if(dataType==0)
 				setDataMag( model,br);
 			else if(dataType==1)
@@ -853,31 +851,22 @@ public class Loader {
 		String line;
 
 		try {
-			
-			line=br.readLine();
-			line=br.readLine();
-			int coordCode =getIntData(line);
-			model.coordCode=coordCode;
 
-			line=br.readLine();
-			line=br.readLine();
+
+			line=getNextDataLine(br);
+		
 			model.motor=getBooleanData(line);
-			
-			line=br.readLine();
-			line=br.readLine();
+	
+			line=getNextDataLine(br);
 			int nRegions =getIntData(line);		
 			if(nRegions!=model.numberOfRegions){
 				System.err.println("Mesh and Data do not match in  number of regions: "+model.numberOfRegions+" and "+nRegions);
 			}
-	
 
-			line=br.readLine();
-			line=br.readLine();
-		
 			
+		
 			for(int ir=1;ir<=model.numberOfRegions;ir++){
-			line=br.readLine();
-			line=br.readLine();
+				line=getNextDataLine(br);
 			readAndSetRegDataMech(model,ir,line);
 			}
 			
@@ -886,14 +875,13 @@ public class Loader {
 			for(int j=0;j<model.nBoundary;j++)
 				model.BCtype[j]=-1;
 			model.PBCpair=new int[model.nBoundary];
-			line=br.readLine();
-			line=br.readLine();
+
 
 			int[] bcData=new int[2];
 			
 			for(int j=0;j<model.nBoundary;j++){
 
-				line=br.readLine();
+				line=getNextDataLine(br);
 
 				if(model.BCtype[j]>-1) continue;
 				bcData=getBCdataMech(line);
@@ -912,11 +900,14 @@ public class Loader {
 
 			}
 			
+			line=getNextDataLine(br);
+
+			int numBC=getIntData(line);		
 			
-			for(int j=0;j<100;j++){
-				line=br.readLine();
-			
-				if(line==null || line.equals("")) break;
+			model.mechBC=new String[numBC][50];
+
+			for(int j=0;j<numBC;j++){
+				line=getNextDataLine(br);
 			String sp[]=line.split(regex);
 			for(int k=0;k<sp.length;k++){
 				model.mechBC[j][k]=sp[k];
@@ -1591,7 +1582,6 @@ public void average(String bun1, String bun2,String bun3){
 
 	public boolean loadNodalField(Model model,String nodalFilePath,int mode,double angDeg){
 		
-		
 		boolean rotating =true;
 		if(angDeg==1e10) rotating=false;
 		
@@ -1601,13 +1591,14 @@ public void average(String bun1, String bun2,String bun3){
 	
 
 		try{
+	
+
 			Scanner scr=new Scanner(new FileReader(nodalFilePath));
 
 			scr.next();
 			int dim=Integer.parseInt(scr.next());
 			
 			int nNodes=Integer.parseInt(scr.next());
-
 			if(nNodes!=model.numberOfNodes || dim!=model.dim) {
 				String msg="Nodal field file does not match the mesh";
 				System.err.println(msg);
@@ -2114,7 +2105,6 @@ private void readAndSetRegDataMech(Model model,int ir,String line){
 		
 		int is=0;
 		String[] sp=line.split(this.regex);	
-
 
 
 		is=1;

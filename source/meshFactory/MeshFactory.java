@@ -50,9 +50,10 @@ public class MeshFactory {
 	public static void main(String[] args){
 		
 		MeshFactory mf=new MeshFactory();
-		mf.reRegionz();
+		mf.meshFromModel();
+	//	mf.reRegionz();
 	//	mf.meshDiskQuad();
-		//mf.meshDiskQuadTri();
+	//	mf.meshDiskQuadTri();
 //	mf.triFiner(0, .559);
 	//	String bun1="C:\\Works\\MagFem\\EMSol\\my_tri.txt";
 	//	String bun2="C:\\Works\\MagFem\\EMSol\\convetred_triangle.txt";
@@ -3780,7 +3781,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -3791,7 +3792,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(7);
+		meshFromDel(7,null);
 
 
 		wait (4*nNodes);
@@ -3850,7 +3851,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -3861,7 +3862,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(7);
+		meshFromDel(7,null);
 
 
 		wait (4*nNodes);
@@ -3925,7 +3926,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -3936,7 +3937,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(7);
+		meshFromDel(7,null);
 
 
 		wait (4*nNodes);
@@ -4102,7 +4103,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(7);
+		meshFromDel(7,null);
 
 
 		wait (4*nNodes);
@@ -4138,8 +4139,12 @@ for(int i=0; i<dh.length; i++){
 
 
 
-	private void writeNodesForDelaunay(Vect[] P,int nNodes,double scaleFactor){
-		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
+	private void writeNodesForDelaunay(Vect[] P,int nNodes,double scaleFactor, String folder){
+	
+		if(folder==null){
+			folder=System.getProperty("user.dir");
+		}
+		String nodeFile = folder+ "//node4Del.node";
 
 		int dim=P[0].length;
 
@@ -4182,7 +4187,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -4193,7 +4198,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait (5*nNodes);
 
-		meshFromDel(7);
+		meshFromDel(7,null);
 
 		wait (5*nNodes);
 
@@ -4246,7 +4251,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -4257,7 +4262,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait (5*nNodes);
 
-		meshFromDel(7);
+		meshFromDel(7,null);
 
 		wait (5*nNodes);
 
@@ -4312,7 +4317,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -4324,7 +4329,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait (5*nNodes);
 
-		meshFromDel(2);
+		meshFromDel(2,null);
 
 		wait (5*nNodes);
 
@@ -4369,7 +4374,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -4381,7 +4386,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait (5*nNodes);
 
-		meshFromDel(2);
+		meshFromDel(2,null);
 
 		wait (5*nNodes);
 
@@ -4426,7 +4431,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -4438,7 +4443,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait (5*nNodes);
 
-		meshFromDel(2);
+		meshFromDel(2,null);
 
 		wait (5*nNodes);
 
@@ -4482,7 +4487,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -4494,7 +4499,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait (5*nNodes);
 
-		meshFromDel(4);
+		meshFromDel(4,null);
 
 		wait (5*nNodes);
 
@@ -4523,6 +4528,45 @@ for(int i=0; i<dh.length; i++){
 
 	}
 
+	public void meshFromModel(){
+
+		String bun=util.getFile(0);
+
+		Model model=new Model(bun);
+		
+		String folder=new File(model.meshFilePath).getParentFile().getPath();
+
+		
+		int nNodes=100;//model.numberOfNodes;
+		Vect[] P=new Vect[nNodes];
+
+		for(int i=1;i<=nNodes;i++){
+			P[i-1]=new Vect(i*.001*cos(.1*i),i*.001*sin(.1*i));
+			//P[i-1]=model.node[i].getCoord();
+			//P[i-1].el[0]=Math.random();
+			//P[i-1].el[1]=Math.random();
+			P[i-1].hshow();
+		}
+
+		double scaleFactor=1;
+
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
+
+		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
+
+
+
+		wait (5*nNodes);
+
+		Delaunay(nodeFile);
+
+		wait (5*nNodes);
+
+		meshFromDel(1,folder);
+
+		wait (5*nNodes);
+
+		}
 
 	public void meshIPMstator1deg(){
 
@@ -4534,7 +4578,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -4545,7 +4589,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait (5*nNodes);
 
-		meshFromDel(6);
+		meshFromDel(6,null);
 
 		wait (5*nNodes);
 
@@ -5625,16 +5669,21 @@ for(int i=0; i<dh.length; i++){
 
 	}
 	public void meshFromDel(){
-		meshFromDel(1);
+		meshFromDel(1,null);
 	}
 
-	public void meshFromDel(int nReg) {
+	public void meshFromDel(int nReg,String folder) {
+		
+		if(folder==null)
+			folder=System.getProperty("user.dir");
+		
 		String nodeFile=System.getProperty("user.dir") + "//node4Del.1.node";
 		String elementFile=System.getProperty("user.dir") + "//node4Del.1.ele";
 
 		Model model=new Model();
 
 		try{
+			util.pr(nodeFile);
 			BufferedReader br1 = new BufferedReader(new FileReader(nodeFile));
 			BufferedReader br2 = new BufferedReader(new FileReader(elementFile));
 			String[] s1,s2;
@@ -5686,14 +5735,18 @@ for(int i=0; i<dh.length; i++){
 
 			br1.close();
 			br2.close();
-			String bunFilePath = System.getProperty("user.dir") + "//meshFromDel.txt";
+			String bunFilePath = folder + "//meshFromDel.txt";
 
 			model.writeMesh(bunFilePath);
-
+			System.out.println();
+			System.out.println(" Bun data was written to:");
+			System.out.println("    "+bunFilePath);
 
 		}
 
-		catch(IOException e){}
+		catch(IOException e){
+			 System.err.println("error");e.printStackTrace();
+		}
 
 
 
@@ -8378,7 +8431,7 @@ for(int i=0; i<dh.length; i++){
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(ix,model.dim);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}
@@ -8796,7 +8849,7 @@ for(int i=0; i<dh.length; i++){
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(ix,model.dim);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}
@@ -9001,7 +9054,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -9012,7 +9065,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(1);
+		meshFromDel(1,null);
 
 
 
@@ -9069,7 +9122,7 @@ for(int i=0; i<dh.length; i++){
 
 		double scaleFactor=1000;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -9080,7 +9133,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(1);
+		meshFromDel(1,null);
 
 
 
@@ -9167,7 +9220,7 @@ for(int i=0; i<dh.length; i++){
 		double scaleFactor=1000;
 
 		nNodes=ix;
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -9178,7 +9231,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(1);
+		meshFromDel(1,null);
 
 
 
@@ -9224,7 +9277,7 @@ for(int i=0; i<dh.length; i++){
 
 		nNodes=ix;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -9235,7 +9288,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(1);
+		meshFromDel(1,null);
 
 
 
@@ -9283,7 +9336,7 @@ for(int i=0; i<dh.length; i++){
 
 		nNodes=ix;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -9294,7 +9347,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(1);
+		meshFromDel(1,null);
 
 
 
@@ -9325,7 +9378,7 @@ for(int i=0; i<dh.length; i++){
 
 		nNodes=ix;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -9336,7 +9389,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(1);
+		meshFromDel(1,null);
 
 
 
@@ -9380,7 +9433,7 @@ for(int i=0; i<dh.length; i++){
 
 		nNodes=ix;
 
-		writeNodesForDelaunay(P,nNodes,scaleFactor);
+		writeNodesForDelaunay(P,nNodes,scaleFactor,null);
 
 		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
 
@@ -9391,7 +9444,7 @@ for(int i=0; i<dh.length; i++){
 
 		wait(4*nNodes);
 
-		meshFromDel(1);
+		meshFromDel(1,null);
 
 
 

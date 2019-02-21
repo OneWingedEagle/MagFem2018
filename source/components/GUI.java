@@ -60,7 +60,7 @@ public class GUI extends JFrame implements ActionListener{
 				String dataFile= "";
 
 
-			int	tag=22;	
+			int	tag=5;	
 				
 				if(tag==0){
 					//meshFile= System.getProperty("user.dir") + "\\quiz.txt";
@@ -150,9 +150,11 @@ public class GUI extends JFrame implements ActionListener{
 				}
 				
 			else if(tag==5){
-				meshFile= System.getProperty("user.dir") + "\\inputs\\mesh\\mot4th3D.txt";
 				
-				dataFile= System.getProperty("user.dir") + "\\inputs\\data\\dataMot4th3D.txt";
+				meshFile= System.getProperty("user.dir") + "\\ipm_motor\\mot4th3D.txt";
+				
+				dataFile= System.getProperty("user.dir") + "\\ipm_motor\\dataMot4th3D.txt";
+			
 					
 			/*	meshFile= System.getProperty("user.dir") + "\\bb.txt";
 				
@@ -245,9 +247,9 @@ public class GUI extends JFrame implements ActionListener{
 	else if(tag==18){
 		
 		
-		meshFile= System.getProperty("user.dir") + "\\caps\\motorHalf.txt";
+		meshFile= System.getProperty("user.dir") + "\\forceMotorHalf\\bun.txt";
 	
-			dataFile= System.getProperty("user.dir") + "\\dataMechMotorHalf.txt";
+			dataFile= System.getProperty("user.dir") + "\\forceMotorHalf\\dataMechMotorHalf.txt";
 		}
 	else if(tag==19){
 		
@@ -280,7 +282,7 @@ public class GUI extends JFrame implements ActionListener{
 		//String folder="D:\\Works\\2018\\MagFemElectrost\\3D\\3coils\\roughmesh";
 		String folder="D:\\Works\\2018\\MagFemElectrost\\2D\\circular";
 		folder="D:\\Works\\2018\\MagFemElectrost\\2D\\circular\\3d1layer";
-		folder="D:\\Works\\2018\\MagFemElectrost\\3D\\2coils";
+		folder="D:\\Works\\2018\\MagFemElectrost\\3D\\2coils/newway";
 
 		meshFile= folder + "\\bun.txt";
 	
@@ -308,7 +310,7 @@ public class GUI extends JFrame implements ActionListener{
 	 //================================================================ redirecting console to text area
 			
 			int ww1=(int)(.65*width);
-			int hh1=(int)(.7*height);
+			int hh1=(int)(.6*height);
 		
 			progressArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 			progressArea.setEditable(false);;

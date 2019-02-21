@@ -80,6 +80,8 @@ import fem.RunMech;
 			@Override
 			public void run(){
 
+				double t_start= System.currentTimeMillis();
+				
 				Main.this.model.loadMesh(model.meshFilePath);
 			
 	
@@ -105,7 +107,9 @@ import fem.RunMech;
 
 					}
 
-		
+			double t_end= System.currentTimeMillis();
+			System.out.format("Total cpu time (s): %10.1f\n",(t_end-t_start)/1000.);	
+
 				String logFilePath = model.resultFolder+ "\\log.txt";
 				gui.writeLog(logFilePath);
 				gui.Run.setBackground(Color.green);

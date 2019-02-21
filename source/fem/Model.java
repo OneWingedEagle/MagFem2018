@@ -48,7 +48,7 @@ public class Model{
 	U_unknownIndex,unknownUnumber,A_unknownIndex,unknownAnumber,T_unknownIndex,unknownTnumber;
 	public int[] knownEdgeNumber,nodeVarIndex,varNodeNumber,unCurRegNumb;
 	public double[] knownEdgeValue;
-	public double scaleFactor,Bmax1=0,Bmin1=0,Bmax,Bmin,stressMax=0,nodalStressMax=0,
+	public double scaleFactor=1,Bmax1=0,Bmin1=0,Bmax,Bmin,stressMax=0,nodalStressMax=0,
 			stressMin,nodalStressMin=0,Jmin,Jmax,Jemin,Jemax,maxDim,minEdgeLength,maxEdgeLength,
 			FmsMin,FmsMax=0,FreluctMax=0,FreluctMin=0,uMax=0,AuMax,defScale;
 	public int numberOfUnknownEdges,numberOfMappedEdges,numberOfKnownEdges,numberOfVarNodes
@@ -91,7 +91,7 @@ public class Model{
 	public double[] C,Cj2d;
 	public Vect[] Cj;
 
-	public String[][] mechBC=new String[50][20];
+	public String[][] mechBC;
 	public String[][] seepBC=new String[50][20];
 	public String[] forceFile;
 	public String forceFolder;
@@ -126,7 +126,7 @@ public class Model{
 
 		node=new Node[this.numberOfNodes+1];
 		for(int i=1;i<=this.numberOfNodes;i++)
-			node[i]=new Node(dim);
+			node[i]=new Node(dim,i);
 	}
 
 
@@ -165,7 +165,7 @@ public class Model{
 
 		node=new Node[this.numberOfNodes+1];
 		for(int i=1;i<=this.numberOfNodes;i++)
-			node[i]=new Node(dim);
+			node[i]=new Node(i,dim);
 	}
 	public void loadMesh(String bunFilePath){
 
@@ -209,7 +209,8 @@ public class Model{
 		if(this.edge!=null){
 			copy.edge=new Edge[this.numberOfEdges+1];
 			for(int i=1;i<=this.numberOfEdges;i++){
-				copy.edge[i]=new Edge(this.edge[i].endNodeNumber[0],this.edge[i].endNodeNumber[1]);
+				//copy.edge[i]=new Edge(this.edge[i].endNodeNumber[0],this.edge[i].endNodeNumber[1]);
+				copy.edge[i]=new Edge(this.edge[i].node[0],this.edge[i].node[1]);
 				copy.edge[i].A=this.edge[i].A;
 				copy.edge[i].Ap=this.edge[i].Ap;
 			}
@@ -252,7 +253,9 @@ public class Model{
 
 
 	public double edgeLength(int i){
-		double length=node[edge[i].endNodeNumber[1]].getCoord().sub(node[edge[i].endNodeNumber[0]].getCoord()).norm();
+	//	double length=node[edge[i].endNodeNumber[1]].getCoord().sub(node[edge[i].endNodeNumber[0]].getCoord()).norm();
+		double length=edge[i].node[0].getCoord().sub(edge[i].node[1].getCoord()).norm();
+
 		return length;
 	}
 
@@ -1994,7 +1997,9 @@ public class Model{
 			if(this.region[ir].isNonLinear){				
 				nx++;
 				this.region[ir].BHnumber=nx;
-			}
+			}else{
+				this.region[ir].BHnumber=0;
+				}
 
 			if(this.region[ir].MS){				
 				ny++;

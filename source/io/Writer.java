@@ -1422,11 +1422,11 @@ public class Writer {
 				
 				if(mapEdNd[ned]>0) continue;
 			
-			int[] end=model.edge[ned].endNodeNumber;
+			//int[] end=model.edge[ned].endNodeNumber;
 			
 			if(model.edge[ned].direction!=2){
 				ix++;
-				nodep[ix]=model.node[end[0]].getCoord().add(model.node[end[1]].getCoord()).times(.5);
+				nodep[ix]=model.edge[ned].node[0].getCoord().add(model.edge[ned].node[1].getCoord()).times(.5);
 				mapEdNd[ned]=ix;
 			}
 			}
@@ -1996,11 +1996,11 @@ public class Writer {
 		try{
 			PrintWriter pw=new PrintWriter(new BufferedWriter(new FileWriter(nodalForceFile)));
 			if(mode==1)
-				pw.println("force_reluc");
+				pw.println("nodal");
 			else if(mode==2)
-				pw.println("force_ms");
+				pw.println("nodal");
 			else if(mode==3)
-				pw.println("force_reluc");
+				pw.println("nodal");
 			else if(mode==-1)
 				pw.println("displacement");
 

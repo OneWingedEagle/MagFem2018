@@ -124,8 +124,12 @@ public class Force {
 
 						for(int j=0;j<this.nElEdge;j++){
 
-							int n0=model.edge[edgeNumb[j]].endNodeNumber[0];
-							int n1=model.edge[edgeNumb[j]].endNodeNumber[1];
+/*							int n0=model.edge[edgeNumb[j]].endNodeNumber[0];
+							int n1=model.edge[edgeNumb[j]].endNodeNumber[1];*/
+							
+							int n0=model.edge[edgeNumb[j]].node[0].id;
+							int n1=model.edge[edgeNumb[j]].node[1].id;
+
 
 							if(model.node[n0].hasF())
 								model.node[n0].F=model.node[n0].F.add(fs[j].times(0.5));
@@ -854,8 +858,12 @@ public class Force {
 			int[] ednumb=model.element[i].edgeXYNumb;
 
 			for(int j=0;j<3;j++){
-				int n1=model.edge[ednumb[j]].endNodeNumber[0];
-				int n2=model.edge[ednumb[j]].endNodeNumber[1];
+				
+				/*int n0=model.edge[edgeNumb[j]].endNodeNumber[0];
+				int n1=model.edge[edgeNumb[j]].endNodeNumber[1];*/
+				
+				int n1=model.edge[ednumb[j]].node[0].id;
+				int n2=model.edge[ednumb[j]].node[1].id;
 				double length=model.edge[ednumb[j]].length;
 
 				Vect v1=model.node[n1].getCoord();

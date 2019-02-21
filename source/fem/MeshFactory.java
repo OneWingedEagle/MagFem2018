@@ -8033,7 +8033,7 @@ for(int i=0; i<dh.length; i++){
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(model.dim,i);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}
@@ -8451,7 +8451,7 @@ for(int i=0; i<dh.length; i++){
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(ix,model.dim);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}

@@ -27,7 +27,10 @@ import fem.Node;
 import fem.Region;
 import io.Loader;
 import io.Writer;
+import math.Complex;
+import math.Mandelbrot;
 import math.Mat;
+import math.Picture;
 import math.SpBlockMat;
 import math.SpMat;
 import math.Vect;
@@ -44,6 +47,46 @@ public class MeshManipulator {
 	public static void main(String[] args){
 
 		MeshManipulator mf=new MeshManipulator();
+		
+/*		  double xc   = 0;
+	        double yc   = 0;
+	        double size = 3;
+
+	        int max = 255;   // maximum number of iterations
+	        
+	        double constt=2;
+
+	
+	        int iterMax=100;
+	        double x0 = 0;//xc - size/2;
+	        double y0 = 0;//yc - size/2;
+	        Complex z0 = new Complex(x0, y0);
+
+	        Complex dz=new Complex(0,0);
+		Model mmm=new Model("D:\\personal\\Farsi\\2019\\darbareh\\Mandelbrot\\model2D.txt");
+		
+		for (int i=1;i<=mmm.numberOfNodes;i++){
+			mmm.node[i].setDeformable(true);
+			dz.re=mmm.node[i].getCoord(0);
+			dz.im=mmm.node[i].getCoord(1);
+            Complex z = z0.add(dz.times(5));
+		//	z.show();
+
+            int val=Mandelbrot.mand(z, constt,iterMax);
+			mmm.node[i].T=val;//Math.pow((i-1.0*mmm.numberOfNodes/2)/mmm.numberOfNodes, 2);
+		}
+		mmm.writeNodalScalar("D:\\personal\\Farsi\\2019\\darbareh\\Mandelbrot\\temp.txt");*/
+/*		Model model33=new Model("C:\\JavaWorks\\MagFem2018\\forceMotorHalf\\bun.txt");
+		for(int i=0;i<90;i++){
+			for(int n=1;n<=model33.numberOfNodes;n++){
+				Vect v2=model33.node[n].getCoord().v2();
+				if(model33.node[n].getCoord(2)<.05 && v2.norm()<.055){
+				model33.node[n].setDeformable(true);
+				model33.node[n].setF(v2.normalized().times(-2+Math.sin(i*PI/4-4*util.getAng(v2))).v3());
+				}
+			}
+			model33.writeNodalField("C:\\JavaWorks\\MagFem2018\\forceMotorHalf\\force"+i+".txt", 1);
+		}*/
 	
 	//	mf.reRegionf();
 		int[] nrs={1,2,3,4,5};
@@ -8234,7 +8277,7 @@ for(int i=0; i<dh.length; i++){
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(ix,model.dim);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}
@@ -8652,7 +8695,7 @@ for(int i=0; i<dh.length; i++){
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(ix,model.dim);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}

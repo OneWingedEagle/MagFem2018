@@ -15,30 +15,165 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 
-
-
-
-
-
-
-
-
 import materialData.CurrentWaveForm;
+import triangulation.ConvexHull;
 
 import org.math.plot.Plot2DPanel;
 
 import fem.Model;
 
-		
-		public class util {
-			static DecimalFormat df=new DecimalFormat("0.00000E00");
-			static String regex="[ : ,=\\t]+";
+				
+	public class util {
+				static DecimalFormat df=new DecimalFormat("0.00000E00");
+				static String regex="[ : ,=\\t]+";
 
-			public util(){}
+				public util(){}
+				
+				public static void main(String[] args) throws Exception{
+					
+					DFTdecopler();
+				}
+
+				
+	public static void DFTdecopler() {
+		
+					long startTime = System.currentTimeMillis();
+					
+					int N=2;
+		
+			
+					Vect x=new Vect(N);
+					
+					int M=2*N-1;
+				
+					Mat Rm=new Mat(N,N);
+					
+					for(int i=0;i<N;i++){
+						//if(i==0)
+						x.el[i]=i+1./(i+2);//100./(1+abs(i-.5*N)/N);
+						//R.el[i]=(1+pow(i-N/2.,2)/(N*N));
+						for(int j=0;j<N;j++){
+							Rm.el[i][j]=1+1*Math.abs(i-j);//1./(1.+abs(i-j));
+						}
+					}
+				//	b=Rm.inv().mul(b);;
+					x.hshow();
+				//	Rm=Rm.inv();
+			//	Rm.show();
+				//	Vect I1=Rm.inv().mul(b);
+				Vect y1=Rm.mul(x);
+					//Rm=Rm.inv().deepCopy();
+					//y1.hshow();
+				
+			
+					Vect y2=new Vect(2*M);
+					for(int j=0;j<N;j++){
+						y2.el[j]=y1.el[j];
+
+					}
+					//y2.el[0]=y2.el[M-1];
+					y2.hshow();
+				
+					Vect x2=new Vect(M);
+					for(int j=0;j<N;j++){
+						x2.el[j]=x.el[j];
+
+					}
+
+					Vect Rj=new Vect(M);
+
+					for(int i=0;i<N;i++){
+
+						for(int j=0;j<N;j++){
+							Rj.el[i-j+N-1]=Rm.el[i][j];
+						}
+					}
+					
+			
+
+					Complex[] Rk=DFT.dft(Rj.el);
+					//Complex[] x2k=DFT.dft(x2.el);
+					Complex[] y2k=DFT.dft(y2.el);
+					Complex[] x2k=new Complex[M];
+						
+/*					util.pr("Rk --------------");
+
+					for(int j=0;j<Rk.length;j++){
+						util.pr(String.format("%10.5f",Rk[j].norm()));
+						}
+					util.pr("x2k --------------");
+					for(int j=0;j<x2k.length;j++){
+					//	util.pr(String.format("%10.5f",x2k[j].norm()));
+						util.pr(String.format("%10.5f",x2k[j].re)+String.format("%10.5f",x2k[j].re));
+
+						}
+					*/
+		
+					//util.pr("y2k --------------");
+					for(int j=0;j<M;j++){
+					//	y2k[j]=x2k[j].times(Rk[j]);
+						//I2k[j]=I1k[j].times(Rk[j]);
+					}
+					
+					for(int j=0;j<M;j++){
+						//util.pr(String.format("%10.5f",y2k[j].norm()));
+						//util.pr(String.format("%10.5f",Xk.re)+", "+String.format("%10.5f",Xk.im));
+							//df.format(A[i][j])+"\t"
+						}
+					
+					for(int j=0;j<M;j++){
+					//	I2k[j]=I2k[j].times(Rk[j].inv());
+						//I2k[j]=I1k[j].times(Rk[j]);
+					}
+					
+					Complex[] I2c=DFT.idft(y2k);
+					
+					Vect I2=new Vect(M);
+					
+
+					for(int j=0;j<M;j++){
+						I2.el[j]=I2c[j].re;
+					}
+				
+				I2.hshow();
+					Vect I3=new Vect(N);
+					for(int j=0;j<N;j++){
+						I3.el[j]=I2c[j+N-1].re;
+
+					}
+					//I3.el[0]=I2c[2*N-2].re;
+				
+					I3.hshow();
+					
+				//	util.pr("y2k --------------");
+					for(int j=0;j<M;j++){
+						
+						x2k[j]=y2k[j].times(Rk[j].inv());
+						//I2k[j]=I1k[j].times(Rk[j]);
+					}
+					
+					util.pr("x2k --------------");
+					for(int j=0;j<x2k.length;j++){
+						util.pr(String.format("%10.5f",x2k[j].re)+String.format("%10.5f",x2k[j].re));
+						}
+					
+Complex[] x3c=DFT.idft(x2k);
+					
+					Vect x3=new Vect(M);
+					
+
+					for(int j=0;j<M;j++){
+						x3.el[j]=x3c[j].re;
+					}
+				
+				x3.hshow();
+
+				}
+				
 			public static void main3(String[] args) throws Exception{
 			
 			}
-			public static void main(String[] args) {
+			public static void main4(String[] args) {
 				
 				Mat M=new Mat();
 					
@@ -495,6 +630,12 @@ public static void eigenSpMat() {
 			max=x[i];
 		return max;
 	}
+	public static double max(final double a, final double b){
+		double result =a;;
+		if(b>a) result =b;
+		return result;
+	}
+	
 	
 	public static int max(int[] x){
 		int max=x[0];
@@ -1007,6 +1148,12 @@ public static void eigenSpMat() {
 				System.out.format("%s\n",s[i]);
 	}
 	}
+	public static void hshow(String[] s){
+		for(int i=0;i<s.length;i++){
+				System.out.format("%s  ",s[i]);
+	}
+		System.out.println();
+	}
 	
 	public static void pr(double a){
 	
@@ -1454,5 +1601,10 @@ public static void plot(double[][] XY){
 		}
 	 }
 	
+	 
+	 public static Vect[] getHull(Vect[] p){
+			return ConvexHull.getConvexHull(p);
+		}
+		
 	
 }

@@ -42,3 +42,13 @@ sourcezzz/
 forcesPlunger2D/
 results/
 /prismatic.txt
+/inputs/
+/delauney mesh/
+/forceMotorHalf/
+/ipm_motor/
+/legs.txt
+/node4Del.1.node
+/node4Del.node
+/node4Del.1.ele
+/model2D.txt
+/meshFromDel.txt

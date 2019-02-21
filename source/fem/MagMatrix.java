@@ -852,8 +852,8 @@ public class MagMatrix {
 							}
 
 							else if(model.dim==3){
-								Vect t=model.node[model.edge[rowEdgeNumb].endNodeNumber[1]].getCoord().sub
-										(model.node[model.edge[rowEdgeNumb].endNodeNumber[0]].getCoord());
+								Vect t=model.edge[rowEdgeNumb].node[1].getCoord().sub
+										(model.edge[rowEdgeNumb].node[0].getCoord());
 								t.normalize();
 
 								val=-model.region[ir].NtS*model.Cj[j].dot(t);

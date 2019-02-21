@@ -37,14 +37,14 @@ public class BoundarySet {
 		if(model.dim==3) {mapEdges3D(model); return;}
 		int[] nodeEdge=new int[1+model.numberOfNodes];
 		for(int i=1;i<=model.numberOfEdges;i++){
-			nodeEdge[model.edge[i].endNodeNumber[0]]=i;
+			nodeEdge[model.edge[i].node[0].id]=i;
 		}
 		int end0;
 
 	
 		for(int i=1;i<=model.numberOfEdges;i++){
 
-			end0=model.edge[i].endNodeNumber[0];
+			end0=model.edge[i].node[0].id;
 
 			int nmp=model.node[end0].getMap();
 			if(nmp>0){
@@ -81,8 +81,8 @@ public class BoundarySet {
 		int end0,end1;
 
 		for(int i=1;i<=model.numberOfEdges;i++){
-			end0=model.edge[i].endNodeNumber[0];
-			end1=model.edge[i].endNodeNumber[1];
+			end0=model.edge[i].node[0].id;
+			end1=model.edge[i].node[1].id;
 			nodeEdge[end0].el[ic[end0]++]=i;	
 			nodeEdge[end1].el[ic[end1]++]=i;
 		}
@@ -91,13 +91,13 @@ public class BoundarySet {
 
 
 		for(int i=1;i<=model.numberOfEdges;i++){
-			end0=model.edge[i].endNodeNumber[0];
+			end0=model.edge[i].node[0].id;
 
 
 
 			int nmp0=model.node[end0].getMap();
 			if(nmp0>0){
-				end1=model.edge[i].endNodeNumber[1];
+				end1=model.edge[i].node[1].id;
 				int nmp1=model.node[end1].getMap();
 
 				int emap=0;
@@ -163,8 +163,8 @@ public class BoundarySet {
 
 				if(!model.edge[i].hasJ)continue;
 
-				if(model.node[model.edge[i].endNodeNumber[0]].getCoord(2)<.01251 && 
-						model.node[model.edge[i].endNodeNumber[1]].getCoord(2)<.01251){
+				if(model.edge[i].node[0].getCoord(2)<.01251 && 
+						model.edge[i].node[1].getCoord(2)<.01251){
 					model.edge[i].edgeKnownT=true;
 					if(	model.edge[i].direction==1){
 
@@ -177,21 +177,21 @@ public class BoundarySet {
 
 
 				}
-				else if(model.node[model.edge[i].endNodeNumber[0]].getCoord(2)>.107 && 
-						model.node[model.edge[i].endNodeNumber[1]].getCoord(2)>.105){
+				else if(model.edge[i].node[0].getCoord(2)>.107 && 
+						model.edge[i].node[1].getCoord(2)>.105){
 					model.edge[i].edgeKnownT=true;
 
 					model.edge[i].T=0;
 
 				}
-				else if(model.node[model.edge[i].endNodeNumber[0]].getCoord().v2().norm()<.01201 && 
-						model.node[model.edge[i].endNodeNumber[1]].getCoord().v2().norm()<.01201){
+				else if(model.edge[i].node[0].getCoord().v2().norm()<.01201 && 
+						model.edge[i].node[1].getCoord().v2().norm()<.01201){
 					model.edge[i].edgeKnownT=true;
 					model.edge[i].T=0;
 
 				}
-				else if(model.node[model.edge[i].endNodeNumber[0]].getCoord().v2().norm()>.03299 && 
-						model.node[model.edge[i].endNodeNumber[1]].getCoord().v2().norm()>.03299){
+				else if(model.edge[i].node[0].getCoord().v2().norm()>.03299 && 
+						model.edge[i].node[1].getCoord().v2().norm()>.03299){
 					model.edge[i].edgeKnownT=true;
 					model.edge[i].T=0;
 
@@ -256,6 +256,7 @@ public class BoundarySet {
 
 		for(int j=0;j<model.mechBC.length;j++){
 
+			//util.hshow(model.mechBC[j]);;
 
 			val[j]=new Vect(dim);
 
@@ -316,7 +317,7 @@ public class BoundarySet {
 
 
 				if(!regBound[j]){
-					
+		
 					if(model.mechBC[j][k].equals("x") || model.mechBC[j][k].equals("r"))
 					{
 						bounds[j][0]=Double.parseDouble(model.mechBC[j][k+1]);
@@ -345,7 +346,7 @@ public class BoundarySet {
 					{
 						bounds[j][4]=Double.parseDouble(model.mechBC[j][k+1]);
 						bounds[j][5]=Double.parseDouble(model.mechBC[j][k+2]);
-
+		
 						if(model.mechBC[j][k].equals("z")) 
 							boundCoSys[j][2]=0;
 						else
@@ -355,7 +356,6 @@ public class BoundarySet {
 					}
 					else
 					{
-
 						if(model.mechBC[j][k].equals("0") )
 						{
 							val[j].el[0]=Double.parseDouble(model.mechBC[j][k+1]);
@@ -364,6 +364,9 @@ public class BoundarySet {
 						}
 						else if(model.mechBC[j][k].equals("1") )
 						{
+				
+							util.pr(model.mechBC[j][k]);
+
 							val[j].el[1]=Double.parseDouble(model.mechBC[j][k+1]);
 							k++;
 							hasVal[j][1]=true;
@@ -648,8 +651,8 @@ public class BoundarySet {
 			
 			for(int i=1;i<=model.numberOfEdges;i++)
 				if(model.edge[i].edgeKnown){
-					model.node[model.edge[i].endNodeNumber[0]].setPhiVar(false);
-					model.node[model.edge[i].endNodeNumber[1]].setPhiVar(false);
+					model.edge[i].node[0].setPhiVar(false);
+					model.edge[i].node[1].setPhiVar(false);
 				}
 
 			
@@ -757,8 +760,8 @@ public class BoundarySet {
 			for(int i=1;i<=model.numberOfEdges;i++){
 				for(int j=0;j<model.nBoundary;j++){
 
-					if(model.BCtype[j]==1 && model.node[model.edge[i].endNodeNumber[0]].onBound[j] && 
-							model.node[model.edge[i].endNodeNumber[1]].onBound[j]){
+					if(model.BCtype[j]==1 && model.edge[i].node[0].onBound[j] && 
+							model.edge[i].node[1].onBound[j]){
 						model.edge[i].setKnownA(0);
 
 						break;					
@@ -775,11 +778,11 @@ public class BoundarySet {
 
 	
 					for(int i=1;i<=model.numberOfEdges;i++){
-						if (model.node[model.edge[i].endNodeNumber[0]].onBound[3] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[3])
+						if (model.edge[i].node[0].onBound[3] && 
+								model.edge[i].node[1].onBound[3])
 							model.edge[i].setKnownA(Au0);
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[2] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[2] )
+						else if(model.edge[i].node[0].onBound[2] && 
+								model.edge[i].node[1].onBound[2] )
 							model.edge[i].setKnownA(0);
 
 					}
@@ -787,11 +790,11 @@ public class BoundarySet {
 
 				
 					for(int i=1;i<=model.numberOfEdges;i++){
-						if(model.node[model.edge[i].endNodeNumber[0]].onBound[0] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[0])
+						if(model.edge[i].node[0].onBound[0] && 
+								model.edge[i].node[1].onBound[0])
 							model.edge[i].setKnownA(Au1);
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[1] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[1])
+						else if(model.edge[i].node[0].onBound[1] && 
+								model.edge[i].node[1].onBound[1])
 							model.edge[i].setKnownA(0);
 
 					}
@@ -809,20 +812,20 @@ public class BoundarySet {
 
 				if(model.BCtype[0]==0)
 					for(int i=1;i<=model.numberOfEdges;i++){
-						if(model.node[model.edge[i].endNodeNumber[0]].onBound[4] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[4]||
-								model.node[model.edge[i].endNodeNumber[0]].onBound[5] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[5]   )
+						if(model.edge[i].node[0].onBound[4] && 
+								model.edge[i].node[1].onBound[4]||
+								model.edge[i].node[0].onBound[5] && 
+								model.edge[i].node[1].onBound[5]   )
 
 							model.edge[i].setKnownA(0);
 
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[2] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[2])
+						else if(model.edge[i].node[0].onBound[2] && 
+								model.edge[i].node[1].onBound[2])
 
 							model.edge[i].setKnownA(0);
 
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[3] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[3] && model.edge[i].direction==2)
+						else if(model.edge[i].node[0].onBound[3] && 
+								model.edge[i].node[1].onBound[3] && model.edge[i].direction==2)
 						{
 							model.edge[i].setKnownA(Au0*model.edge[i].length);
 						}
@@ -831,19 +834,19 @@ public class BoundarySet {
 
 				if(model.BCtype[2]==0)
 					for(int i=1;i<=model.numberOfEdges;i++){
-						if((model.node[model.edge[i].endNodeNumber[0]].onBound[0] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[0]||
-								model.node[model.edge[i].endNodeNumber[0]].onBound[1] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[1])  )
+						if((model.edge[i].node[0].onBound[0] && 
+								model.edge[i].node[1].onBound[0]||
+								model.edge[i].node[0].onBound[1] && 
+								model.edge[i].node[1].onBound[1])  )
 							model.edge[i].setKnownA(0);
 
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[4] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[4] )
+						else if(model.edge[i].node[0].onBound[4] && 
+								model.edge[i].node[1].onBound[4] )
 
 							model.edge[i].setKnownA(0);
 
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[5] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[5] && model.edge[i].direction==0)
+						else if(model.edge[i].node[0].onBound[5] && 
+								model.edge[i].node[1].onBound[5] && model.edge[i].direction==0)
 
 							model.edge[i].setKnownA(Au2*model.edge[i].length);
 					}
@@ -851,19 +854,19 @@ public class BoundarySet {
 				if(model.BCtype[4]==0)
 					for(int i=1;i<=model.numberOfEdges;i++){
 
-						if((model.node[model.edge[i].endNodeNumber[0]].onBound[2] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[2]||
-								model.node[model.edge[i].endNodeNumber[0]].onBound[3] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[3])  )
+						if((model.edge[i].node[0].onBound[2] && 
+								model.edge[i].node[1].onBound[2]||
+								model.edge[i].node[0].onBound[3] && 
+								model.edge[i].node[1].onBound[3])  )
 							model.edge[i].setKnownA(0);
 
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[0] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[0])
+						else if(model.edge[i].node[0].onBound[0] && 
+								model.edge[i].node[1].onBound[0])
 
 							model.edge[i].setKnownA(0);
 
-						else if(model.node[model.edge[i].endNodeNumber[0]].onBound[1] && 
-								model.node[model.edge[i].endNodeNumber[1]].onBound[1] && model.edge[i].direction==1)
+						else if(model.edge[i].node[0].onBound[1] && 
+								model.edge[i].node[1].onBound[1] && model.edge[i].direction==1)
 						{
 
 							model.edge[i].setKnownA(Au4*model.edge[i].length);

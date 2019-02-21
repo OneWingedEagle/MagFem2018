@@ -5,11 +5,28 @@ import math.util;
 public class Edge {
 	public byte direction;
 	public double  length,A,Ap,T;
-	public int[] endNodeNumber=new int[2];
+	//public int[] endNodeNumber=new int[2];
+	public Node[] node=new Node[2];
 	public boolean edgeKnown,edgeKnownT,hasJ,sPBC,aPBC,common;
 	public int map;
 	
-	public Edge(int n1,int n2)
+	
+	public Edge(Node n1,Node n2)
+	{
+
+		node[0]=n1;
+		node[1]=n2;
+	if(n1.id<n2.id){
+		node[0]=n1;
+		node[1]=n2;
+	}
+	else{
+		node[0]=n2;
+		node[1]=n1;
+	}
+	}
+
+/*	public Edge(int n1,int n2)
 	{
 
 	if(n1<n2){
@@ -22,7 +39,7 @@ public class Edge {
 	}
 
 	}
-	
+	*/
 	public void setKnownA(double A){
 		edgeKnown=true;
 		this.A=A;

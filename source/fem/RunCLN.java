@@ -57,7 +57,7 @@ public class RunCLN {
 		if(model.nCLNstages<0){
 
 			model.nCLNstages=-model.nCLNstages;
-			run3(model,main);
+			runNoDifferential(model,main);
 			return;
 		}
 
@@ -482,7 +482,8 @@ public class RunCLN {
 	}
 
 	public void runNoDifferential(Model model, Main main){
-		util.pr("run2 ++++++++++++++++++++++++++++++++++++++++++++++++");
+
+		numStages=model.nCLNstages;
 
 
 		outputFolder=model.resultFolder;
@@ -492,11 +493,11 @@ public class RunCLN {
 		model.hasJ =true;
 		model.setMagBC();
 
-		magsolver.setMagMat(model);
-
+		magsolver.setMatrix(model);
+	
 		StaticElectricSolver phiSolver= new StaticElectricSolver();
+		//phiSolver.open_vps=true;
 		phiSolver.open_vps=true;
-
 
 		phiSolver.setBoundaryCondition(model);
 		phiSolver.setMatrix(model);
@@ -515,80 +516,152 @@ public class RunCLN {
 
 		Vect elecAtemp=new Vect(magsolver.magMat.getnCol());
 
-		Vect magRhs1=null;
-		Vect elecRhs1=null;
 
-		for(int kstage=0;kstage<nStages;kstage++){
+		phiSolver.setRHS0(model);
+		phiSolver.conductiveMat.show("%1.2e");
+		//phiSolver.RHS.timesVoid(2.84191e-05);
+
+		phiSolver.RHS.show();
+		Vect x=phiSolver.solve(model);
+
+		phiSolver.setSolution(model,x);
+
+		
+		Vect ii=new Vect(model.network.indep_elems.length);
+		
+		for(int i=0;i<ii.length;i++){
+			int index=model.network.indep_elems[i].unknown_seq_no;
+			if(index==-1) continue;
+			ii.el[i]=x.el[phiSolver.numberOfUnknownPhis+index];
+		}
+		double networkloss=ii.dot(model.network.PRPt.mul(ii));
+
+		if(phiSolver.open_vps) 	phiSolver.openVPS(model);
+
+		util.pr("current: "+x.el[x.length-1]);
+
+		elecPhiModes[0]=x.deepCopy();
+		elecAModes[0]=elecAtemp.deepCopy();
+
+		model.setSolution(elecAtemp);
+
+		model.setJStatic();
+		model.writeJe(model.resultFolder+"\\Je"+0+".txt");
+		model.writePhi(model.resultFolder+"\\phi"+0+".txt");
+
+
+		magsolver.setRHS(model,losses);
+		
+		losses[0]+=networkloss;
+		
+		
+		resistances.el[0]=1./losses[0];
+		
+		
+		magsolver.RHS=magsolver.RHS.times(resistances.el[0]);// corresponding to 1 A
+
+		
+		util.pr("R"+0+"="+		resistances.el[0]);
+
+
+		Vect rhs1=magsolver.RHS.deepCopy();
+
+		x=magsolver.solve(model);
+		
+
+
+		magModes[0]=x.deepCopy();
+
+		inductances.el[0]=rhs1.dot(x);
+
+		//util.pr("L"+kstage+"="+inductances.el[kstage]);
+
+		//========
+
+		model.setSolution(x);
+		model.setB();
+		model.writeB(model.resultFolder+"\\B"+0+".txt");
+
+
+
+
+		for( int kstage=1;kstage<nStages;kstage++){
 
 			//====== Elec
 
-			if(kstage==0){
-				phiSolver.setRHS0(model);
-			}
-			else{
-				elecAtemp=magModes[kstage-1].times(-1./inductances.el[kstage-1]);
-
-				model.setSolution(elecAtemp);
-
-				phiSolver.setRHS(model);
-
-				if (kstage > 1 ||(kstage>0 &&!phiSolver.open_vps)){
-					elecAtemp=elecAtemp.add(elecAModes[kstage - 1]);
-					phiSolver.RHS=phiSolver.RHS.add(elecRhs1);
-				}
-
-			}
-
-			//=======
-
-			elecRhs1=phiSolver.RHS.deepCopy();
-
-			Vect x=phiSolver.solve(model);
+if(kstage>1)
+			elecAtemp=magModes[kstage-1].times(-1./inductances.el[kstage-1]+270.5/resistances.el[kstage-1]);
+else
+	elecAtemp=magModes[kstage-1].times(-1./inductances.el[kstage-1]);
 
 			if (kstage > 1 ||(kstage>0 &&!phiSolver.open_vps)){
-				//	x=x.add(elecPhiModes[kstage - 1]);
+				//elecAtemp=elecAtemp.add(elecAModes[kstage - 1]);
 			}
+
+			model.setSolution(elecAtemp);
+			
+		//	model.setJStatic();
+		//	model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
+
+			phiSolver.setRHS(model);
+
+			//phiSolver.RHS.show();
+			//phiSolver.conductiveMat.show();
+			x=phiSolver.solve(model);
+			x.show();
+
+			ii=new Vect(model.network.indep_elems.length);
+			
+			for(int i=0;i<ii.length;i++){
+				int index=model.network.indep_elems[i].unknown_seq_no;
+				if(index==-1) continue;
+				ii.el[i]=x.el[phiSolver.numberOfUnknownPhis+index];
+			}
+			 networkloss=ii.dot(model.network.PRPt.mul(ii));
+			 
 			phiSolver.setSolution(model,x);
 
-
-			if(kstage==0 && phiSolver.open_vps) phiSolver.openVPS(model);
+			if (kstage > 1  ||(kstage>0 &&!phiSolver.open_vps)){
+			//	x=x.add(elecPhiModes[kstage - 1]);
+			}
 
 
 			elecPhiModes[kstage]=x.deepCopy();
 			elecAModes[kstage]=elecAtemp.deepCopy();
 
+			//model.setSolution(elecAtemp);
 
-			model.setSolution(elecAtemp);
+		//	model.setJStatic();
+		//	model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
+		//	model.writePhi(model.resultFolder+"\\phi"+kstage+".txt");
 
-			//model.setJStatic();
-			//	model.writeJe(model.resultFolder+"\\Je"+kstage+".txt");
-			//model.writePhi(model.resultFolder+"\\phi"+kstage+".txt");	
 
 			magsolver.setRHS(model,losses);
+			
+			losses[0]+=networkloss;
 
 			resistances.el[kstage]=1./losses[0];
+			//util.pr("R"+kstage+"="+		resistance.el[kstage]);
 
+			//======
 
 			//====== Mag
-			magsolver.RHS=magsolver.RHS.times(resistances.el[kstage]);
+			magsolver.RHS=magsolver.RHS.times(resistances.el[kstage]+0*inductances.el[kstage-1]);
 
-			//if(magRhs1!=null) magsolver.RHS=magsolver.RHS.add(magRhs1);
+			rhs1=magsolver.RHS.deepCopy();
 
-			magRhs1=magsolver.RHS.deepCopy();
-
-			util.pr("norma of magRhs1-------------> "+magRhs1.norm());
 			x=magsolver.solve(model);
 
-			if (kstage > 0)
+
+			//if (kstage > 0)
 				x=x.add(magModes[kstage - 1]);
-
-
-			//util.pr("norma of magSolve deltaA--------------> "+x.norm());
 
 
 			magModes[kstage]=x.deepCopy();
 
-			inductances.el[kstage]=magRhs1.dot(x);
+			inductances.el[kstage]=rhs1.dot(x);
+
+			//util.pr("L"+kstage+"="+inductances.el[kstage]);
 
 			//========
 
@@ -612,7 +685,7 @@ public class RunCLN {
 
 		WriteImpedance(resistances,inductances,1e0,1e2,11);
 
-		double f0=1e0;
+		double f0=1e2;
 		//	Complex imp=ObtainImpedance(resistance,inductances,1e2);
 
 		Complex vs=new Complex(1,0);
@@ -642,16 +715,16 @@ public class RunCLN {
 		//	Ar.times(1e6).hshow();
 		//	Am.times(1e6).hshow();
 
-		util.pr("Ar. norm=====>  "+Ar.norm());
-		util.pr("Am norm=====>  "+Am.norm());
+	//	util.pr("Ar. norm=====>  "+Ar.norm());
+	//	util.pr("Am norm=====>  "+Am.norm());
 
-		model.setSolution(Ar);
-		model.setB();
-		model.writeB(model.resultFolder+"\\Br.txt");
+	//	model.setSolution(Ar);
+	//	model.setB();
+	//	model.writeB(model.resultFolder+"\\Br.txt");
 
-		model.setSolution(Am);
-		model.setB();
-		model.writeB(model.resultFolder+"\\Bm.txt");
+	//	model.setSolution(Am);
+	//	model.setB();
+	//	model.writeB(model.resultFolder+"\\Bm.txt");
 
 	}
 

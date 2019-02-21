@@ -243,17 +243,20 @@ public class StaticElectricSolver{
 			RHS.el[rowIndex]=-vps_volatge;
 		
 		if(byCPS){
-			
 
-
-				
+			network.tiesetMat.show("%1.1e");		
 			for(int i=0;i<network.indep_elems.length;i++){
 				if(network.indep_elems[i].type==ElemType.CPS){
-					for(int j=0;j<network.indep_elems.length;j++){
+			
+					for(int j=0;j<network.elems.length;j++){
 						if(network.elems[j].type==ElemType.FEM &&network.tiesetMat.el[i][j]!=0){
+					
 							PhiCoil coil=model.phiCoils[network.elems[j].fem_index];
-							rowIndex=this.phiVarIndex[coil.infaceNodes[0]];
-							RHS.el[rowIndex]=vps_volatge;
+						
+							//rowIndex=this.phiVarIndex[coil.infaceNodes[0]];
+							//RHS.el[rowIndex]=vps_volatge;
+							
+
 						}
 					}
 				}

@@ -70,8 +70,10 @@ public class RunMech {
 
 
 		//=======================================
-		boolean layeredData=true;
+		boolean layeredData=false;
 		int[] reg8nodes=new int[1];
+
+		if(layeredData){
 		model.mapnr=new int[1];
 		if(model.dim==3 && model.transfer2DTo3D){
 			String m2dBun= System.getProperty("user.dir") + "\\mot4th2DFine.txt";
@@ -87,7 +89,7 @@ public class RunMech {
 			model.m2d.coordCode=1;
 		}
 		//=======================================
-
+		}
 
 
 		double tstart=System.currentTimeMillis();

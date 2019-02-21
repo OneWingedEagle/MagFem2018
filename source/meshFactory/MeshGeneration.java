@@ -48,7 +48,8 @@ public class MeshGeneration {
 		
 		MeshGeneration mf=new MeshGeneration();
 
-		mf.mesh16WiresTwisted();
+		mf.meshQ();
+		//mf.mesh16WiresTwisted();
 		//mf.meshHexa();
 		
 	}
@@ -584,7 +585,7 @@ public class MeshGeneration {
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(ix,model.dim);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}
@@ -628,7 +629,7 @@ public class MeshGeneration {
 		model.element=new Element[model.numberOfElements+1];
 
 		for(int i=1;i<=model.numberOfElements;i++){
-			model.element[i]=new Element("hexahedron");
+			model.element[i]=new Element("quadrangle");
 			for(int j=0;j<model.nElVert;j++)
 				model.element[i].setVertNumb(j,mapNd[elVerts[mapEl[i]][j]]);
 
@@ -1002,7 +1003,7 @@ public class MeshGeneration {
 
 			if(nc[i]){
 				ix++;
-				model.node[ix]=new Node(model.dim);		
+				model.node[ix]=new Node(ix,model.dim);		
 				model.node[ix].setCoord(coords[i-1]);	
 				mapNd[i]=ix;
 			}
@@ -1204,8 +1205,8 @@ public class MeshGeneration {
 		
 			//double[][] bb={{471,492.32,0,12.5},{478.43,481.23,.55,6.25},{478.43,481.23,.55,6.25},{478.43,481.23,.55,6.25},{478.43,481.23,.55,6.25}};
 		//	double[][] bb={{0,1000,-1000,1000},{-1000,1000,-1000,-300},{-400,-300,0,100},{300,400,0,100}};
-			double[][] bb={{-300,300,-300,300},{-60,60,-60,60},{-40,40,-40,40},{40,60,-5,5}, {-35,0,-35,35},{-100,-65,-35,35}};
-			
+			//double[][] bb={{-300,300,-300,300},{-60,60,-60,60},{-40,40,-40,40},{40,60,-5,5}, {-35,0,-35,35},{-100,-65,-35,35}};
+			double[][] bb={{-100,100,-100,100}};
 			/*
 			double[] bair={470,700,0,12.5};
 			double[] balum={0,2.8,0,5.7};
@@ -1264,11 +1265,11 @@ public class MeshGeneration {
 				//mg.blockName[j]="coil";
 	
 
-			mg.blockName[1]="core";
-			mg.blockName[2]="air";
-			mg.blockName[3]="air";
-			mg.blockName[4]="coil1";
-			mg.blockName[5]="coil2";
+			//mg.blockName[1]="core";
+			//mg.blockName[2]="air";
+		//	mg.blockName[3]="air";
+			//mg.blockName[4]="coil1";
+			//mg.blockName[5]="coil2";
 
 			
 for(int j=0;j<bb.length;j++){
@@ -1276,8 +1277,8 @@ for(int j=0;j<bb.length;j++){
 				for(int k=0;k<bb[0].length;k++){
 				
 			
-				mg.baseLeft[j][k]=1.3;
-				mg.baseRight[j][k]=1.3;
+				mg.baseLeft[j][k]=1.;
+				mg.baseRight[j][k]=1.;
 					
 			
 			

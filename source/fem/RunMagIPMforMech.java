@@ -463,7 +463,7 @@ public class RunMagIPMforMech {
 					for(int k:ee)
 					{
 						
-						Vect P=model.node[model.edge[k].endNodeNumber[0]].getCoord();
+						Vect P=model.edge[k].node[0].getCoord();
 
 						double[] AnAp=modelp.getApAnAt(P);
 						
