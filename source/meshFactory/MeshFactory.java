@@ -1188,7 +1188,7 @@ for(int i=m2dx.region[nr2].getFirstEl();i<=m2dx.region[nr2].getLastEl();i++){
 
 
 		if(model.elCode==0)
-			model.writeMesh32q(quadMesh);
+			model.writeMeshTriToQuad(quadMesh);
 
 	}
 
@@ -1208,7 +1208,7 @@ for(int i=m2dx.region[nr2].getFirstEl();i<=m2dx.region[nr2].getLastEl();i++){
 
 
 		if(model.elCode==0)
-			writer.writeMesh32qCoarse(model,quadMesh);
+			writer.writeMeshTriToQuadCoarse(model,quadMesh);
 
 	}
 	
@@ -1795,7 +1795,7 @@ for(int i=m2dx.region[nr2].getFirstEl();i<=m2dx.region[nr2].getLastEl();i++){
 
 
 		if(model.elCode==0)
-			model.writeMesh323(finerMesh, r1,  r2);
+			model.writeMeshTriToTri(finerMesh, r1,  r2);
 
 	}
 
@@ -1869,7 +1869,7 @@ for(int i=m2dx.region[nr2].getFirstEl();i<=m2dx.region[nr2].getLastEl();i++){
 		String triangMesh = folder + "//triangEl.txt";
 
 		if(model.elCode==1)
-			model.writeMeshq23(triangMesh);
+			model.writeMeshQuadToTri(triangMesh);
 
 	}
 
@@ -1883,7 +1883,7 @@ for(int i=m2dx.region[nr2].getFirstEl();i<=m2dx.region[nr2].getLastEl();i++){
 		String triangMesh = System.getProperty("user.dir") + "//triangEl.txt";
 
 		if(model.elCode==1)
-			model.writeMeshq23(tri);
+			model.writeMeshQuadToTri(tri);
 
 	}
 

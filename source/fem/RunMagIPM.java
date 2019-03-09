@@ -58,7 +58,6 @@ public class RunMagIPM {
 
 			int nTsteps=model.nTsteps;
 		
-			
 			int nBegin=model.nBegin;
 			int nEnd=model.nEnd;
 			
@@ -103,7 +102,7 @@ public class RunMagIPM {
 				
 				model.setMagBC();
 				
-				String initfile = System.getProperty("user.dir")+"\\initxMag.txt";
+				String initfile = model.resultFolder+"\\initxMag.txt";
 				model.loader.loadPrevMag(model,initfile);
 
 				}
@@ -144,7 +143,7 @@ public class RunMagIPM {
 
 			if(model.saveForce){
 			
-					dispFolder = System.getProperty("user.dir")+"\\forces";
+					dispFolder = model.resultFolder+"\\forces";
 				File dfolder = new File(dispFolder);
 				if(dfolder.exists())
 					util.deleteDir(dfolder);
@@ -154,7 +153,7 @@ public class RunMagIPM {
 			
 			if(model.saveFlux){
 				
-				fluxFolder = System.getProperty("user.dir")+"\\fluxes";
+				fluxFolder = model.resultFolder+"\\fluxes";
 			File dfolder = new File(fluxFolder);
 			if(dfolder.exists())
 				util.deleteDir(dfolder);
@@ -234,7 +233,6 @@ public class RunMagIPM {
 
 					if(model.magAnalysis){
 				
-						
 							model.setMagBC();
 							
 							if(i==nBegin){
@@ -307,9 +305,16 @@ public class RunMagIPM {
 								String fluxFile = fluxFolder+"\\flux"+i+".txt";
 							
 								model.writeB(fluxFile);
+
+								
+								String vpotFile = fluxFolder+"\\A"+i+".txt";
+
+								model.writeA(vpotFile);
+								
 								String meshFile = fluxFolder+"\\bun"+i+".txt";
 								
-								//model.writeMesh(meshFile);
+								
+								model.writeMesh(meshFile);
 		
 							}
 
@@ -355,7 +360,7 @@ public class RunMagIPM {
 					}
 					else if(model.loadPotentioal) {
 
-						String vPot = System.getProperty("user.dir")+"\\flux\\vPot"+i+".txt";
+						String vPot = model.resultFolder+"\\A"+i+".txt";
 						model.loadPotential(vPot);
 						model.setB();
 
@@ -363,7 +368,7 @@ public class RunMagIPM {
 					
 			
 					
-					folder=System.getProperty("user.dir") + "\\results";
+					folder=model.resultFolder;
 			
 					//if(model.dim==2)
 						model.setTorque(.0,model.rm,1);
@@ -394,7 +399,7 @@ public class RunMagIPM {
 				//	writeFiles=true;
 
 
-					if( writeFiles /*&& i==nEnd*/){
+					if( writeFiles && i==nEnd){
 
 						model.writeMesh( folder+"\\bun"+i+".txt");
 						String fluxFile =  folder+"\\flux"+i+".txt";
@@ -403,6 +408,12 @@ public class RunMagIPM {
 						String forceFile =folder+"\\force"+i+".txt";
 						model.writeNodalField(forceFile,model.forceCalcMode);
 
+						//String vpotFile = folder+"\\A"+i+".txt";
+						//for(int w=1;w<=model.numberOfEdges;w++)
+						//	if(abs(model.edge[w].node[0].getR()-0.0547)<1e-5)
+							//	util.pr(util.getAng(model.edge[w].node[0].getCoord())+"\t"+model.edge[w].A);
+
+						//model.writeNodalA2D(vpotFile);
 					
 					}
 
@@ -425,10 +436,7 @@ public class RunMagIPM {
 			if(model.solver.terminate) break;
 
 			}
-			
-
-	
-			
+		
 			boolean writeInit=true;
 			
 			if(writeInit){
@@ -436,7 +444,7 @@ public class RunMagIPM {
 			}
 			
 			if(model.POD==-1){
-				String solutions=System.getProperty("user.dir") +"\\solutions.txt";
+				String solutions=model.resultFolder +"\\solutions.txt";
 				model.writer.writeArray(W.el, solutions);
 			}
 
@@ -612,7 +620,7 @@ public class RunMagIPM {
 		
 		double tet=model.tet,tetp=model.tetp,tetpp=model.tetpp;
 	
-		String initfile = System.getProperty("user.dir")+"\\initxMag.txt";
+		String initfile = model.resultFolder+"\\initxMag.txt";
 		double[][] arr=new double[model.numberOfUnknowns+1+1][2];
 		
 		Vect vk=model.getUnknownA();
@@ -651,8 +659,8 @@ public class RunMagIPM {
 		
 		int nTsteps=model.nTsteps;
 		
-		String def = System.getProperty("user.dir") + "//uu"+model.defMode+".txt";
-		String Trq = System.getProperty("user.dir") + "//torque.txt";
+		String def = model.resultFolder + "//uu"+model.defMode+".txt";
+		String Trq = model.resultFolder + "//torque.txt";
 		
 		String si="I";
 		String sv="V";
@@ -661,9 +669,9 @@ public class RunMagIPM {
 		else
 			s=sv;
 
-		String emf1 = System.getProperty("user.dir") + "//emf//"+s+"a.txt";
-		String emf2 = System.getProperty("user.dir") + "//emf//"+s+"b.txt";
-		String emf3 = System.getProperty("user.dir") + "//emf//"+s+"c.txt";
+		String emf1 = model.resultFolder + "//emf//"+s+"a.txt";
+		String emf2 = model.resultFolder + "//emf//"+s+"b.txt";
+		String emf3 = model.resultFolder + "//emf//"+s+"c.txt";
 		
 
 		try {

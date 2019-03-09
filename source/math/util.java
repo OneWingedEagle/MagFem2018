@@ -31,8 +31,37 @@ import fem.Model;
 				
 				public static void main(String[] args) throws Exception{
 					
-					DFTdecopler();
+					//DFTdecopler();
+					
+					Loader loader=new Loader();
+					double[] xx=loader.loadArray();
+					int N=xx.length;
+				//	util.hshow(xx);
+					
+					Complex[] XX=DFT.dft(xx);
+					
+					double[] xx1=new double[N];
+					for(int i=0;i<N;i++){
+						Complex tmp=new Complex(0,0);
+						for(int j=0;j<N;j++){
+							if(j<15 || j>N-15-1)
+							tmp=tmp.add(XX[j].times(new Complex(cos(2*PI*j*i/N),sin(2*PI*j*i/N))));
+						}
+						xx1[i]=tmp.re/N;
+					}
+					
+					//util.show(xx1);
+					
+					double[][] data=new double[N][3];
+					for(int i=0;i<N;i++){
+							data[i][0]=i;
+							data[i][1]=xx[i];
+							data[i][2]=xx1[i];
+					}
+					
+					util.plotBunch(data);
 				}
+				
 
 				
 	public static void DFTdecopler() {
@@ -1026,7 +1055,7 @@ public static void eigenSpMat() {
 	}
 	public static void show(double[] v){
 		for(int i=0;i<v.length;i++)
-			System.out.print(df.format(v[i])+"\t");
+			System.out.println(df.format(v[i])+"\t");
 			System.out.println();
 	}
 	

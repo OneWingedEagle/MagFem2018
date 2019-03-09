@@ -53,8 +53,10 @@ public class MeshConverter {
 		MeshConverter mf=new MeshConverter();
 	//	mf.hexaToTetraNeu();
 		
-	//	mf.quadToTriang();
+	mf.quadToTriang();
+	//mf.triToQuad();
 
+		
 	
 	//mf.hexaToTetra();
 		
@@ -62,7 +64,7 @@ public class MeshConverter {
 		//mf.addMidNodesNeu();
 	//mf.refine2ndTo1stTetra();
 	//	mf.refineTetraTo3Tetra();
-		mf.removeMidNodesNeu();
+	//	mf.removeMidNodesNeu();
 		
 	//	mf.cutCorners();
 		
@@ -273,7 +275,38 @@ public void hexaToTetra()
 		String triangMesh = folder + "//triangEl.txt";
 
 		if(model.elCode==1)
-			model.writeMeshq23(triangMesh);
+			model.writeMeshQuadToTri(triangMesh);
+
+	}
+
+	
+	public void triToTri(){
+
+		String bun=util.getFile();
+		if(bun==null || bun.equals("") )return;
+		Model model=new Model();
+		model.loadMesh(bun);
+
+		String folder=new File(bun).getParentFile().getPath();
+		String triangMesh = folder + "//triangEl.txt";
+
+		if(model.elCode==0)
+			model.writeMeshTriToTri(triangMesh,0,1e99);
+
+	}
+
+	public void triToQuad(){
+
+		String bun=util.getFile();
+		if(bun==null || bun.equals("") )return;
+		Model model=new Model();
+		model.loadMesh(bun);
+
+		String folder=new File(bun).getParentFile().getPath();
+		String triangMesh = folder + "//quad.txt";
+
+		if(model.elCode==0)
+			model.writeMeshTriToQuad(triangMesh);
 
 	}
 

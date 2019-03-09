@@ -47,925 +47,42 @@ public class MeshManipulator {
 	public static void main(String[] args){
 
 		MeshManipulator mf=new MeshManipulator();
+
+		mf.connectivity(1e-5);	mf.dropUnusedNodes();
+	//	mf.dropUnusedNodes();
+	//	mf.deform();
+		int[] regs={4,5};
+		//mf.revolveLine(new Vect().linspace(1, 6, 7), regs, 9, PI/2/9);
+
+		//mf.extractReg(regs);mf.dropUnusedNodes();
+		//mf.assemble("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\rot.txt", "D:\\JavaWorks\\FEM problems\\ipm_motor2D\\stat.txt");
+
+		//mf.extractReg(0.,2.0,PI/6,PI/3,0,1);
+/*		String bun=util.getFile();
+		Model model=new Model(bun);
+		int[] map=new int[1+model.numberOfNodes];
 		
-/*		  double xc   = 0;
-	        double yc   = 0;
-	        double size = 3;
+		for(int i=1;i<=model.numberOfNodes;i++){
+			Vect v=model.node[i].getCoord();
+			double r=v.norm();
+			double tt=util.getAng(v);
+			int ir=(int )Math.round((r-.999)/.2);
+			int it=(int )Math.round((tt-.5)/.175);
+			
+			util.pr(r+" "+tt);
+		//	util.pr(ir+" "+it);
+		//	map[i]=
 
-	        int max = 255;   // maximum number of iterations
-	        
-	        double constt=2;
-
-	
-	        int iterMax=100;
-	        double x0 = 0;//xc - size/2;
-	        double y0 = 0;//yc - size/2;
-	        Complex z0 = new Complex(x0, y0);
-
-	        Complex dz=new Complex(0,0);
-		Model mmm=new Model("D:\\personal\\Farsi\\2019\\darbareh\\Mandelbrot\\model2D.txt");
-		
-		for (int i=1;i<=mmm.numberOfNodes;i++){
-			mmm.node[i].setDeformable(true);
-			dz.re=mmm.node[i].getCoord(0);
-			dz.im=mmm.node[i].getCoord(1);
-            Complex z = z0.add(dz.times(5));
-		//	z.show();
-
-            int val=Mandelbrot.mand(z, constt,iterMax);
-			mmm.node[i].T=val;//Math.pow((i-1.0*mmm.numberOfNodes/2)/mmm.numberOfNodes, 2);
-		}
-		mmm.writeNodalScalar("D:\\personal\\Farsi\\2019\\darbareh\\Mandelbrot\\temp.txt");*/
-/*		Model model33=new Model("C:\\JavaWorks\\MagFem2018\\forceMotorHalf\\bun.txt");
-		for(int i=0;i<90;i++){
-			for(int n=1;n<=model33.numberOfNodes;n++){
-				Vect v2=model33.node[n].getCoord().v2();
-				if(model33.node[n].getCoord(2)<.05 && v2.norm()<.055){
-				model33.node[n].setDeformable(true);
-				model33.node[n].setF(v2.normalized().times(-2+Math.sin(i*PI/4-4*util.getAng(v2))).v3());
-				}
-			}
-			model33.writeNodalField("C:\\JavaWorks\\MagFem2018\\forceMotorHalf\\force"+i+".txt", 1);
 		}*/
-	
-	//	mf.reRegionf();
-		int[] nrs={1,2,3,4,5};
-		//mf.extractReg(nrs);
-		//int[] nrs1={1};
-		//mf.extractReg(1);	mf.dropUnusedNodes();
-		//mf.reverseFace2D();
-	//mf.extendFlip(1);
-		//mf.quadToTriang();
-		//mf.cutCorners();
-		//mf.twistNeuMeshToMatchHelical(.215,-4.5);
-	//mf.renumberNeuMeshElNodes();
-	
-		//mf.renumberNeuMeshRegions();
-		
-		//mf.copyTranslateNeu(7000000,new Vect(1.12,0,0));
-		//mf.renumber6CoilsByCoord(1120, new Vect(0,0,1), 6);
-	//mf.renumberRegionAcualModel();
-		//Vect axis= new Vect( 1.424699,0.82261,0);
-		Vect axis= new Vect(0,0,1);
-	//mf.twist3DNeu(axis,2.4,.17);
-	
-	//mf.wind(axis,4);
-		
-		//mf.multipleTwist3DNeu(8,.1985);
-	//	mf.multipleTwist3DNeu(9,.276);
-
-	//mf.twist3DNeu(axis,36,15.6e-1);
-	//mf.twist3DNeu(axis,16,5.6e-1);
-		//mf.twist3DNeu(axis,18,4.548e-1);
-		//mf.twist3DNeu(axis,18,4.68e-1);
-		//mf.twist3DNeu(axis,-8,4.548e1);
-		
-		if(1>10){
-		String bun="C:\\Users\\Hassan Ebrahimi\\Desktop\\mesh\\hexa.txt";
-		String bun2="C:\\Users\\Hassan Ebrahimi\\Desktop\\mesh\\hexa.txt";
-		//Model model1=mf.getModel(bun);
-		Model model1=new Model(bun);
-		int nLayers=45;
-		Model model2=null;
-		for(int i=1;i<nLayers;i++){
-		 model2=new Model(bun2);
-			mf.translate(model2,new Vect(0,0,.4*i),false);
-			model1=mf.assemble(model1, model2,false);
-
-
-		}
-		String bunOut="C:\\Users\\Hassan Ebrahimi\\Desktop\\mesh\\assembled.txt";
-		model1.writeMesh(bunOut);
-		}
-		
-
-		//mf.extractReg(1);
-		//mf.extendFlip(2);
-//	mf.connectivity(1e-5);	mf.dropUnusedNodes();
-	//mf.translate(new Vect(-.65,-1));
-//	mf.connectivity(1e-6);
-	//mf.extractReg(1);	//
-//	mf.extractReg(1);
-	//mf.dropUnusedNodes();
-		//mf.pileHelic(60, 5,20);
-		
-	//	int[] nrx={1,2,5,6,25,26};mf.extractReg(nrx); 		mf.dropUnusedNodes();
-		
-		//mf.extractReg(0,1000,0.,88.4);	mf.dropUnusedNodes();
-	//	mf.elimitateZeroAreaElements(1e-6);	
-		//mf.pileUpPrism(1, 1e-4);
-		//mf.connectivity(1e-4);
-	//	mf.reRegion();
-	//	mf.reRegionf();
-	//	mf.rescale(new Vect(1,1,2));
-		//Model modelRot=new Model(System.getProperty("user.dir") + "\\inputs\\mesh\\SPMRot.txt");
-		//Model modelStat=new Model(System.getProperty("user.dir") + "\\inputs\\mesh\\SPMStat.txt");
-	//	mf.assemble(modelRot, modelStat,true);
-		
-	//mf.fetchNodeCoord(modelx,37593).hshow();;//.sub(mf.fetchNodeCoord(modelx,15733)).hshow();		
-		//util.pr(mf.fetchNodeCoord(2185).v2().norm());
-		
-		//mf.extractReg(0,1,0,PI/2,0,.005);
-		
-		//mf.rescale(new Vect(1,1,.8));
-		
-		//	mf.meshQx();
-
-/*		Loader wr=new Loader();
-		String fani=System.getProperty("user.dir") + "\\aniso.txt";
-		double[][] ani=wr.loadArrays(38, 14, fani);
-		util.show(ani);
-		*/
-		
-	//	int[] nrx=new int[50];
-		//for(int i=0;i<nrx.length;i++)
-	//		nrx[i]=i+6;
-//	int[] nrx={1};
-	//	mf.extractReg(nrx);// mf.dropUnusedNodes();
-		//int[] nrx={8,9,10,11,12,13,14,15,16,17};mf.extractReg(nrx); mf.dropUnusedNodes();
-		
-		//int[] nrAll={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};mf.extractReg(nrAll); mf.dropUnusedNodes();
-	//	mf.connectivity(2e-4);
-	//	mf.dropUnusedNodes();
-		//mf.getNeuMeshQ(1);
-		//mf.getPostMeshQ();
-	//mf.getNeuMeshHexa(1);
-	//	mf.getPostMeshHex();
-	//	mf.getPostMeshHexAtlas();
-	//	mf.getPostMeshHexAtlas();
-		
-	//	mf.fetFluxAtlas(3, 1);
-		
-		int elNumb=6780;
-	//elNumb=2190;
-//	elNumb=390;
-		int nf=121;
-		//mf.getEMSolFlux(3, 121);
-		Vect T=new Vect(nf);
-	//	String bbf="C:\\Works\\EMSolBuild_C\\EMSolBatch\\Small model\\magnetic";
-		//bbf="C:\\Works\\EMSolBuild_C\\EMSolBatch\\ThinDisk\\Small model\\magnetization";
-	
-	//	String bhfolder="C:\\Works\\EMSolBuild_C\\EMSolBatch\\ringCompositAngDep";
-		//String bhfolder="C:\\Works\\EMSolBuild_C\\EMSolBatch\\Large model_Angs";
-		//String bhfolder="C:\\Works\\EMSolBuild_C\\EMSolBatch\\ThinDiscF2\\AngleDependent\\0deg";
-		
-	//	mf.extractFlux( bbf,3,nf,  6780);
-
-		//mf.getEMSolFlux(bbf,3, nf);
-		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if(2>10){
-		String bbx=System.getProperty("user.dir") + "\\EMSol\\aHexa.txt";
-		Model mb=new Model(bbx);
-		
-		Vect[] B12=new Vect[nf];
-		
-		for(int i=0;i<B12.length;i++){
-		String bf=System.getProperty("user.dir") + "\\EMSol\\flux"+i+".txt";
-		mb.loadFlux(bf);
-		B12[i]=mb.element[12].getB();
-		}
-		
-		for(int i=0;i<B12.length;i++){
-			B12[i].hshow();
-			T.el[i]=B12[i].el[0];
-		}
-		
-		util.plot(T);
-		
-		}
-		//mf.rotate(PI);
-		//mf.rescale(.038/.035);
-		//mf.rescale(1.0);
-		//mf.deform();
-		//mf.extractReg(0,.02,0,PI,0,.005);
-	//mf.connectivity(2e-4);
-		//mf.dropUnusedNodes();
-	//mf.rotExtendNfoldW(2);
-		boolean transFlax=false;
-		
-		if(transFlax) mf.makeFullFlux();
-		
-	 //mf.makeFullForce();
-
-		
-		//mf.onlyIronForce();
-		String mm=System.getProperty("user.dir") + "\\fluxesGear\\bun0.txt";
-		String bb=System.getProperty("user.dir") + "\\fluxesGearAir\\flux0.txt";
-			/*Model mmx=new Model(mm);
-			int ppx=0;
-			for(int i=1;i<=mmx.numberOfNodes;i++)
-			{
-				Vect v=mmx.node[i].getCoord();
-				  double r=v.norm();
-				  double tt=util.getAng(v);
-				if(Math.abs(v.el[1])<.0001)
-					for(int j=1;j<=mmx.numberOfNodes;j++)
-					{
-						Vect v1=mmx.node[j].getCoord();
-						  double r1=v.norm();
-						  double tt1=util.getAng(v1);
-						if(Math.abs(v1.el[1])<.0001){
-							double d=v.sub(v1).norm();
-							if(i!=j && d<1e-4) util.pr(d+" "+(ppx++));
-						}
-			}
-			}
-/*		mmx.setSliceBounds();
-		util.pr(mmx.r1);
-	for(int i=1;i<=mmx.numberOfNodes;i++){
-		  Vect v=mmx.node[i].getCoord();
-		  double r=v.norm();
-		  double tt=util.getAng(v);
-		  if(tt>PI/3-.001){
-			  mmx.node[i].setCoord(new Vect(r*Math.cos(PI/3),r*Math.sinf(PI/3)));
-		  }
-			  
-		}
-		
-
-		
-		Vect T=new Vect(360);
-		
-		double r=.092;
-		for(int i=0;i<T.length;i++){
-			double tt=(i+.5)*PI/180;
-			Vect z=new Vect(r*Math.cos(tt),r*Math.sin(tt));
-			T.el[i]=mmx.getBAt(z).dot(z.normalized());
-					
-					}
-		util.plot(T);
-		T.show();
-		*/
-		
-		String b1=System.getProperty("user.dir") + "\\gears\\magGear.txt";
-		String b2=System.getProperty("user.dir") + "\\gears\\1to2.txt";
-		//String b2=System.getProperty("user.dir") + "\\gears\\noUnusedNodes2.txt";
-		
-		double[] boundx={0,1,-.001,.001};
-		//mf.connectCyl(b1, b2, boundx, 1e-4);
-	//mf.assemble(b1, b2);
-	//mf.connect(b1, b2);
-		//mf.reRegion();
-
-		
-/*		Model mx=new Model(System.getProperty("user.dir") + "\\model2D.txt");
-		
-		double tt=PI/180;
-	for(int i=1;i<=mx.numberOfNodes;i++){
-		if(mx.node[i].getCoord(1)>.0001){
-			double r=mx.node[i].getCoord(0);
-			double x=r*Math.cos(tt);
-			double y=r*Math.sin(tt);
-			mx.node[i].setCoord(new Vect(x,y));
-		}
-	}
-	mx.writeMesh(System.getProperty("user.dir") + "\\model2Dx.txt");*/
-		
-	
-		
-		//int[] nr={1,2,3,4,5,6,7};
-		int[] nr={1};
-
-	
-
-//mf.extractReg(nr); mf.dropUnusedNodes();
-		//mf.extendFlip(0);
-		//mf.translate(new Vect(200e-3,0));
-		//mf.meshQx();
-
-	//	int[] nr={1,3,4};
-	//	mf.dropUnusedNodes();
-		//mf.getNeuMeshQ();
-
-//	mf.extractReg(nr); mf.dropUnusedNodes();
-		//mf.extendFlip(0);
-		//mf.translate(new Vect(200e-3,0));
-		//mf.meshQ();
-
-		
-	//	mf.rescale(.1);
-		//mf.reRegionf();
-		double[] ar={1,1.5,2,3,3.5,4,5};
-		Vect v=new Vect(ar);
-		int[] regs={1,1,2,2,2,3};
-		
-	//	mf.RCM();
-	//	mf.revolveLine(v, regs, 2, PI/18);
-
-		int sib=0;
-		
-		
-		if(sib==1){
-			
-			int f1=1;
-			Model model2=new Model();
-			
-		//	if(f1==0){
-	 b1=System.getProperty("user.dir") + "\\EMSsibc.txt";
- b2=System.getProperty("user.dir") + "\\EMSsibcFlux.txt";
- Model model=new Model(b1);
-		model.loadFlux(b2);
-			//}
-			//else if(f1==1){
-	 b1=System.getProperty("user.dir") + "\\EMS.txt";
-	 model2=new Model(b1);
-	 b2=System.getProperty("user.dir") + "\\EMSFlux.txt";
-		//	model.loadFlux(b2);
-	 model2.loadFlux(b2);
-
-		//	}
-		
-		
-	
-		
-		
-		for(int i=1;i<=model.numberOfElements;i++)
-			model.element[i].setB(model2.element[i].getB());
-		
-		model.writeB(System.getProperty("user.dir") + "\\EMSFluxxxxx.txt");
-
-		
-		Vect xx1=new Vect().linspace(.1, .6, 1000);
-		Vect[] B1=new Vect[xx1.length];
-
-		int n=0;
-		for(double x:xx1.el){
-			 B1[n]=model.getBAt(new Vect(x,0));
-			if(abs(B1[n].el[0])>1000)
-			{
-				 B1[n]=new Vect(model.dim);
-			}
-			n++;
-		}
-		util.pr(n);
-		Vect By=new Vect(n);
-		for(int i=0;i<n;i++)
-			By.el[i]=B1[i].el[1];
-		
-		util.plot(By);
-		}
-		
-	//	mf.getNeuMeshQ();
-		//mf.getPostMeshQ();
-		//mf.getEMSolFlux(2);
-		
-		//mf.modifyEMSolFlux(2);
-		
-			//	mf.rotate(PI/2);
-		mf.pileUpHexa(1, 1);
+	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\compacted.txt");*/
+		//	mf.rotate(PI/2);
+	//	mf.pileUpHexa(1, 1);
 		
 	//	mf.pileHelic(6*8, PI/4, .0125*18);
 		
 		//mf.pileRotate(10, PI/18);
-		
-		boolean old=false;
-		
-		if(old){
-		
-/*		Model mx1=new Model(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\bun.txt");
-		mx1.loadStress(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\stress0.txt");*/
-		/*Model mx2=new Model(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\mot4th3Dstf.txt");
-		
-		mx2.loadStress(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\stressmot4th3Dstf.txt");
-
-		Model mx3=new Model(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\statFrameRough.txt");
-		mx3.loadStress(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\stressStatFrameRough.txt");
-		*/
-		
-/*for(int ir=1;ir<=mx3.numberOfRegions;ir++)
-			
-			for(int i=mx3.region[ir].getFirstEl();i<=mx2.region[ir].getLastEl();i++){
-				
-				Mat ss=mx3.element[i].getStressTensor();
-				ss.show();
-			}
-*/
-
-		Model m3d=new Model(System.getProperty("user.dir") + "\\resultsShrink3DLamin\\bunBot.txt");
-		Model m2d=new Model(System.getProperty("user.dir") + "\\statFrame2D.txt");
-		//Model m2d=new Model(System.getProperty("user.dir") + "\\resultsShrink3DLamin\\bunBot.txt");
-		
-/*		Vect T=new Vect(23);
-		for(int k=0;k<T.length;k++){
-			
-			m2d.loadStress(System.getProperty("user.dir") + "\\resultsShrink3DLamin\\stressLamins\\stress2D"+(k+1)+".txt");
-
-			T.el[k]=m2d.element[149].getStress().el[1];
-			
-		}
-		util.plot(T);
-		T.show();*/
-		
-		for(int k=4;k<-48;k++){
-			
-		for(int ir=1;ir<=m2d.numberOfRegions;ir++){
-			
-			double t1=0;
-			double t2=PI/18;
-		if(ir!=1 && ir!=2) continue;
-		for(int j=m2d.region[ir].getFirstEl();j<=m2d.region[ir].getLastEl();j++){
-			
-		/*	Vect B=m2d.element[j].getB();
-			double Bn=B.norm();*/
-			Vect c=m2d.getElementCenter(j);
-			
-			for(int ir1=1;ir1<=m3d.numberOfRegions;ir1++)
-				for(int i1=m3d.region[ir1].getFirstEl();i1<=m3d.region[ir1].getLastEl();i1++){
-				
-					
-					Vect c1=m3d.getElementCenter(i1);
-					double d=c1.sub(c.add(new Vect(0,0,k*.00026))).norm();
-				
-					if(d<1e-4) 
-					{
-						Vect ss=m3d.element[i1].getStress();
-						
-				
-						
-						m2d.element[j].setDeformable(true);
-						m2d.element[j].setStress(ss);
-						//ss.hshow();
-				/*		m2d.element[i].setDeformable(true);
-					
-						m2d.element[i].setStress(sr);*/
-						break;
-						
-					}
-				}
-		/*	double ang =util.getAng(c);
-			//	util.pr(i);
-				if(ang<t1 || ang>t2) continue;
-				util.pr(j);*/
-
-		//	Vect ss=m3d.getStressAt(c.v3().add(.00001));
-		//	Vect ss=m3d.getStressAt(c);
-			
-			
-		/*	ss.hshow();
-			Mat S=util.tensorize(ss);
-			//Mat S=m2.element[ix].getStressTensor();
-			Mat S2D=new Mat(2,2);
-			
-			S2D.el[0][0]=S.el[0][0];
-			S2D.el[0][1]=S.el[0][1];
-			S2D.el[1][0]=S.el[1][0];
-			S2D.el[1][1]=S.el[1][1];*/
-			
-/*			m2d.element[j].setDeformable(true);
-			m2d.element[j].setStress(ss);*/
-		}
-		}
-		
-		m2d.writeStress(System.getProperty("user.dir") + "\\resultsShrink3DLamin\\stressBot"+k+".txt");
-
-	}
-	
-		for(int k=0;k<-48;k++){
-			m3d.loadStress(System.getProperty("user.dir") + "\\resultsShrink3DLamin\\stressBot"+k+".txt");
-
-		
-			int ix=0;
-		for(int t=0;t<10;t++){
-			
-			util.pr(t);
-			double t1=t*PI/18;
-			double t2=(t+1)*PI/18;
-			
-			Mat R=util.rotEuler(new Vect(0,0,1), -t*PI/18);
-		
-		
-		for(int ir=1;ir<=m2d.numberOfRegions;ir++){
-			
-			//if(ir!=8 && ir!=16) continue;
-			
-			for(int i=m2d.region[ir].getFirstEl();i<=m2d.region[ir].getLastEl();i++){
-				
-				
-				//Vect c=m2d.getElementCenter(i).v3().add(.00001);
-				Vect c=m2d.getElementCenter(i);
-				double ang =util.getAng(c);
-				//	util.pr(i);
-				if(ang<t1 || ang>t2) continue;
-				Vect cr=R.mul(c.v3());
-				//Vect ss=mx2.getStressAt(cr);
-				for(int ir1=1;ir1<=m3d.numberOfRegions;ir1++)
-				for(int i1=m3d.region[ir1].getFirstEl();i1<=m3d.region[ir1].getLastEl();i1++){
-				
-					
-					Vect c1=m3d.getElementCenter(i1);
-					double d=c1.sub(cr).norm();
-				
-					if(d<1e-4) 
-					{
-						Vect ss=m3d.element[i1].getStress();
-						
-						Mat S=util.tensorize(ss);
-						//Mat S=m2.element[ix].getStressTensor();
-						Mat S2D=new Mat(2,2);
-						
-						S2D.el[0][0]=S.el[0][0];
-						S2D.el[0][1]=S.el[0][1];
-						S2D.el[1][0]=S.el[1][0];
-						S2D.el[1][1]=S.el[1][1];
-						Mat sr=R.transp().mul(util.tensorize(ss)).mul(R);
-						
-						m2d.element[i].setDeformable(true);
-						m2d.element[i].setStress(sr);
-						//ss.hshow();
-				/*		m2d.element[i].setDeformable(true);
-					
-						m2d.element[i].setStress(sr);*/
-						break;
-						
-					}
-				}
-				
-			//	Mat sr=R.transp().mul(util.tensorize(ss)).mul(R);
-				
-			
-				//ss.hshow();
-			
-			}
-		}
-		}
-		
-		m2d.writeStress(System.getProperty("user.dir") + "\\resultsShrink3DLamin\\stress2D"+k+".txt");
-
-		}
-	//	mf.triangToQuad();
-		
-		
-
-		double[] h={.00025,.00025,.00001,.00001};
-		
-		double[] hhz6=new double[5*4];
-
-		int jx=0;
-		for(int i=0;i<5*0;i++){
-			for(int j=0;j<h.length;j++)
-				hhz6[jx++]=h[j];
-				
-		}
-		
-		
-		
-		//mf.pileUpPrism(hhz6,0);
-
-		
-		//Model mx2=new Model(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\mot4th3D.txt");
-	//	mx2.loadStress(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\stressCopy.txt");
-			
-		for(int t=0;t<-10;t++){/*
-			
-			util.pr(t);
-			double t1=t*PI/18;
-			double t2=(t+1)*PI/18;
-			
-			Mat R=util.rotEuler(new Vect(0,0,1), -t*PI/18);
-		
-		
-		for(int ir=1;ir<=mx3.numberOfRegions;ir++){
-			
-			//if(ir!=8 && ir!=16) continue;
-			
-			for(int i=mx3.region[ir].getFirstEl();i<=mx3.region[ir].getLastEl();i++){
-				Vect c=mx3.getElementCenter(i);
-				double ang =util.getAng(c.v2());
-			//	util.pr(i);
-				if(ang<t1 || ang>t2) continue;
-				Vect cr=R.mul(c);
-				//Vect ss=mx2.getStressAt(cr);
-				for(int ir1=1;ir1<=mx2.numberOfRegions;ir1++)
-				for(int i1=mx2.region[ir1].getFirstEl();i1<=mx2.region[ir1].getLastEl();i1++){
-					Vect c1=mx2.getElementCenter(i1);
-					double d=c1.sub(cr).norm();
-				
-					if(d<1e-5) 
-					{
-						Vect ss=mx2.element[i1].getStress();
-						mx3.element[i].setDeformable(true);
-						Mat sr=R.transp().mul(util.tensorize(ss)).mul(R);
-						mx3.element[i].setStress(sr);
-						break;
-						
-					}
-				}
-				
-			//	Mat sr=R.transp().mul(util.tensorize(ss)).mul(R);
-				
-			
-				//ss.hshow();
-			
-			}
-		}
-		*/}
-		
-/*for(int t=1;t<-5;t++){
-			
-			util.pr(t);
-			double t1=t*PI/18;
-			double t2=(t+1)*PI/18;
-			
-			Mat R=util.rotEuler(new Vect(0,0,1), -t*PI/18);
-		
-		
-		for(int ir=1;ir<=mx2.numberOfRegions;ir++){
-			
-			if(ir!=8 && ir!=16) continue;
-			
-			for(int i=mx2.region[ir].getFirstEl();i<=mx2.region[ir].getLastEl();i++){
-				Vect c=mx2.getElementCenter(i);
-				double ang =util.getAng(c.v2());
-			//	util.pr(i);
-				if(ang<t1 || ang>t2) continue;
-				Vect cr=R.mul(c);
-				
-				for(int i1=mx2.region[ir].getFirstEl();i1<=mx2.region[ir].getLastEl();i1++){
-					Vect c1=mx2.getElementCenter(i1);
-					double ang1 =util.getAng(c1.v2());
-				//	util.pr(i);
-					if(ang1<0 || ang1>PI/18) continue;
-					double d=cr.sub(c1).norm();
-					if(d<1e-6) {
-						
-						Vect ss=mx2.getStressAt(c1);
-						
-						Mat sr=R.transp().mul(util.tensorize(ss)).mul(R);
-						
-						mx2.element[i].setDeformable(true);
-						mx2.element[i].setStress(sr);
-						break;
-						
-					}
-				}
-				
-			
-			
-			}
-		}
-		}
-		*/
-		
-	//	mx3.writeStress(System.getProperty("user.dir") + "\\resultsShrink3DOrthot\\stressCopyfull.txt");
 
 
-		
-		//mf.meshStatQ();
-		
-		//mf.pileRotate(30, 2*PI/30);
-	//	mf.quadToTriang();
-		//mf.triangToQuad();
-		int nL=-1799;
-		if(nL>0){
-		String bun=System.getProperty("user.dir") + "\\motorHalf.txt";
-		Model model1=new Model(bun);
-		Model model2=new Model(bun);
-		
-		Model model3=new Model(bun);
-		
-		Vect uu=new Vect(180);
-		int px=0;
-		
-		for(int i=0;i<nL;i+=10){
-			model1=new Model(bun);
-			model2=new Model(bun);
-			
-			model1.loadNodalField(System.getProperty("user.dir") + "\\dispMagHalf\\disp"+i+1800+".txt",-1);
-			model2.loadNodalField(System.getProperty("user.dir") + "\\dispTotHalf\\disp"+i+1800+".txt",-1);
-
-			for(int j=1;j<=model3.numberOfNodes;j++){
-				if(model1.node[j].u!=null ||  model2.node[j].u!=null ){
-				model3.node[j].setDeformable(true);
-				if(model1.node[j].u==null)
-					model3.node[j].u=model2.node[j].u.deepCopy();
-				else if(model2.node[j].u==null)
-					model3.node[j].u=model1.node[j].u.times(-1);
-				else{
-				model3.node[j].u=model1.node[j].u.sub(model2.node[j].u);
-				}
-				}
-				
-			//	util.pr(i);
-		/*		if(j==24697){
-					model2.node[24697].getU().times(1e9).hshow();
-					model1.node[24697].getU().times(1e9).hshow();
-					model3.node[24697].getU().times(1e9).hshow();
-				}*/
-			//	}
-				}
-		
-				
-				//model3.node[24697].getCoord().hshow();
-				
-				uu.el[px++]=model3.node[24697].getU(0)*1e9;
-
-			
-		
-			String dispout=System.getProperty("user.dir") + "\\dispMSHalf\\disp"+i+".txt";
-			model3.writeNodalField(dispout, -1);
-		}
-		
-		util.plot(uu);
-		uu.show();
-		}
-/*
-		Model model1=new Model(bun);
-		Model model2=new Model(bun);*/
-
-
-		for(int i=0;i<=-nL;i++){/*
-
-			String disp1=System.getProperty("user.dir") + "\\dispMagHalf\\disp"+i+".txt";
-			model1.loadNodalField(disp1,-1);
-			disp1=System.getProperty("user.dir") + "\\dispMagHalf\\disp"+i+".txt";
-			model1.loadNodalField(disp1,-1);
-			
-			C:\JavaProjects\proj8\dispMagHalf
-			String bun1=System.getProperty("user.dir") + "\\coreReact.txt";
-			Model model1=new Model(bun1);
-			int p=1;
-			for(int j=model.region[17].getFirstEl();j<=model.region[17].getLastEl();j++)
-				model1.element[p++].setB(model.element[j].getB());
-			
-			String flux1=System.getProperty("user.dir") + "\\fluxes\\flux"+i+".txt";
-			model1.writeB(flux1);
-		*/}
-
-
-
-/*		SpMat M1=mf.adjMat();
-		M1.showcl();*/
-/*		
-			String bun1=System.getProperty("user.dir") + "\\motorHalf.txt";
-			String bun2=System.getProperty("user.dir") + "\\reNumb.txt";
-	
-			//mf.RCM(mf.getModel());
-			mf.RCM(new Model(bun1));
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			SpMat M1=mf.adjMat(new Model(bun1));
-			SpMat M2=mf.adjMat(new Model(bun2));
-			M1.plot();
-			M2.plot();*/
-		//	M1.showcl();
-			
-			//mf.reRegion();
-		//	mf.assemble( bun2, bun1);
-			
-			//mf.hexToPrism();
-		//mf.translate(new Vect(0.0,0,-0.025));
-			
-		//	double[] bound={-100,100,-100,100,-100,100};
-			
-		//mf.deform();
-			
-			//double[]  bound={.087,.088,-10,10,-1,1};
-			double[]  bound={0,1,-10,10,-1e-3,1e-3};
-		
-			//mf.connect( bun1, bun2);
-
-		//mf.connectCyl( bun1, bun2,bound,1e-4);
-	
-			
-			
-			//mf.connectivity(1e-5);
-		
-		//	mf.dropUnusedNodes();
-		
-		//mf.prismToHexa();
-			//mf.hexToPrism(0);
-			
-			//mf.rotate(PI/2);
-			//mf.pileRotate(45,6*PI/180);
-			//mf.pileRotate(16,PI/8);
-			
-	//util.pr(mf.fetchNodeCoord(2634).v2().norm());
-	//util.pr(mf.fetchNodeCoord(2185).v2().norm());
-			
-			//util.pr(mf.getNodeOf(new Vect(.04686,.02879,.05/6),1e-3));
-	
-//	util.pr(mf.getNodeOf(new Vect(.04769,.06008,.05/6),1e-3));
-
-	//	mf.pileUpPrism(12,.05);
-		//mf.pileUpPrism(12,.3,-0.15);
-			double[] dhb={.002,.0125,.0105,.003,.0015,.0045,.0035};
-			double[] dhf={.002,.0155,.0075,.003,.0075,.002};
-			double[] dhb2={.0125,.0105,.003};
-			double[] dhf2={.0155,.0075,.003};
-			
-			double[] dhleg={0.002999999999999989,0.01050000000000001,0.012499999999999997,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.0155,0.007500000000000007,0.002999999999999989,};
-	
-			
-		//	mf.pileUpPrism(dhleg,0);
-			
-			double[] hh=new double[30];
-			for(int i=0;i<hh.length;i++)
-				if(i<9)
-				hh[i]=.005/2;
-				else if (i<14)
-					hh[i]=.005/8;
-				else
-					hh[i]=.0065/2;
-			
-			double[] hh2=new double[14];
-			for(int i=0;i<hh2.length;i++)
-		
-				if(i<9)
-				hh2[i]=.0025;
-				else
-					hh2[i]=.0025/4;
-			
-			double[] hhz=new double[14];
-			for(int i=0;i<hhz.length;i++)
-				if(i<10)
-				hhz[i]=.0005/10;
-				else
-					hhz[i]=.00002/4;
-			
-			double[] hhz3=new double[14*48+25];
-
-			int ix=0;
-			for(int i=0;i<48;i++){
-				for(int j=0;j<hhz.length;j++)
-					hhz3[ix++]=hhz[j];
-					
-			}
-
-			for(int i=0;i<5;i++){
-					hhz3[ix++]=.0005/10*(i+1)*2;
-					
-			}
-			
-			for(int i=0;i<20;i++){
-				hhz3[ix++]=.003325;
-				
-		}
-
-//mf.dropUnusedNodes();
-		
-		//mf.pileUpPrism(hhz3,0);
-		
-
-			//mf.pileUpPrism(v6.el,0);
-			
-			int[] r1=new int[18];
-			for(int i=0;i<r1.length;i++)
-				r1[i]=i+1;
-			
-		int[] r2={1,2};
-		//int[] r2={1,2,3,4,5,6,7};
-		//int[] r2={8,9,10,11,12,13,14,15,16,17};
-	//mf.extractReg(r2);	mf.dropUnusedNodes();
-		
-		
-	//	mf.connectivity(1e-5);
-		
-		
-		//mf.extractReg(-1,1,-10,10,-1,0.00003);
-		
-		//mf.extractReg(0,.01,0,2*PI);
-	
-		//mf.dropUnusedNodes();
-
-		
-		//mf.reRegion();
-		
-	//mf.reRegionf();
-		
-
-
-		String body = System.getProperty("user.dir") + "\\motMechDomain3DnoCap.txt";
-		body = System.getProperty("user.dir") + "\\dataMechDomainFull3D8Capped.txt";
-		body=System.getProperty("user.dir") + "\\motWithRotor3DCut.txt";
-		String cap  = System.getProperty("user.dir") + "\\cap3DUpper.txt";
-		cap = System.getProperty("user.dir") + "\\shaft3D.txt";
-		cap  = System.getProperty("user.dir") + "\\surfSeg.txt";
-		body=System.getProperty("user.dir") + "\\segHex.txt";
-		//	rot=System.getProperty("user.dir") + "\\mot4thNewest.txt";*/
-		Model mt=new Model();
-		//mf.putCap(mt, body, cap,1);
-		//mf.putRotor(mt, cap, body);
-
-		body  = System.getProperty("user.dir") + "\\noUnusedNodesRot.txt";
-		cap=System.getProperty("user.dir") + "\\noUnusedNodesStat.txt";
-		//	mf.assemble(mt, cap, body);
-
-	//	mf.cut2D(-0.001);
-		
-
-	//mf.connect(body,cap);
-		
-		}
 
 	}
 	
@@ -1168,7 +285,7 @@ public class MeshManipulator {
 
 
 		if(model.elCode==0)
-			model.writeMesh32q(quadMesh);
+			model.writeMeshTriToQuad(quadMesh);
 
 	}
 
@@ -1188,7 +305,7 @@ public class MeshManipulator {
 
 
 		if(model.elCode==0)
-			writer.writeMesh32qCoarse(model,quadMesh);
+			writer.writeMeshTriToQuadCoarse(model,quadMesh);
 
 	}
 	
@@ -1624,7 +741,7 @@ public class MeshManipulator {
 
 
 		if(model.elCode==0)
-			model.writeMesh323(finerMesh, r1,  r2);
+			model.writeMeshTriToTri(finerMesh, r1,  r2);
 
 	}
 
@@ -1698,7 +815,7 @@ public class MeshManipulator {
 		String triangMesh = System.getProperty("user.dir") + "//triangEl.txt";
 
 		if(model.elCode==1)
-			model.writeMeshq23(triangMesh);
+			model.writeMeshQuadToTri(triangMesh);
 
 	}
 
@@ -1712,7 +829,7 @@ public class MeshManipulator {
 		String triangMesh = System.getProperty("user.dir") + "//triangEl.txt";
 
 		if(model.elCode==1)
-			model.writeMeshq23(tri);
+			model.writeMeshQuadToTri(tri);
 
 	}
 
@@ -2339,70 +1456,30 @@ util.pr(rm);
 		Model model=new Model();
 		model.loadMesh(bun);
 			
-		Vect cc1=model.node[1].getCoord();
+	
+		boolean[] nn=new boolean[1+model.numberOfNodes];
 		
-		List<Double> list1=new ArrayList<Double>();
-
+		for(int ir=1;ir<=model.numberOfRegions;ir++){
+			if(ir<=7)
+			for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++)
+				{
+				int[] nv=model.element[i].getVertNumb();
+				for(int k=0;k<nv.length;k++)
+					nn[nv[k]]=true;
+				}
+		}
 			
 		for(int i=1;i<=1*model.numberOfNodes;i++){
 
-			Vect c=model.node[i].getCoord();
+		if(nn[i])
 			
-			double r=c.norm();
-			if(Math.abs(c.el[1])<1e-4){ c.el[1]=0;
-			
-			model.node[i].setCoord(c.times(1));
+			model.node[i].setCoord(model.node[i].getCoord().times(.9));
 			}
 			//list1.add(c.el[2]);
-		}
-
 		
 
-		
-
-		
-		for(int n=1;n<=model.numberOfNodes;n++){/*
-			Vect v=model.node[n].getCoord();
-			if(v.el[0]>.0198)
-				model.node[n].setCoord(0,.02);
-				else if(n>583 && n<594){
-
-				model.node[n].setCoord(0,model.node[583].getCoord(0)+.0015*(model.node[583].getCoord(1)-v.el[1])/(model.node[583].getCoord(1)-model.node[592].getCoord(1)));
-				}
-			 else  if(n>593 && n<597){
-
-				model.node[n].setCoord(0,model.node[597].getCoord(0));
-				}
-			 
-			 else if(n>535 && n<548){
-
-				model.node[n].setCoord(0,model.node[536].getCoord(0)+.0018*(model.node[536].getCoord(1)-v.el[1])/(model.node[536].getCoord(1)-model.node[548].getCoord(1)));
-				}
-			 else if(n>488 && n<495){
-				model.node[n].setCoord(0,model.node[488].getCoord(0)+.0005*(model.node[488].getCoord(1)-v.el[1])/(model.node[488].getCoord(1)-model.node[495].getCoord(1)));
-				}
-			 else if(n>494 && n<500){
-					model.node[n].setCoord(0,model.node[494].getCoord(0)+.0012*(model.node[494].getCoord(1)-v.el[1])/(model.node[494].getCoord(1)-model.node[500].getCoord(1)));
-					}
-			 
-			 else if(n==548){
-
-				model.node[n].setCoord(0,model.node[549].getCoord(0));
-				}
-			 
-			 else if(n==500){
-
-					model.node[n].setCoord(0,model.node[501].getCoord(0));
-					}
-		
-		
-		*/}
-
-
-		
-
-		String bunFilePath = System.getProperty("user.dir") + "//deformed.txt";
-
+		String folder=new File(bun).getParentFile().getPath();
+		String bunFilePath = folder+ "//deformed.txt";
 
 		model.writeMesh(bunFilePath);
 

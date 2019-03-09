@@ -67,7 +67,15 @@ public class BoundarySet {
 
 
 		}
-
+/*
+		int ix=0;
+		for(int i=1;i<=model.numberOfEdges;i++){
+			if(model.edge[i].common){
+				util.pr(ix+" "+i+" "+model.edge[i].map);
+				ix++;
+			}
+		}*/
+	
 
 	}
 
@@ -365,8 +373,6 @@ public class BoundarySet {
 						else if(model.mechBC[j][k].equals("1") )
 						{
 				
-							util.pr(model.mechBC[j][k]);
-
 							val[j].el[1]=Double.parseDouble(model.mechBC[j][k+1]);
 							k++;
 							hasVal[j][1]=true;
@@ -686,15 +692,54 @@ public class BoundarySet {
 		}
 
 	
+		boolean[] rotorEdges=null;
+		if(model.motor){
+		rotorEdges=new boolean[1+model.numberOfEdges];
+		for(int ir=1;ir<=model.numberOfRegions;ir++){
+			if(model.region[ir].rotor){
+				for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 
-		
+					int[] ne=model.element[i].getEdgeNumb();
+					for(int k=0;k<ne.length;k++){
+						if(!rotorEdges[ne[k]]){
+							rotorEdges[ne[k]]=true;
+						}
+					}
+			}
+		}
+		}
+		}
+
+				
 		int nex=0;	
 		model.edgeUnknownIndex=new int[model.numberOfEdges+1];
-		for(int i=1;i<=model.numberOfEdges;i++){
-			if(!model.edge[i].edgeKnown && model.edge[i].map==0){
-				model.edgeUnknownIndex[i]=++nex;
-				
-					}
+
+		if(rotorEdges!=null){
+			for(int i=1;i<=model.numberOfEdges;i++){
+				if(rotorEdges[i] &&!model.edge[i].edgeKnown && model.edge[i].map==0){
+					model.edgeUnknownIndex[i]=++nex;
+					
+						}
+			}
+			
+			for(int i=1;i<=model.numberOfEdges;i++){
+				if(!rotorEdges[i] &&!model.edge[i].edgeKnown && model.edge[i].map==0){
+					model.edgeUnknownIndex[i]=++nex;
+					
+						}
+			}
+
+		}
+
+		else{
+
+			for(int i=1;i<=model.numberOfEdges;i++){
+				if(!model.edge[i].edgeKnown && model.edge[i].map==0){
+					model.edgeUnknownIndex[i]=++nex;
+						}
+			}
+			
+
 		}
 
 		for(int i=1;i<=model.numberOfEdges;i++){
@@ -710,8 +755,11 @@ public class BoundarySet {
 			if(model.edge[i].map>0) kx++;
 
 		}
+		
 
-		model.numberOfMappedEdges=nex;
+		//}
+
+		model.numberOfMappedEdges=kx;
 
 		model.numberOfUnknownEdges=nex;
 
@@ -739,9 +787,7 @@ public class BoundarySet {
 
 			}
 		}
-		
 
-		
 
 		
 
@@ -750,11 +796,17 @@ public class BoundarySet {
 
 	public void setMagBC(Model model){
 
-
 		if(model.hasPBC || model.hasTwoNodeNumb)
 			mapEdges(model);
 
 
+		for(int i=1;i<=model.numberOfEdges;i++){
+				if(model.edge[i].common) 
+				{					
+					model.edge[i].setKnownA(0);
+					model.edge[model.edge[i].map].setKnownA(0);
+				}					
+			}
 	
 		if(model.hasJ || model.hasM || model.stranded)
 			for(int i=1;i<=model.numberOfEdges;i++){
@@ -885,8 +937,9 @@ public class BoundarySet {
 
 		for(int i=1;i<=model.numberOfEdges;i++){
 			int mp=model.edge[i].map;
-			if(mp>0)
+			if(mp>0){
 				model.edge[i].edgeKnown=model.edge[mp].edgeKnown;
+			}
 		}
 
 		setMagIndice(model);
@@ -1157,6 +1210,7 @@ public class BoundarySet {
 
 
 		model.rm=rm;
+
 		model.alpha1=tmin;
 		model.alpha2=tmax;
 		model.spaceBoundary=new double[2*model.dim];
@@ -1177,7 +1231,6 @@ public class BoundarySet {
 	public void mapCommonNodes(Model model){
 
 		model.commonNodes=getCommonNodeSorted(model);
-
 		
 		if( !model.hasTwoNodeNumb) return;
 

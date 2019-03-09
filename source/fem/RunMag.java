@@ -40,7 +40,7 @@ public class RunMag {
 				
 				model.setMagBC();
 				
-				String initfile = System.getProperty("user.dir")+"\\initxMag.txt";
+				String initfile =folder+"\\initxMag.txt";
 				model.loader.loadPrevMag(model,initfile);
 
 				}
@@ -55,7 +55,7 @@ public class RunMag {
 			String fluxFolder="";
 
 			if(model.saveDisp){
-					dispFolder = System.getProperty("user.dir")+"\\disps"+model.defMode;
+					dispFolder = folder+"\\disps"+model.defMode;
 			
 			
 				File dfolder = new File(dispFolder);
@@ -68,7 +68,7 @@ public class RunMag {
 			if(model.saveForce){
 			
 			
-					dispFolder = System.getProperty("user.dir")+"\\forces";
+					dispFolder = folder+"\\forces";
 				File dfolder = new File(dispFolder);
 				if(dfolder.exists())
 					util.deleteDir(dfolder);
@@ -77,7 +77,7 @@ public class RunMag {
 			}
 
 			if(model.saveFlux){
-					fluxFolder = System.getProperty("user.dir")+"\\fluxes";
+					fluxFolder = folder+"\\fluxes";
 				
 				File dfolder = new File(fluxFolder);
 				if(dfolder.exists())
@@ -229,14 +229,13 @@ public class RunMag {
 					}
 					else if(model.loadPotentioal) {
 
-						String vPot = System.getProperty("user.dir")+"\\flux\\vPot"+i+".txt";
+						String vPot = folder+"\\flux\\vPot"+i+".txt";
 						model.loadPotential(vPot);
 						model.setB();
 
 					}
 
 					
-					folder=System.getProperty("user.dir") + "\\results";
 			
 					if(model.dim==2)
 						model.setTorque(0,model.rm,1);
@@ -304,7 +303,7 @@ public class RunMag {
 				if(writeInit){
 			
 			
-				String initfile = System.getProperty("user.dir")+"\\initxMag.txt";
+				String initfile = folder+"\\initxMag.txt";
 				double[][] arr=new double[model.numberOfUnknowns+1+1][2];
 				
 				Vect vk=model.getUnknownA();

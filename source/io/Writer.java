@@ -285,7 +285,7 @@ public class Writer {
 	}
 
 
-	public void writeMesh322(Model model,String bunFilePath , boolean deformed){
+	public void writeMeshTriToQuad2(Model model,String bunFilePath , boolean deformed){
 		DecimalFormat formatter;
 		if(model.scaleFactor==1)
 			formatter= new DecimalFormat("0.0000");
@@ -434,12 +434,12 @@ public class Writer {
 		catch(IOException e){}
 		if(model.dim==3){
 			String bun2D=System.getProperty("user.dir")+"\\bun2D.txt";
-			model.writeMesh322(bun2D,false);
+			model.writeMeshTriToQuad2(bun2D,false);
 		}
 	}
 
 
-	public void writeMesh323(Model model,String bunFilePath,double r1, double r2){
+	public void writeMeshTriToTri(Model model,String bunFilePath,double r1, double r2){
 
 		Vect[] nodep=new Vect[model.numberOfNodes+model.numberOfElements+1];
 		for(int i=1;i<=model.numberOfNodes;i++)
@@ -557,7 +557,7 @@ public class Writer {
 	}
 
 
-	public void writeMesh323W(Model model,String bunFilePath){
+	public void writeMeshTriToTriW(Model model,String bunFilePath){
 
 
 		int[][] elEdge=new int[model.numberOfElements+1][3];
@@ -686,7 +686,7 @@ public class Writer {
 		catch(IOException e){}
 	}
 
-	public void writeMesh32q(Model model,String bunFilePath){
+	public void writeMeshTriToQuad(Model model,String bunFilePath){
 
 
 		int[][] elEdge=new int[model.numberOfElements+1][3];
@@ -802,7 +802,7 @@ public class Writer {
 	}
 
 
-	public void writeMesh32qCoarse(Model model,String bunFilePath){
+	public void writeMeshTriToQuadCoarse(Model model,String bunFilePath){
 
 
 		int[][] elEdge=new int[model.numberOfElements+1][3];
@@ -968,7 +968,7 @@ public class Writer {
 		catch(IOException e){}
 	}
 
-	public void writeMeshq23(Model model,String bunFilePath){
+	public void writeMeshQuadToTri(Model model,String bunFilePath){
 
 
 		int nElNew=2*model.numberOfElements;

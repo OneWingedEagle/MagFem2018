@@ -2,6 +2,7 @@ package fem;
 
 import static java.lang.Math.abs;
 
+import math.Mat;
 import math.SpMat;
 import math.SpVect;
 import math.Vect;
@@ -30,6 +31,10 @@ public class MagMatrix {
 	public void setMagMat(Model model){
 		
 		setReactMat(model);
+
+		if(model.hasTwoNodeNumb)
+		setConnectionMat(model);
+		
 		if(model.analysisMode>0)
 			setConductMat(model);
 		
@@ -201,15 +206,183 @@ public class MagMatrix {
 		for(int i=0;i<model.numberOfUnknownEdges;i++){
 			model.Hs.row[i].sortAndTrim(nz[i]);
 		}
-
+		
 
 	}
 	
+	
+	public void setConnectionMat(Model model){		
+
+/*		boolean[] rotorEdges=null;
+		if(model.motor){
+		rotorEdges=new boolean[1+model.numberOfEdges];
+		for(int ir=1;ir<=model.numberOfRegions;ir++){
+			if(model.region[ir].rotor){
+				for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
+
+					int[] ne=model.element[i].getEdgeNumb();
+					for(int k=0;k<ne.length;k++){
+						if(!rotorEdges[ne[k]]){
+							rotorEdges[ne[k]]=true;
+						}
+					}
+			}
+		}
+		}
+		}
+		*/
+		double eps=1e-10,cPB=model.cpb; 
+		boolean nonLinear;
+		double[][] H1=new double[model.nElEdge][model.nElEdge];
+
+		int m,columnEdgeNumb,matrixRow=0, rowEdgeNumb,nBH=0,nLam=0,ext=6;
+	
+		int[] nz=new int[model.numberOfUnknowns];
+
+
+		int L=model.commonNodes[0][0].length;
+		SpMat Fs=new SpMat(model.numberOfUnknownEdges);
+		Mat Rs=new Mat(2*L,2*L);
+		
+		for(int i=0;i<model.numberOfUnknownEdges;i++){
+
+			Fs.row[i]=new SpVect(2*L,model.nEdEd);
+		}
+
+		int[] cols=new int[1+model.numberOfEdges];
+		for(int i=1;i<=model.numberOfEdges;i++){
+			cols[i]=-1;
+			}
+		int jx=0;
+		for(int i=1;i<=model.numberOfEdges;i++){
+			
+			if(model.edge[i].common){
+				cols[i]=jx+L;
+				cols[model.edge[i].map]=jx;
+				jx++;
+			}
+		}
+
+
+
+		for(int ir=1;ir<=model.numberOfRegions;ir++){
+
+			nBH=model.region[ir].BHnumber;
+			nLam=model.region[ir].lamBNumber;
+			for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
+
+				nonLinear=model.element[i].isNonlin();
+
+					H1=this.calc.He(model,nBH,nLam,i,nonLinear,false,false,false);
+			
+
+				int[] edgeNumb=model.element[i].getEdgeNumb();
+
+				for(int j=0;j<model.nElEdge;j++){
+					rowEdgeNumb=edgeNumb[j];
+
+					if(model.edge[rowEdgeNumb].edgeKnown ) continue;
+
+
+					matrixRow=model.edgeUnknownIndex[rowEdgeNumb]-1;
+
+					for(int k=0;k<model.nElEdge;k++){
+
+						columnEdgeNumb=edgeNumb[k];
+
+
+
+						if(cols[columnEdgeNumb]>=0  ){
+		
+							int  matrixCol=cols[columnEdgeNumb];
+
+							m=util.search(Fs.row[matrixRow].index,nz[matrixRow]-1,matrixCol);
+							if(m<0)
+							{	
+
+
+								if(abs(H1[j][k])>eps  ){	
+
+									Fs.row[matrixRow].index[nz[matrixRow]]=matrixCol;
+
+									Fs.row[matrixRow].el[nz[matrixRow]]=H1[j][k];
+
+
+									nz[matrixRow]++;
+
+									//===========================
+									if(nz[matrixRow]==Fs.row[matrixRow].nzLength-1){
+										Fs.row[matrixRow].extend(ext);
+									}
+									//===========================
+								}
+							}
+							else{
+
+								Fs.row[matrixRow].addToNz(H1[j][k],m);
+							
+							}
+							
+				}
+			}
+		}
+			}
+		}		
+
+		for(int i=0;i<model.numberOfUnknownEdges;i++){
+		Fs.row[i].sortAndTrim(nz[i]);
+		}
+		
+model.Fs=Fs;
+
+
+for(int ir=1;ir<=model.numberOfRegions;ir++){
+
+	nBH=model.region[ir].BHnumber;
+	nLam=model.region[ir].lamBNumber;
+	for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
+
+		nonLinear=model.element[i].isNonlin();
+
+		H1=this.calc.He(model,nBH,nLam,i,nonLinear,false,false,false);
+
+
+		int[] edgeNumb=model.element[i].getEdgeNumb();
+
+		for(int j=0;j<model.nElEdge;j++){
+			rowEdgeNumb=edgeNumb[j];
+
+			if(cols[rowEdgeNumb]<0 ) continue;
+
+
+			matrixRow=cols[rowEdgeNumb];
+
+			for(int k=0;k<model.nElEdge;k++){
+
+				columnEdgeNumb=edgeNumb[k];
+
+				if(cols[columnEdgeNumb]<0 ) continue;
+
+
+				int  matrixCol=cols[columnEdgeNumb];
+
+
+
+				Rs.el[matrixRow][matrixCol]=H1[j][k];
+
+
+
+			}
+		}
+	}
+}
+//Rs.show();
+model.Rs=Rs;
+
+}
+	
+	
 	public void setConductMat(Model model){		
-
-
-
-
 
 		double eps=1e-10,cPB=model.cpb; 
 		int m,columnEdgeNumb,columnIndex,matrixRow=0, rowEdgeNumb,ext=6;

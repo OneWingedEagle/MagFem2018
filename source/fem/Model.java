@@ -72,7 +72,8 @@ public class Model{
 	public BHCurve[] BH;
 	public CurrentWaveForm ia,ib,ic,va,vb,vc;
 	public String elType="hexahedron";
-	public SpMat Hs,Ms,Ks,Ls,Cs,Ss,Ps,Qs;
+	public SpMat Hs,Ms,Ks,Ls,Cs,Ss,Ps,Qs,Fs;
+	public Mat Rs;
 	public Mat eigVects,bigMat;
 	public Vect lams,RHS,bU,bT,HpAp,HkAk;
 	public boolean AC,motor,modal,hasTwoNodeNumb,fullMotor,writeFiles,Tmethod,
@@ -436,8 +437,8 @@ public class Model{
 
 	}
 
-	public void writeMesh322(String bunFilePath , boolean deformed){
-		writer.writeMesh322(this,bunFilePath ,deformed);
+	public void writeMeshTriToQuad2(String bunFilePath , boolean deformed){
+		writer.writeMeshTriToQuad2(this,bunFilePath ,deformed);
 	}
 
 	public void writeMeshq2h(String bunFilePath , boolean deformed){
@@ -452,18 +453,18 @@ public class Model{
 		writer.writeMeshPyramidToTetra(this,bunFilePath);
 	}
 
-	public void writeMesh323(String bunFilePath,double r1,double r2){
+	public void writeMeshTriToTri(String bunFilePath,double r1,double r2){
 		//	writer.writeMesh323(this,bunFilePath,r1,r2);
-		writer.writeMesh323W(this,bunFilePath);
+		writer.writeMeshTriToTriW(this,bunFilePath);
 
 	}
 
-	public void writeMesh32q(String bunFilePath){
-		writer.writeMesh32q(this,bunFilePath);
+	public void writeMeshTriToQuad(String bunFilePath){
+		writer.writeMeshTriToQuad(this,bunFilePath);
 	}
 
-	public void writeMeshq23(String bunFilePath){
-		writer.writeMeshq23(this,bunFilePath);
+	public void writeMeshQuadToTri(String bunFilePath){
+		writer.writeMeshQuadToTri(this,bunFilePath);
 
 	}
 
@@ -2484,6 +2485,8 @@ public class Model{
 	}
 
 	public void setJ(double t,double factor){
+
+
 		for(int ir=1;ir<=numberOfRegions;ir++){
 			if(!region[ir].circuit){
 				if(region[ir].hasJ  ) {
@@ -2785,6 +2788,18 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 		writer.writeA(this, file);
 
 	}
+	public void writeNodalA2D(String file){
+		
+
+		for(int n=1;n<=this.numberOfEdges;n++)
+		{	
+			this.edge[n].node[0].T=this.edge[n].A;
+		}		
+		
+		writer.writeNodalScalar(this, file);
+
+	}
+
 
 	public void writeNodalField(String nodalForceFile,int mode){
 

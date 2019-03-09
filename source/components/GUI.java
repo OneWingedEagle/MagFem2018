@@ -60,7 +60,7 @@ public class GUI extends JFrame implements ActionListener{
 				String dataFile= "";
 
 
-			int	tag=5;	
+			int	tag=3;	
 				
 				if(tag==0){
 					//meshFile= System.getProperty("user.dir") + "\\quiz.txt";
@@ -137,11 +137,11 @@ public class GUI extends JFrame implements ActionListener{
 				}
 				
 				else if(tag==3){
-					meshFile= System.getProperty("user.dir") + "\\inputs\\mesh\\mot4th2DFine.txt";
-					dataFile= System.getProperty("user.dir") + "\\inputs\\data\\dataMot4th2DFineJForFineMesh.txt";
-					//	meshFile= System.getProperty("user.dir") + "\\caps\\motor8thFiner.txt";
-					
-					//dataFile= System.getProperty("user.dir") + "\\dataMechMotor8th.txt";
+		
+					//meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\mot4th2DDuplicateNodes.txt";
+					//dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\dataMot4th2D.txt";
+					meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\motorx.txt";
+					dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\dataRotStatx.txt";
 				}
 				else if(tag==4){
 					

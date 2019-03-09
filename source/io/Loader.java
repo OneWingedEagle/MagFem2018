@@ -211,7 +211,7 @@ public class Loader {
 				model.hasTwoNodeNumb=getBooleanData(line);
 		
 				//==============
-				
+			
 				//if(model.motor) model.hasTwoNodeNumb=true;
 				//=========
 				
@@ -241,7 +241,7 @@ public class Loader {
 
 	public void loadData(Model model,String dataFilePath){
 		int dim0=model.dim;
-		
+
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
 			String line;
@@ -344,6 +344,7 @@ public class Loader {
 			}
 			
 			line=getNextDataLine(br);
+
 			int numbRegsWithJ=Integer.parseInt(line);
 			for(int j=0;j<numbRegsWithJ;j++){
 				line=getNextDataLine(br);
@@ -352,12 +353,13 @@ public class Loader {
 				int ib=0;
 				if(sp[0].equals("")) ib=1;
 				int nr=Integer.parseInt(sp[ib++]);
-				Vect J=new Vect(dim);
+				Vect J=new Vect(3);
 				
-				for(int k=0;k<dim;k++)
+				for(int k=0;k<3;k++)
 					J.el[k]=Double.parseDouble(sp[ib++]);
 				
 				model.region[nr].setJ(J);
+
 				
 			}
 
@@ -475,7 +477,8 @@ public class Loader {
 			else if(line.startsWith("loadPrev")) model.loadPrevMag=this.getBooleanData(line);
 			else if(line.startsWith("axi")) model.axiSym=this.getBooleanData(line);	
 			else if(line.startsWith("height")) model.height=this.getScalarData(line);
-			
+			else if(line.startsWith("POD")) model.POD=this.getIntData(line);
+			else if(line.startsWith("snapShot")) model.snapShot=this.getIntData(line);
 		}
 
 	//util.pr(model.fluxFolderIn);
@@ -2469,7 +2472,7 @@ public void setDataMag2D(Model model,BufferedReader br){
 	int dim=model.dim;
 
 	try {
-
+		
 		line=br.readLine();
 		line=br.readLine();
 		int coordCode =getIntData(line);
@@ -2509,7 +2512,7 @@ public void setDataMag2D(Model model,BufferedReader br){
 		line=br.readLine();
 
 		int[] bcData=new int[2];
-		
+
 		for(int j=0;j<model.nBoundary;j++){
 			line=br.readLine();
 
@@ -2531,6 +2534,35 @@ public void setDataMag2D(Model model,BufferedReader br){
 
 		
 		}
+		
+		line=getNextDataLine(br);
+		int numbRegsWithJ=Integer.parseInt(line);
+		util.pr(numbRegsWithJ);
+		for(int j=0;j<numbRegsWithJ;j++){
+			line=getNextDataLine(br);
+			String[] sp=line.split(this.regex);	
+
+			int ib=0;
+			if(sp[0].equals("")) ib=1;
+			int nr=Integer.parseInt(sp[ib++]);
+			Vect J=new Vect(dim);
+			
+			for(int k=0;k<dim;k++)
+				J.el[k]=Double.parseDouble(sp[ib++]);
+			util.pr(nr);
+			model.region[nr].setJ(J);
+			
+		}
+
+		line=getNextDataLine(br);
+		model.hasBunif=getBooleanData(line);
+		if(model.hasBunif){
+			line=getNextDataLine(br);
+			double[] array=getCSV(line);
+			
+			model.unifB=new Vect(array);
+		}
+		
 		
 
 		double f=0,dt=0;
@@ -2591,6 +2623,7 @@ public void setDataMag2D(Model model,BufferedReader br){
 for(int j=0;j<30+model.numberOfRegions;j++){
 	
 		line=br.readLine();
+	
 		if(line==null) continue;
 		if(line.startsWith("MS")){
 					
@@ -2632,7 +2665,7 @@ for(int j=0;j<30+model.numberOfRegions;j++){
 		else if(line.startsWith("height")) model.height=this.getScalarData(line);
 		else if(line.startsWith("POD")) model.POD=this.getIntData(line);
 		else if(line.startsWith("snapShot")) model.snapShot=this.getIntData(line);
-		
+
 	}
 
 
