@@ -1281,7 +1281,6 @@ public class BoundarySet {
 			 rm=1e10;
 		}
 	
-
 	
 		for(int iz=0;iz<nZ;iz++)
 			for(int j=0;j<allNodeNumbsLayered[iz].length;j++){
@@ -1300,6 +1299,7 @@ public class BoundarySet {
 
 		}
 		model.rm=rm;
+	
 	
 		int[] Lz=new int[nZ];
 		

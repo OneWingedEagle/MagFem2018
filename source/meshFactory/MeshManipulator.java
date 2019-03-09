@@ -48,19 +48,30 @@ public class MeshManipulator {
 
 		MeshManipulator mf=new MeshManipulator();
 
+	//	mf.reRegionb();
 		mf.connectivity(1e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
 	//	mf.deform();
-		int[] regs={4,5};
-		//mf.revolveLine(new Vect().linspace(1, 6, 7), regs, 9, PI/2/9);
-
+		int Nr=10;
+		int[] regs0=new  int[Nr];
+		for(int i=1;i<=Nr;i++){
+			regs0[i-1]=i;
+		}
+		//mf.revolveLine(new Vect().linspace(1, 10, Nr+1), regs0, 45, PI/2/45);
+		int[] regs={5};
 		//mf.extractReg(regs);mf.dropUnusedNodes();
-		//mf.assemble("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\rot.txt", "D:\\JavaWorks\\FEM problems\\ipm_motor2D\\stat.txt");
+		//mf.assemble("D:\\JavaWorks\\FEM problems\\motor_simple\\rot1.txt", D:\\JavaWorks\\FEM problems\\motor_simple\\stat1.txt");
 
+		//mf.rescale(1.556476989933596);
 		//mf.extractReg(0.,2.0,PI/6,PI/3,0,1);
-/*		String bun=util.getFile();
-		Model model=new Model(bun);
-		int[] map=new int[1+model.numberOfNodes];
+	//	String bun=util.getFile();
+	//	Model model=new Model(bun);
+	//	String folder=new File(bun).getParentFile().getPath();
+
+	//String outMesh = folder + "//quads2.txt";
+	//	model.writeMeshQuadToTri(outMesh);
+		//model.writeMeshTriToQuad(outMesh);
+		/*		int[] map=new int[1+model.numberOfNodes];
 		
 		for(int i=1;i<=model.numberOfNodes;i++){
 			Vect v=model.node[i].getCoord();
@@ -1037,19 +1048,22 @@ public void hexaToTetra()
 		Model model=new Model();
 		model.loadMesh(bun);
 
-		for(int ir=1;ir<=0*model.numberOfRegions;ir++){
+		for(int ir=1;ir<=model.numberOfRegions;ir++){
 
 			for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 
-
-				Vect c=model.getElementCenter(i);		
-				Vect v2=c.v2();
-				double r=v2.norm();
-				
-				if(r<.025 ){
-					model.element[i].setRegion(2);
+				if(ir>7) model.element[i].setRegion(5);
+				else if(ir==7) model.element[i].setRegion(4);
+				else if(ir<4) model.element[i].setRegion(1);
+				else {
+					Vect c=model.getElementCenter(i);	
+					double tt=util.getAng(c);
+					if(tt>PI/2/9 && tt<3*PI/2/9) model.element[i].setRegion(2);
+					else if(tt>6*PI/2/9 && tt<8*PI/2/9) model.element[i].setRegion(3);
+					else model.element[i].setRegion(1);
 				}
-			
+
+		
 				
 				//if(model.getElementArea(i)<1e-7) model.element[i].setRegion(2);
 
@@ -1059,7 +1073,7 @@ public void hexaToTetra()
 		Vect vp=new Vect(70.711,70.711).times(.001);
 		Vect vo=new Vect(50,-86.603).times(.001);
 		
-		for(int ir=1;ir<=1*model.numberOfRegions;ir++){
+		for(int ir=1;ir<=0*model.numberOfRegions;ir++){
 
 			for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 
