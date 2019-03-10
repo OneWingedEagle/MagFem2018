@@ -49,18 +49,21 @@ public class MeshManipulator {
 		MeshManipulator mf=new MeshManipulator();
 
 	//	mf.reRegionb();
-		mf.connectivity(1e-5);	mf.dropUnusedNodes();
+	//	mf.connectivity(1e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
 	//	mf.deform();
+	//	mf.rotate(-3*PI/18);
+		//Model model=mf.rotExtendNfold(1);
+		//model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\extenRot.txt");
 		int Nr=10;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
 			regs0[i-1]=i;
 		}
 		//mf.revolveLine(new Vect().linspace(1, 10, Nr+1), regs0, 45, PI/2/45);
-		int[] regs={5};
+		int[] regs={4,5};
 		//mf.extractReg(regs);mf.dropUnusedNodes();
-		//mf.assemble("D:\\JavaWorks\\FEM problems\\motor_simple\\rot1.txt", D:\\JavaWorks\\FEM problems\\motor_simple\\stat1.txt");
+		//mf.assemble("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\connected4\\rot1.txt","D:\\JavaWorks\\FEM problems\\ipm_motor2D\\connected4\\stat1.txt");
 
 		//mf.rescale(1.556476989933596);
 		//mf.extractReg(0.,2.0,PI/6,PI/3,0,1);
@@ -1052,7 +1055,7 @@ public void hexaToTetra()
 
 			for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 
-				if(ir>7) model.element[i].setRegion(5);
+/*				if(ir>7) model.element[i].setRegion(5);
 				else if(ir==7) model.element[i].setRegion(4);
 				else if(ir<4) model.element[i].setRegion(1);
 				else {
@@ -1061,9 +1064,14 @@ public void hexaToTetra()
 					if(tt>PI/2/9 && tt<3*PI/2/9) model.element[i].setRegion(2);
 					else if(tt>6*PI/2/9 && tt<8*PI/2/9) model.element[i].setRegion(3);
 					else model.element[i].setRegion(1);
+				}*/
+				if(ir<4){ model.element[i].setRegion(1);
+				Vect c=model.getElementCenter(i);	
+				double tt=util.getAng(c);
+				double rr=c.norm();
+				if(rr>1.2 && rr<1.4 && tt>PI/18 && tt<2*PI/18) model.element[i].setRegion(2);
+				else if(rr>1.2 && rr<1.4 && tt>4*PI/18 && tt<5*PI/18) model.element[i].setRegion(3);
 				}
-
-		
 				
 				//if(model.getElementArea(i)<1e-7) model.element[i].setRegion(2);
 

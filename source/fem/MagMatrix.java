@@ -255,8 +255,8 @@ public class MagMatrix {
 			}
 		int jx=0;
 		for(int i=1;i<=model.numberOfEdges;i++){
-			
-			if(model.edge[i].common){
+
+			if(model.edge[i].common/* && !model.edge[i].node[0].onBound[2] && !model.edge[i].node[0].onBound[3]*/){
 				cols[i]=jx+L;
 				cols[model.edge[i].map]=jx;
 				jx++;
@@ -368,7 +368,7 @@ for(int ir=1;ir<=model.numberOfRegions;ir++){
 
 
 
-				Rs.el[matrixRow][matrixCol]=H1[j][k];
+				Rs.el[matrixRow][matrixCol]+=H1[j][k];
 
 
 
@@ -376,7 +376,7 @@ for(int ir=1;ir<=model.numberOfRegions;ir++){
 		}
 	}
 }
-//Rs.show();
+
 model.Rs=Rs;
 
 }

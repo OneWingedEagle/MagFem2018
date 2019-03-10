@@ -51,8 +51,9 @@ if(step==0)
 		kk=model.commonNodes[0][0].length;
 	
 
-	int kp=kk-2;
+	int kp=kk;
 	
+//kp=2;
 	if(!model.hasTwoNodeNumb){
 	 Ks=model.Hs.deepCopy();
 	}
@@ -60,36 +61,47 @@ if(step==0)
 		
 	int method=1;
 
-	Q=new Mat(2*kk,kp);
-	if(method==0)
+
+
+	if(method==0){
+		Q=new Mat(2*kk,kp);
 	for(int p=0;p<kp;p++){
-		Q.el[p+1][p]=1;
+		Q.el[p][p]=1;
 		
-		Q.el[p+kk+1][p]=1;
+		Q.el[p+kk][p]=1;
+	}
 	}
  
 	else{
-
+		kp=41;
+		Q=new Mat(2*kk,kp);
 	int jx=0;
-	double span=PI/2;
-	for(int i=1;i<=1*model.numberOfEdges;i++){
-		if(model.edge[i].common ){	
-			Vect v=model.edge[i].node[0].getCoord();
+	
+	double tt1=util.getAng(model.node[model.commonNodes[0][0][0]].getCoord());
+	double tt2=util.getAng(model.node[model.commonNodes[0][0][kk-1]].getCoord());
+	double span=tt2-tt1;
 
-			if(jx>0 && jx<kk-1){
-		double tt=util.getAng(v);
-			for(int p=0;p<kp;p++){
+	int kph=(kp-1)/2;
+	for(int i=1;i<=1*model.numberOfEdges;i++){
+		if(model.edge[i].common/* && !model.edge[i].node[0].onBound[2] && !model.edge[i].node[0].onBound[3]*/){	
+			Vect v=model.edge[i].node[0].getCoord();
+		double tt=util.getAng(v)-tt1;
+			for(int p=0;p<=kph;p++){
 				if(p==0){
 					Q.el[jx][p]=.5;
 					Q.el[jx+kk][p]=.5;
 				}else{
-			Q.el[jx][p]=Math.cos(2*PI*p*tt/span);
-			Q.el[jx+kk][p]=Math.cos(2*PI*p*tt/span);
-				}
+			Q.el[jx][p]=Math.cos(2*PI*(p)*tt/span);
+			Q.el[jx+kk][p]=Math.cos(2*PI*(p)*tt/span);
+			
+			Q.el[jx][p+kph]=Math.sin(2*PI*(p)*tt/span);
+			Q.el[jx+kk][p+kph]=Math.sin(2*PI*(p)*tt/span);
+				
+			}
 		
 
 			}
-			}
+			
 			jx++;
 		
 	}
@@ -119,17 +131,7 @@ if(step==0)
 	SpMat Bs=new SpMat(FQ);
 
 	Mat BtB=Q.transp().mul(model.Rs.mul(Q));
-	if(method==0){
-	for(int k=0;k<kp;k++)
-		BtB.el[k][k]*=2;
-	}else{
-	//	for(int k=0;k<kp;k++)
-	//	BtB.el[k][k]*=2;
-		
-		BtB=BtB.times(1);
-	}
 
-	
 	for(int i=0;i<kp;i++){
 		Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+1+i);
 		for(int k=0;k<Bs.row[i].nzLength;k++){
@@ -144,11 +146,7 @@ if(step==0)
 		}
 		
 	}
-	
-	
 
-
-	
 
 	Vect b1=model.RHS.deepCopy();
 
@@ -157,9 +155,9 @@ if(step==0)
 		model.RHS.el[k]=b1.el[k];
 	
 }	
+//	Ks.show();
 
-	Ks.shownz();
-	//Ks.show();
+	//Ks.shownz();
 
 	Vect Ci=Ks.scale(model.RHS);
 
@@ -184,6 +182,7 @@ if(step==0)
 
 
 		x.timesVoid(Ci);
+		
 
 		if(Q!=null){
 
@@ -192,14 +191,14 @@ if(step==0)
 				vp.el[k]=x.el[x.length-vp.length+k];
 
 		Vect y1=Q.mul(vp);
-x.show();
 
-y1.show();
+
+
 		int ix=0;
 
 		for(int i=1;i<=model.numberOfEdges;i++){
 			
-			if(model.edge[i].common){
+			if(model.edge[i].common/* && !model.edge[i].node[0].onBound[2] && !model.edge[i].node[0].onBound[3]*/){	
 				model.edge[i].setA(y1.el[ix]);
 				model.edge[model.edge[i].map].setA(model.edge[i].A);
 				ix++;
