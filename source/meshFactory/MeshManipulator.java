@@ -49,21 +49,24 @@ public class MeshManipulator {
 		MeshManipulator mf=new MeshManipulator();
 
 	//	mf.reRegionb();
-	//	mf.connectivity(1e-5);	mf.dropUnusedNodes();
+		mf.connectivity(1e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
-	//	mf.deform();
+		//mf.deform();
 	//	mf.rotate(-3*PI/18);
-		//Model model=mf.rotExtendNfold(1);
-		//model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\extenRot.txt");
+	
+	//	Model model=mf.rotExtendNfold(1);
+		//model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\extenRot.txt");
 		int Nr=10;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
 			regs0[i-1]=i;
 		}
 		//mf.revolveLine(new Vect().linspace(1, 10, Nr+1), regs0, 45, PI/2/45);
-		int[] regs={4,5};
+		int[] regs={1,2,3};
 		//mf.extractReg(regs);mf.dropUnusedNodes();
-		//mf.assemble("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\connected4\\rot1.txt","D:\\JavaWorks\\FEM problems\\ipm_motor2D\\connected4\\stat1.txt");
+		String stat="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\statFiner.txt";
+		String rot="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\rotFiner.txt";
+	//	mf.assemble(rot,stat);
 
 		//mf.rescale(1.556476989933596);
 		//mf.extractReg(0.,2.0,PI/6,PI/3,0,1);
@@ -1069,8 +1072,8 @@ public void hexaToTetra()
 				Vect c=model.getElementCenter(i);	
 				double tt=util.getAng(c);
 				double rr=c.norm();
-				if(rr>1.2 && rr<1.4 && tt>PI/18 && tt<2*PI/18) model.element[i].setRegion(2);
-				else if(rr>1.2 && rr<1.4 && tt>4*PI/18 && tt<5*PI/18) model.element[i].setRegion(3);
+				if(rr>1.2 && rr<1.4 && tt>0*PI/18/2 && tt<2*PI/18/2) model.element[i].setRegion(2);
+				else if(rr>1.2 && rr<1.4 && tt>4*PI/18/2 && tt<6*PI/18/2) model.element[i].setRegion(3);
 				}
 				
 				//if(model.getElementArea(i)<1e-7) model.element[i].setRegion(2);
@@ -1493,10 +1496,15 @@ util.pr(rm);
 			
 		for(int i=1;i<=1*model.numberOfNodes;i++){
 
-		if(nn[i])
-			
-			model.node[i].setCoord(model.node[i].getCoord().times(.9));
+		if(nn[i]){
+			Vect v=model.node[i].getCoord();
+		double r=v.norm();
+		double tt=util.getAng(v)/2;
+		Vect v2=new Vect(r*Math.cos(tt),r*Math.sin(tt));
+		model.node[i].setCoord(v2);
+		//	model.node[i].setCoord(model.node[i].getCoord().times(.9));
 			}
+		}
 			//list1.add(c.el[2]);
 		
 

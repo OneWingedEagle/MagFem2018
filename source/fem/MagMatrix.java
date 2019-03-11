@@ -213,6 +213,7 @@ public class MagMatrix {
 	
 	public void setConnectionMat(Model model){		
 
+	
 
 		double eps=1e-10,cPB=model.cpb; 
 		boolean nonLinear;
@@ -222,7 +223,7 @@ public class MagMatrix {
 	
 		int[] nz=new int[model.numberOfUnknowns];
 
-
+/*
 			double rm=0.0547;
 			rm=1.8333333;
 			rm=1.6250000;
@@ -251,7 +252,17 @@ public class MagMatrix {
 		
 		int L=jx;
 		
-		model.edgeOnFSIndices=edgeOnFSIndices;
+		model.edgeOnFSIndices=edgeOnFSIndices;*/
+		
+		int[] edgeOnFSIndices=	model.edgeOnFSIndices;
+
+		int L=0;
+
+		if(model.edgeOnFSIndices!=null)	
+			for(int i=1;i<=model.numberOfEdges;i++){
+				if(edgeOnFSIndices[i]>=0) L++;
+			}
+
 
 	
 		SpMat Fs=new SpMat(model.numberOfUnknownEdges);

@@ -1,6 +1,7 @@
 package femSolver;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 
 import javax.rmi.CORBA.Util;
@@ -32,6 +33,7 @@ public class StaticLinearMagSolver{
 
 	model.magMat.setRHS(model);
 
+	
 
 if(step==0)
 	model.setMagMat();
@@ -52,7 +54,7 @@ if(step==0)
 			if(model.edgeOnFSIndices[i]>=0) kk++;
 		}
 	//	kk=model.commonNodes[0][0].length;
-	util.pr(kk);
+
 
 	int kp=kk;
 	
@@ -141,7 +143,7 @@ if(step==0)
 	SpMat Bs=new SpMat(FQ);
 	model.Rs.show("%8.3e");
 	Mat BtB=Q.transp().mul(model.Rs.mul(Q));
-BtB.show("%8.3e");
+//BtB.show("%8.3e");
 	for(int i=0;i<kp;i++){
 		Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+1+i);
 		for(int k=0;k<Bs.row[i].nzLength;k++){

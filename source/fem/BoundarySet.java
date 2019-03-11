@@ -15,7 +15,6 @@ public class BoundarySet {
 
 	public void magBC(Model model){
 
-
 		if(model.coordCode==1) {
 			setSliceBounds(model);
 			mapCommonNodes(model);	
@@ -25,6 +24,8 @@ public class BoundarySet {
 		setNodeOnBound(model);
 
 		if(model.hasPBC) mapPBC(model);
+
+
 		
 		setMagBC(model);
 
@@ -67,15 +68,7 @@ public class BoundarySet {
 
 
 		}
-/*
-		int ix=0;
-		for(int i=1;i<=model.numberOfEdges;i++){
-			if(model.edge[i].common){
-				util.pr(ix+" "+i+" "+model.edge[i].map);
-				ix++;
-			}
-		}*/
-	
+
 
 	}
 
@@ -713,7 +706,8 @@ public class BoundarySet {
 				
 		int nex=0;	
 		model.edgeUnknownIndex=new int[model.numberOfEdges+1];
-
+		
+		
 		if(rotorEdges!=null){
 			for(int i=1;i<=model.numberOfEdges;i++){
 				if(rotorEdges[i] &&!model.edge[i].edgeKnown && model.edge[i].map==0){
@@ -795,6 +789,46 @@ public class BoundarySet {
 
 
 	public void setMagBC(Model model){
+		
+		
+if(model.hasTwoNodeNumb){
+		double rm=0.0547;
+		rm=1.8333333;
+		rm=1.6250000;
+	
+	int jx=0;
+	int[] edgeOnFSIndices=new int[1+model.numberOfEdges];
+
+	for(int i=1;i<=model.numberOfEdges;i++){
+		edgeOnFSIndices[i]=-1;
+
+		
+		if(abs(model.edge[i].node[0].getR()-rm)<1e-5){
+			edgeOnFSIndices[i]=jx;
+		
+			jx++;
+		}
+	}
+
+
+	model.edgeOnFSIndices=edgeOnFSIndices;
+
+
+	for(int i=1;i<=model.numberOfEdges;i++){
+	
+		boolean onBoundary=false;
+		for(int k=0;k<4;k++){
+		if(model.edge[i].node[0].onBound[k]){
+			onBoundary=true;
+			break;
+		}
+		}
+		
+		if(!onBoundary) continue;
+	if(model.edgeOnFSIndices[i]>=0) model.edge[i].setKnownA(0);
+	}
+	}
+	//===========
 
 		if(model.hasPBC || model.hasTwoNodeNumb)
 			mapEdges(model);
@@ -941,6 +975,7 @@ public class BoundarySet {
 				model.edge[i].edgeKnown=model.edge[mp].edgeKnown;
 			}
 		}
+
 
 		setMagIndice(model);
 
@@ -1225,6 +1260,8 @@ public class BoundarySet {
 		}
 
 		if(tmax-tmin>3.5) model.fullMotor=true;
+		
+
 
 	}
 
