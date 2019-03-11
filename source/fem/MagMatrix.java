@@ -213,24 +213,7 @@ public class MagMatrix {
 	
 	public void setConnectionMat(Model model){		
 
-/*		boolean[] rotorEdges=null;
-		if(model.motor){
-		rotorEdges=new boolean[1+model.numberOfEdges];
-		for(int ir=1;ir<=model.numberOfRegions;ir++){
-			if(model.region[ir].rotor){
-				for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 
-					int[] ne=model.element[i].getEdgeNumb();
-					for(int k=0;k<ne.length;k++){
-						if(!rotorEdges[ne[k]]){
-							rotorEdges[ne[k]]=true;
-						}
-					}
-			}
-		}
-		}
-		}
-		*/
 		double eps=1e-10,cPB=model.cpb; 
 		boolean nonLinear;
 		double[][] H1=new double[model.nElEdge][model.nElEdge];
@@ -240,29 +223,44 @@ public class MagMatrix {
 		int[] nz=new int[model.numberOfUnknowns];
 
 
-		int L=model.commonNodes[0][0].length;
-		SpMat Fs=new SpMat(model.numberOfUnknownEdges);
-		Mat Rs=new Mat(2*L,2*L);
+			double rm=0.0547;
+			rm=1.8333333;
+			rm=1.6250000;
 		
-		for(int i=0;i<model.numberOfUnknownEdges;i++){
-
-			Fs.row[i]=new SpVect(2*L,model.nEdEd);
-		}
-
-		int[] cols=new int[1+model.numberOfEdges];
-		for(int i=1;i<=model.numberOfEdges;i++){
-			cols[i]=-1;
-			}
 		int jx=0;
-		for(int i=1;i<=model.numberOfEdges;i++){
+		int[] edgeOnFSIndices=new int[1+model.numberOfEdges];
 
-			if(model.edge[i].common/* && !model.edge[i].node[0].onBound[2] && !model.edge[i].node[0].onBound[3]*/){
-				cols[i]=jx+L;
-				cols[model.edge[i].map]=jx;
+		for(int i=1;i<=model.numberOfEdges;i++){
+			edgeOnFSIndices[i]=-1;
+			boolean onBoundary=false;
+			for(int k=0;k<4;k++){
+			if(model.edge[i].node[0].onBound[k]){
+				onBoundary=true;
+				break;
+			}
+			}
+			
+			if(onBoundary) continue;
+			
+			if(abs(model.edge[i].node[0].getR()-rm)<1e-5){
+				edgeOnFSIndices[i]=jx;
+
 				jx++;
 			}
 		}
+		
+		int L=jx;
+		
+		model.edgeOnFSIndices=edgeOnFSIndices;
 
+	
+		SpMat Fs=new SpMat(model.numberOfUnknownEdges);
+		Mat Rs=new Mat(L,L);
+		
+		for(int i=0;i<model.numberOfUnknownEdges;i++){
+
+			Fs.row[i]=new SpVect(L,model.nEdEd);
+		}
 
 
 		for(int ir=1;ir<=model.numberOfRegions;ir++){
@@ -292,9 +290,9 @@ public class MagMatrix {
 
 
 
-						if(cols[columnEdgeNumb]>=0  ){
+						if(edgeOnFSIndices[columnEdgeNumb]>=0  ){
 		
-							int  matrixCol=cols[columnEdgeNumb];
+							int  matrixCol=edgeOnFSIndices[columnEdgeNumb];
 
 							m=util.search(Fs.row[matrixRow].index,nz[matrixRow]-1,matrixCol);
 							if(m<0)
@@ -352,19 +350,19 @@ for(int ir=1;ir<=model.numberOfRegions;ir++){
 		for(int j=0;j<model.nElEdge;j++){
 			rowEdgeNumb=edgeNumb[j];
 
-			if(cols[rowEdgeNumb]<0 ) continue;
+			if(edgeOnFSIndices[rowEdgeNumb]<0 ) continue;
 
 
-			matrixRow=cols[rowEdgeNumb];
+			matrixRow=edgeOnFSIndices[rowEdgeNumb];
 
 			for(int k=0;k<model.nElEdge;k++){
 
 				columnEdgeNumb=edgeNumb[k];
 
-				if(cols[columnEdgeNumb]<0 ) continue;
+				if(edgeOnFSIndices[columnEdgeNumb]<0 ) continue;
 
 
-				int  matrixCol=cols[columnEdgeNumb];
+				int  matrixCol=edgeOnFSIndices[columnEdgeNumb];
 
 
 

@@ -83,6 +83,7 @@ public class Model{
 	public double alpha1,alpha2,r1,r2,h1,h2,rm,TrqZ,height=1,gw=1e4,vNeutral,tet,tetp,tetpp,spwmLevel,rayAlpha, rayBeta;
 	public int[] PBCpair,threePhaseRegs=new int[3];
 	public int[][][] commonNodes;
+	public int[] edgeOnFSIndices=null;
 	public SpMatSolver solver=new SpMatSolver();
 	FEMsolver femSolver=new FEMsolver();;
 
