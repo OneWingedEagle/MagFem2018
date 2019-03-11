@@ -69,22 +69,26 @@ if(step==0)
 
 
 	if(method==0){
+	
+		kp=kk/2-2;
 		Q=new Mat(kk,kp);
 	for(int p=0;p<kp;p++){
-		Q.el[p][p]=1;
+		Q.el[p+1][p]=1;
 		
-		Q.el[p+kk/2][p]=1;
+		Q.el[p+1+kk/2][p]=1;
 	}
 	}
  
 	else{
-		kp=kk/2;
+		kp=kk/4;
 		
 		if(kp%2==0) kp++;
 		
+		kp=Math.min(kp,51);
+		
 		Q=new Mat(kk,kp);
 
-	
+
 	double tt1=model.alpha1;
 	double tt2=model.alpha2;
 	double span=tt2-tt1;
@@ -95,7 +99,18 @@ if(step==0)
 	
 	for(int i=1;i<=model.numberOfEdges;i++){
 		if(model.edgeOnFSIndices[i]>=0){	
+					boolean onBoundary=false;
+			for(int k=0;k<4;k++){
+			if(model.edge[i].node[0].onBound[k]){
+				onBoundary=true;
+				break;
+			}
+			}
+			
+			if(onBoundary) continue;
+			
 			jx=model.edgeOnFSIndices[i];
+			
 			Vect v=model.edge[i].node[0].getCoord();
 		double tt=util.getAng(v)-tt1;
 
@@ -114,6 +129,7 @@ if(step==0)
 		
 
 			}
+		
 		
 	}
 	}

@@ -10,6 +10,7 @@ import static java.lang.Math.*;
 public class BoundarySet {
 
 	double epsr=1e-6,epsAng=1e-4;
+	boolean oldMotorWay=true;
 
 	public BoundarySet(){	}
 
@@ -17,6 +18,7 @@ public class BoundarySet {
 
 		if(model.coordCode==1) {
 			setSliceBounds(model);
+			if(oldMotorWay)
 			mapCommonNodes(model);	
 
 		}
@@ -792,10 +794,14 @@ public class BoundarySet {
 		
 		
 if(model.hasTwoNodeNumb){
-		double rm=0.0547;
-		rm=1.8333333;
-		rm=1.6250000;
-	
+
+
+	//model.rm=1.6250000;
+		//rm=1.8333333;
+		//rm=1.6250000;
+	double rm=model.rm;//0.0547;
+	util.pr("sliding surface radius = "+model.rm);
+	//double rm=0.0547;
 	int jx=0;
 	int[] edgeOnFSIndices=new int[1+model.numberOfEdges];
 
@@ -816,7 +822,7 @@ if(model.hasTwoNodeNumb){
 
 	for(int i=1;i<=model.numberOfEdges;i++){
 	
-/*		boolean onBoundary=false;
+		boolean onBoundary=false;
 		for(int k=0;k<4;k++){
 		if(model.edge[i].node[0].onBound[k]){
 			onBoundary=true;
@@ -824,8 +830,8 @@ if(model.hasTwoNodeNumb){
 		}
 		}
 		
-		if(!onBoundary) continue;*/
-	//if(model.edgeOnFSIndices[i]>=0) model.edge[i].setKnownA(0);
+		if(onBoundary) continue;
+	if(model.edgeOnFSIndices[i]>=0) model.edge[i].setKnownA(0);
 	}
 	}
 	//===========
@@ -833,15 +839,6 @@ if(model.hasTwoNodeNumb){
 		if(model.hasPBC || model.hasTwoNodeNumb)
 			mapEdges(model);
 
-
-		for(int i=1;i<=model.numberOfEdges;i++){
-				if(model.edge[i].common) 
-				{					
-					model.edge[i].setKnownA(0);
-					model.edge[model.edge[i].map].setKnownA(0);
-				}					
-			}
-	
 		if(model.hasJ || model.hasM || model.stranded)
 			for(int i=1;i<=model.numberOfEdges;i++){
 				for(int j=0;j<model.nBoundary;j++){
@@ -1266,6 +1263,7 @@ if(model.hasTwoNodeNumb){
 	}
 
 	public void mapCommonNodes(Model model){
+		if(oldMotorWay) return;
 
 		model.commonNodes=getCommonNodeSorted(model);
 		
@@ -1336,10 +1334,8 @@ if(model.hasTwoNodeNumb){
 
 		}
 		model.rm=rm;
-	
-	
-		int[] Lz=new int[nZ];
-		
+
+			
 		for(int iz=0;iz<nZ;iz++)	
 		{
 			 ix=0;
@@ -1406,94 +1402,6 @@ if(model.hasTwoNodeNumb){
 
 		return commonNodeNumbSorted;
 	}
-
-/*	public int[][] getCommonNodeSorted(Model model){
-		
-		
-		int nNodes=model.numberOfNodes;
-
-		boolean rotOut=model.region[model.numberOfRegions].rotor;
-				
-		double rm=0;
-		
-		if(rotOut){
-			 rm=1e10;
-		}
-	
-		for(int i=1;i<=nNodes;i++)
-		{
-			Vect z=model.node[i].getCoord();
-			double s=new Vect(z.el[0],z.el[1]).norm();
-			if(model.node[i].rotor){
-				if(rotOut){
-					if(s<rm) rm=s;
-				}
-				else 
-					if(s>rm) rm=s;
-			}
-				
-
-		}
-		model.rm=rm;
-
-
-		int ix=0;
-		for(int i=1;i<=nNodes;i++){
-			if(Math.abs(model.node[i].getCoord().v2().norm()-rm)<epsr) 
-			{
-				ix++;
-				model.node[i].common=true;
-			}
-
-		}
-
-
-		int L=ix;
-		if(model.hasTwoNodeNumb)
-			L=L/2;
-		
-		if(L==0) return null;
-
-		int[] commonNodeNumb1=new int[L];
-		int[] commonNodeInd1=new int[nNodes+1];
-		int[] commonNodeNumb2=new int[L];
-		int[] commonNodeInd2=new int[nNodes+1];
-		Vect angs1=new Vect(L);
-		Vect angs2=new Vect(L);
-		int ixr=0;
-		int ixs=0;
-		for(int i=1;i<=nNodes;i++)
-			if(model.node[i].common) {
-				if(model.node[i].rotor){
-
-					commonNodeInd1[i]=ixr;
-					commonNodeNumb1[ixr]=i;
-					angs1.el[ixr]=util.getAng(model.node[i].getCoord());
-					ixr++;
-				}
-				else{
-
-					commonNodeInd2[i]=ixs;
-					commonNodeNumb2[ixs]=i;
-					angs2.el[ixs]=util.getAng(model.node[i].getCoord());
-					ixs++;
-				}
-			}
-
-		int[] indSorted1=angs1.bubble();
-		int[] indSorted2=angs2.bubble();
-
-		int[][] commonNodeNumbSorted=new int[2][L];
-		for(int i=0;i<L;i++)
-			commonNodeNumbSorted[0][i]= commonNodeNumb1[indSorted1[i]];
-
-		for(int i=0;i<L;i++)
-			commonNodeNumbSorted[1][i]= commonNodeNumb2[indSorted2[i]];
-
-
-		return commonNodeNumbSorted;
-	}
-	*/
 
 
 	public int[][] mapBorderNodes2D(Model model,int nb1,int nb2){
