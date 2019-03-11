@@ -222,37 +222,6 @@ public class MagMatrix {
 		int m,columnEdgeNumb,matrixRow=0, rowEdgeNumb,nBH=0,nLam=0,ext=6;
 	
 		int[] nz=new int[model.numberOfUnknowns];
-
-/*
-			double rm=0.0547;
-			rm=1.8333333;
-			rm=1.6250000;
-		
-		int jx=0;
-		int[] edgeOnFSIndices=new int[1+model.numberOfEdges];
-
-		for(int i=1;i<=model.numberOfEdges;i++){
-			edgeOnFSIndices[i]=-1;
-			boolean onBoundary=false;
-			for(int k=0;k<4;k++){
-			if(model.edge[i].node[0].onBound[k]){
-				onBoundary=true;
-				break;
-			}
-			}
-			
-			if(onBoundary) continue;
-			
-			if(abs(model.edge[i].node[0].getR()-rm)<1e-5){
-				edgeOnFSIndices[i]=jx;
-
-				jx++;
-			}
-		}
-		
-		int L=jx;
-		
-		model.edgeOnFSIndices=edgeOnFSIndices;*/
 		
 		int[] edgeOnFSIndices=	model.edgeOnFSIndices;
 

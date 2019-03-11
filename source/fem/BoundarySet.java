@@ -816,7 +816,7 @@ if(model.hasTwoNodeNumb){
 
 	for(int i=1;i<=model.numberOfEdges;i++){
 	
-		boolean onBoundary=false;
+/*		boolean onBoundary=false;
 		for(int k=0;k<4;k++){
 		if(model.edge[i].node[0].onBound[k]){
 			onBoundary=true;
@@ -824,8 +824,8 @@ if(model.hasTwoNodeNumb){
 		}
 		}
 		
-		if(!onBoundary) continue;
-	if(model.edgeOnFSIndices[i]>=0) model.edge[i].setKnownA(0);
+		if(!onBoundary) continue;*/
+	//if(model.edgeOnFSIndices[i]>=0) model.edge[i].setKnownA(0);
 	}
 	}
 	//===========

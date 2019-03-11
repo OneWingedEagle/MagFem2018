@@ -141,7 +141,7 @@ if(step==0)
 	
 
 	SpMat Bs=new SpMat(FQ);
-	model.Rs.show("%8.3e");
+//	model.Rs.show("%8.3e");
 	Mat BtB=Q.transp().mul(model.Rs.mul(Q));
 //BtB.show("%8.3e");
 	for(int i=0;i<kp;i++){
@@ -167,7 +167,7 @@ if(step==0)
 		model.RHS.el[k]=b1.el[k];
 	
 }	
-	Ks.show("%6.3e");
+//	Ks.show("%6.3e");
 
 	//Ks.shownz();
 
@@ -212,7 +212,7 @@ if(step==0)
 		for(int i=1;i<=model.numberOfEdges;i++){
 			
 			if(model.edgeOnFSIndices[i]>=0){	
-				model.edge[i].setA(y1.el[ix]);
+				model.edge[i].setA(y1.el[model.edgeOnFSIndices[i]]);
 			//	model.edge[model.edge[i].map].setA(model.edge[i].A);
 				ix++;
 			}
