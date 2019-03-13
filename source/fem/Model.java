@@ -73,8 +73,8 @@ public class Model{
 	public CurrentWaveForm ia,ib,ic,va,vb,vc;
 	public String elType="hexahedron";
 	public SpMat Hs,Ms,Ks,Ls,Cs,Ss,Ps,Qs,Fs;
-	public Mat Rs;
-	public Mat eigVects,bigMat;
+	public SpMat Rs;
+	public Mat eigVects,bigMat,Q;
 	public Vect lams,RHS,bU,bT,HpAp,HkAk;
 	public boolean AC,motor,modal,hasTwoNodeNumb,fullMotor,writeFiles,Tmethod,
 	circuit,stranded,wavePC,loadFlux,loadPotentioal,loadPrevMag,loadPrevMech,loadForce,loadDisp,saveFlux,saveForce,saveDisp,saveStress,

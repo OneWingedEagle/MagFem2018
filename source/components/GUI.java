@@ -139,8 +139,8 @@ public class GUI extends JFrame implements ActionListener{
 				else if(tag==3){
 		
 					meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\motor2parts.txt";
-					dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\dataMot4th2D.txt";
-					//meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\motorFiner2.txt";
+					dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\dataMot4th2Dpbc.txt";
+					//meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\motorFiner.txt";
 					//dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\dataMotor.txt";
 				}
 				else if(tag==4){

@@ -1,10 +1,6 @@
 package femSolver;
 
 import static java.lang.Math.PI;
-import static java.lang.Math.abs;
-import static java.lang.Math.cos;
-
-import javax.rmi.CORBA.Util;
 
 import fem.Model;
 import math.Mat;
@@ -47,21 +43,22 @@ if(step==0)
 	
 	SpMat Ks=null;
 	
-	Mat Q=null;
+/*	Mat Q=null;
 	int kk=0;
 	if(model.edgeOnFSIndices!=null)	
 		for(int i=1;i<=model.numberOfEdges;i++){
 			if(model.edgeOnFSIndices[i]>=0) kk++;
-		}
+		}*/
 	//	kk=model.commonNodes[0][0].length;
 
 
-	int kp=kk;
+	//int kp=kk;
+	//int kph=0;
 	
 
-	if(!model.hasTwoNodeNumb){
+	//if(!model.hasTwoNodeNumb){
 	 Ks=model.Hs.deepCopy();
-	}
+	/*}
 	else{
 		
 	int method=1;
@@ -79,12 +76,13 @@ if(step==0)
 	}
 	}
  
-	else{
+	else if(method==1){
 		kp=kk/4;
 		
+			
 		if(kp%2==0) kp++;
-		
-		kp=Math.min(kp,51);
+	
+		kp=Math.min(kp,61);
 		
 		Q=new Mat(kk,kp);
 
@@ -93,7 +91,7 @@ if(step==0)
 	double tt2=model.alpha2;
 	double span=tt2-tt1;
 
-	int kph=(kp-1)/2;
+	kph=(kp-1)/2;
 	
 	int jx=0;
 	
@@ -117,13 +115,10 @@ if(step==0)
 			for(int p=0;p<=kph;p++){
 				if(p==0){
 					Q.el[jx][p]=.5;
-					//Q.el[jx+kk][p]=.5;
 				}else{
 			Q.el[jx][p]=Math.cos(2*PI*(p)*tt/span);
-			//Q.el[jx+kk][p]=Math.cos(2*PI*(p)*tt/span);
 			
 			Q.el[jx][p+kph]=Math.sin(2*PI*(p)*tt/span);
-			//Q.el[jx+kk][p+kph]=Math.sin(2*PI*(p)*tt/span);
 				
 			}
 		
@@ -134,12 +129,48 @@ if(step==0)
 	}
 	}
 	}
-	//Q.show();
-//	util.plot(Q.getColVect(2));
+	else if(method==2){
+		kp=kk/4;
+	
+		Q=new Mat(kk,kp);
+		
+	double tt1=model.alpha1;
+	double tt2=model.alpha2;
+	double span=tt2-tt1;
+
+	double dtt=span/(kp-1);
+	
+	int jx=0;
+	
+	for(int i=1;i<=model.numberOfEdges;i++){
+		if(model.edgeOnFSIndices[i]>=0){	
+					boolean onBoundary=false;
+			for(int k=0;k<4;k++){
+			if(model.edge[i].node[0].onBound[k]){
+				onBoundary=true;
+				break;
+			}
+			}
+			
+			if(onBoundary) continue;
+			
+			jx=model.edgeOnFSIndices[i];
+			
+			Vect v=model.edge[i].node[0].getCoord();
+		double tt=util.getAng(v)-tt1;
+		
+		int it=(int)Math.floor(tt/dtt);
+	
+		Q.el[jx][it]=1-(tt-it*dtt)/dtt;
+		Q.el[jx][it+1]=1-Q.el[jx][it];
+
+		
+		
+	}
+	}
+	}
 
 	 Ks=new SpMat(model.numberOfUnknowns+kp);
-	 //Ks=model.Hs.deepCopy();
-
 	for(int i=0;i<model.numberOfUnknownEdges;i++){
 		Ks.row[i]=new SpVect(model.numberOfUnknowns+kp,model.Hs.row[i].nzLength);
 		for(int k=0;k<model.Hs.row[i].nzLength;k++){
@@ -148,29 +179,58 @@ if(step==0)
 
 		}
 	}
-
-	Mat FQ=new Mat(kp,model.numberOfUnknownEdges);
-	for(int k=0;k<kp;k++){
-		Vect v=model.Fs.amul(Q.getColVect(k));
-		FQ.setRow(v, k);
-	}
 	
-
-	SpMat Bs=new SpMat(FQ);
-//	model.Rs.show("%8.3e");
-	Mat BtB=Q.transp().mul(model.Rs.mul(Q));
-//BtB.show("%8.3e");
+	SpMat Bs=new SpMat(kp);
 	for(int i=0;i<kp;i++){
-		Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+1+i);
+		Vect v=model.Fs.amul(Q.getColVect(i));
+		SpVect vs=new SpVect(v);
+		Bs.row[i]=new SpVect(model.numberOfUnknowns,vs.nzLength);
+		for(int k=0;k<vs.nzLength;k++){
+		Bs.row[i].el[k]=vs.el[k];
+		Bs.row[i].index[k]=vs.index[k];
+		}
+	}
+
+	//model.Rs.show("%8.3e");
+	//model.Rs.shownz();
+
+	SpMat BtB=new SpMat(kp);
+	for(int i=0;i<kp;i++){
+		Vect v1=model.Rs.amul(Q.getColVect(i));
+		Vect v2=Q.transp().mul(v1);
+		SpVect vs=new SpVect(v2);
+		
+		//vs.shownz();
+		int nnz=0;
+		for(int k=0;k<vs.nzLength;k++)
+			if(vs.index[k]<=i){
+				nnz++;
+			}
+		BtB.row[i]=new SpVect(kp,nnz);
+		for(int k=0;k<vs.nzLength;k++){
+			if(vs.index[k]<=i){
+			BtB.row[i].el[k]=vs.el[k];
+			BtB.row[i].index[k]=vs.index[k];
+
+			}
+		}
+		//BtB.row[i].showr();
+	}
+	//Mat BtB=Q.transp().mul(model.Rs.mul(Q));
+	//BtB.shownz();
+	//BtB.show("%8.3e");
+	
+	for(int i=0;i<kp;i++){
+		Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+BtB.row[i].nzLength);
 		for(int k=0;k<Bs.row[i].nzLength;k++){
 			Ks.row[i+model.numberOfUnknowns].el[k]=Bs.row[i].el[k];
 			Ks.row[i+model.numberOfUnknowns].index[k]=Bs.row[i].index[k];
 
 			}
-		for(int j=0;j<=i;j++){
-		Ks.row[i+model.numberOfUnknowns].el[Bs.row[i].nzLength+j]=BtB.el[i][j];
+		for(int j=0;j<BtB.row[i].nzLength;j++){
+		Ks.row[i+model.numberOfUnknowns].el[Bs.row[i].nzLength+j]=BtB.row[i].el[j];
 
-		Ks.row[i+model.numberOfUnknowns].index[Bs.row[i].nzLength+j]=j+model.numberOfUnknowns;
+		Ks.row[i+model.numberOfUnknowns].index[Bs.row[i].nzLength+j]=BtB.row[i].index[j]+model.numberOfUnknowns;
 		}
 		
 	}
@@ -182,7 +242,10 @@ if(step==0)
 	for(int k=0;k<b1.length;k++)
 		model.RHS.el[k]=b1.el[k];
 	
-}	
+}	*/
+	//Ks.shownz();
+	
+	
 //	Ks.show("%6.3e");
 
 	//Ks.shownz();
@@ -212,25 +275,23 @@ if(step==0)
 		x.timesVoid(Ci);
 		
 
-		if(Q!=null){
+		if(model.Q!=null){
 
+			int kp=model.Q.nCol;
 			Vect vp=new Vect(kp);
 			for(int k=0;k<vp.length;k++)
 				vp.el[k]=x.el[x.length-vp.length+k];
 
-		Vect y1=Q.mul(vp);
+		Vect y1=model.Q.mul(vp);
 
+		//y1.show();
 
-
-		int ix=0;
 
 		
 		for(int i=1;i<=model.numberOfEdges;i++){
 			
 			if(model.edgeOnFSIndices[i]>=0){	
 				model.edge[i].setA(y1.el[model.edgeOnFSIndices[i]]);
-			//	model.edge[model.edge[i].map].setA(model.edge[i].A);
-				ix++;
 			}
 		}
 
