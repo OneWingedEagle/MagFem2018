@@ -2909,7 +2909,7 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 		}
 
 		int L=0;
-		if(commonNodes!=null)
+		if(commonNodes!=null){
 			L=commonNodes[0][0].length;
 
 		for(int iz=0;iz<commonNodes.length;iz++)
@@ -2918,7 +2918,7 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 			node[nn].setMap(commonNodes[iz][1][i]);
 			node[nn].common=true;
 		}
-
+		}
 
 		if(this.hasPBC)
 			this.mapPBC();

@@ -256,6 +256,7 @@ public class Combiner {
 	
 	public void setRotorPosition(Model motor, double newAng)
 	{
+
 		setRotorPosition(motor,newAng,motor.meshAngStep);
 	}
 	
@@ -311,6 +312,7 @@ public class Combiner {
 		
 		boolean[] nodeRotated=new boolean[motor.numberOfNodes+1];
 		
+		if(motor.commonNodes!=null){
 		int nZ=motor.commonNodes.length;
 
 		for(int iz=0;iz<nZ;iz++){
@@ -419,7 +421,35 @@ public class Combiner {
 				}
 		
 		}
+		}else if(motor.hasTwoNodeNumb){
 
+				
+
+				for(int ir=1;ir<=motor.numberOfRegions;ir++)
+					if(motor.region[ir].rotor)
+						for(int i=motor.region[ir].getFirstEl();i<=motor.region[ir].getLastEl();i++){
+
+							Vect Mr=R.mul(motor.element[i].getM());
+							if(motor.element[i].hasM())
+							motor.element[i].setM(Mr);
+
+							int[] vertNumb=motor.element[i].getVertNumb();
+							for(int j=0;j<motor.nElVert;j++){
+
+								int nn=vertNumb[j];
+							
+
+								if(nodeRotated[nn]) continue;
+								nodeRotated[nn]=true;
+		
+									motor.node[nn].setCoord(R.mul(motor.node[nn].getCoord()));	
+				
+							}
+						}
+				
+				}
+				
+		
 
 		
 	}

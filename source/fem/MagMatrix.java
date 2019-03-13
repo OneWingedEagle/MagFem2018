@@ -58,206 +58,7 @@ public class MagMatrix {
 			}
 		}
 	
-		SpMat Ks=null;
-		
-		Mat Q=null;
-		int kk=0;
-		if(model.edgeOnFSIndices!=null)	
-			for(int i=1;i<=model.numberOfEdges;i++){
-				if(model.edgeOnFSIndices[i]>=0) kk++;
-			}
 
-
-		int kp=kk;
-		int kph=0;
-		
-		if(model.hasTwoNodeNumb){
-
-			
-			int method=1;
-
-
-
-			if(method==0){
-			
-				kp=kk/2-2;
-				Q=new Mat(kk,kp);
-			for(int p=0;p<kp;p++){
-				Q.el[p+1][p]=1;
-				
-				Q.el[p+1+kk/2][p]=1;
-			}
-			}
-		 
-			else if(method==1){
-				kp=kk/4;
-				
-					
-				if(kp%2==0) kp++;
-			
-				kp=Math.min(kp,61);
-				
-				Q=new Mat(kk,kp);
-
-
-			double tt1=model.alpha1;
-			double tt2=model.alpha2;
-			double span=tt2-tt1;
-
-			kph=(kp-1)/2;
-			
-			int jx=0;
-			
-			for(int i=1;i<=model.numberOfEdges;i++){
-				if(model.edgeOnFSIndices[i]>=0){	
-	
-					
-					jx=model.edgeOnFSIndices[i];
-					
-					Vect v=model.edge[i].node[0].getCoord();
-				double tt=util.getAng(v)-tt1;
-
-					for(int p=0;p<=kph;p++){
-						if(p==0){
-							Q.el[jx][p]=.5;
-						}else{
-					Q.el[jx][p]=Math.cos(2*PI*(p)*tt/span);
-					
-					Q.el[jx][p+kph]=Math.sin(2*PI*(p)*tt/span);
-						
-					}
-				
-
-					}
-				
-				
-			}
-			}
-			}
-			else if(method==2){
-				kp=kk/4;
-			
-				Q=new Mat(kk,kp);
-				
-			double tt1=model.alpha1;
-			double tt2=model.alpha2;
-			double span=tt2-tt1;
-
-			double dtt=span/(kp-1);
-			
-			int jx=0;
-			
-			for(int i=1;i<=model.numberOfEdges;i++){
-				if(model.edgeOnFSIndices[i]>=0){	
-							boolean onBoundary=false;
-					for(int k=0;k<4;k++){
-					if(model.edge[i].node[0].onBound[k]){
-						onBoundary=true;
-						break;
-					}
-					}
-					
-					if(onBoundary) continue;
-					
-					jx=model.edgeOnFSIndices[i];
-					
-					Vect v=model.edge[i].node[0].getCoord();
-				double tt=util.getAng(v)-tt1;
-				
-				int it=(int)Math.floor(tt/dtt);
-			
-				Q.el[jx][it]=1-(tt-it*dtt)/dtt;
-				Q.el[jx][it+1]=1-Q.el[jx][it];
-
-				
-				
-			}
-			}
-			}
-			
-			model.Q=Q;
-
-			 Ks=new SpMat(model.numberOfUnknowns+kp);
-			for(int i=0;i<model.numberOfUnknownEdges;i++){
-				Ks.row[i]=new SpVect(model.numberOfUnknowns+kp,model.Hs.row[i].nzLength);
-				for(int k=0;k<model.Hs.row[i].nzLength;k++){
-				Ks.row[i].el[k]=model.Hs.row[i].el[k];
-				Ks.row[i].index[k]=model.Hs.row[i].index[k];
-
-				}
-			}
-			
-			SpMat Bs=new SpMat(kp);
-			for(int i=0;i<kp;i++){
-				Vect v=model.Fs.amul(Q.getColVect(i));
-				SpVect vs=new SpVect(v);
-				Bs.row[i]=new SpVect(model.numberOfUnknowns,vs.nzLength);
-				for(int k=0;k<vs.nzLength;k++){
-				Bs.row[i].el[k]=vs.el[k];
-				Bs.row[i].index[k]=vs.index[k];
-				}
-			}
-
-			//model.Rs.show("%8.3e");
-			//model.Rs.shownz();
-
-			SpMat BtB=new SpMat(kp);
-			for(int i=0;i<kp;i++){
-				Vect v1=model.Rs.amul(Q.getColVect(i));
-				Vect v2=Q.transp().mul(v1);
-				SpVect vs=new SpVect(v2);
-				
-				//vs.shownz();
-				int nnz=0;
-				for(int k=0;k<vs.nzLength;k++)
-					if(vs.index[k]<=i){
-						nnz++;
-					}
-				BtB.row[i]=new SpVect(kp,nnz);
-				for(int k=0;k<vs.nzLength;k++){
-					if(vs.index[k]<=i){
-					BtB.row[i].el[k]=vs.el[k];
-					BtB.row[i].index[k]=vs.index[k];
-
-					}
-				}
-				//BtB.row[i].showr();
-			}
-			//Mat BtB=Q.transp().mul(model.Rs.mul(Q));
-			//BtB.shownz();
-			//BtB.show("%8.3e");
-			
-			for(int i=0;i<kp;i++){
-				Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+BtB.row[i].nzLength);
-				for(int k=0;k<Bs.row[i].nzLength;k++){
-					Ks.row[i+model.numberOfUnknowns].el[k]=Bs.row[i].el[k];
-					Ks.row[i+model.numberOfUnknowns].index[k]=Bs.row[i].index[k];
-
-					}
-				for(int j=0;j<BtB.row[i].nzLength;j++){
-				Ks.row[i+model.numberOfUnknowns].el[Bs.row[i].nzLength+j]=BtB.row[i].el[j];
-
-				Ks.row[i+model.numberOfUnknowns].index[Bs.row[i].nzLength+j]=BtB.row[i].index[j]+model.numberOfUnknowns;
-				}
-				
-			}
-
-
-			Vect b1=model.RHS.deepCopy();
-
-			Vect b2=model.HkAk.deepCopy();
-					
-			model.HkAk=new Vect(b2.length+kp);
-			model.RHS=new Vect(b1.length+kp);
-			for(int k=0;k<b1.length;k++){
-				model.RHS.el[k]=b1.el[k];
-				model.HkAk.el[k]=b2.el[k];
-			}
-		
-			
-			model.Hs=Ks;
-
-		}
 		
 	
 
@@ -1664,6 +1465,218 @@ model.Rs=new SpMat(Rs);
 	
 	}
 
+public void coupleFSMat(Model model){
+	SpMat Ks=null;
+	
+	Mat Q=null;
+	int kk=0;
+	if(model.edgeOnFSIndices!=null)	
+		for(int i=1;i<=model.numberOfEdges;i++){
+			if(model.edgeOnFSIndices[i]>=0) kk++;
+		}
 
+
+	int kp=kk;
+	int kph=0;
+	
+	if(model.motor&& model.hasTwoNodeNumb){
+
+		
+		int method=1;
+
+
+
+		if(method==0){
+		
+			kp=kk/2;
+			Q=new Mat(kk,kp);
+		for(int p=0;p<kp;p++){
+			Q.el[p+1][p]=1;
+			
+			Q.el[p+1+kk/2][p]=1;
+		}
+		}
+	 
+		else if(method==1){
+			kp=kk/4;
+			
+				
+			if(kp%2==0) kp++;
+		
+			kp=Math.min(kp,61);
+			
+			Q=new Mat(kk,kp);
+
+
+		double tt1=model.alpha1;
+		double tt2=model.alpha2;
+		double span=tt2-tt1;
+
+		kph=(kp-1)/2;
+		
+		int jx=0;
+		
+		for(int i=1;i<=model.numberOfEdges;i++){
+			if(model.edgeOnFSIndices[i]>=0){	
+
+				
+				jx=model.edgeOnFSIndices[i];
+				
+				Vect v=model.edge[i].node[0].getCoord();
+			double tt=util.getAng(v)-tt1;
+
+				for(int p=0;p<=kph;p++){
+					if(p==0){
+						Q.el[jx][p]=.5;
+					}else{
+				Q.el[jx][p]=Math.cos(2*PI*(p)*tt/span);
+				
+				Q.el[jx][p+kph]=Math.sin(2*PI*(p)*tt/span);
+					
+				}
+			
+
+				}
+			
+			
+		}
+		}
+		}
+		else if(method==2){
+			kp=kk/4;
+		
+			Q=new Mat(kk,kp);
+			
+		double tt1=model.alpha1;
+		double tt2=model.alpha2;
+		double span=tt2-tt1;
+
+		double dtt=span/(kp-1);
+		
+		int jx=0;
+		
+		for(int i=1;i<=model.numberOfEdges;i++){
+			if(model.edgeOnFSIndices[i]>=0){	
+						boolean onBoundary=false;
+				for(int k=0;k<4;k++){
+				if(model.edge[i].node[0].onBound[k]){
+					onBoundary=true;
+					break;
+				}
+				}
+				
+				if(onBoundary) continue;
+				
+				jx=model.edgeOnFSIndices[i];
+				
+				Vect v=model.edge[i].node[0].getCoord();
+			double tt=util.getAng(v)-tt1;
+			
+			int it=(int)Math.floor(tt/dtt);
+		
+			Q.el[jx][it]=1-(tt-it*dtt)/dtt;
+			Q.el[jx][it+1]=1-Q.el[jx][it];
+
+			
+			
+		}
+		}
+		}
+		
+		model.Q=Q;
+
+		 Ks=new SpMat(model.numberOfUnknowns+kp);
+		for(int i=0;i<model.numberOfUnknownEdges;i++){
+			Ks.row[i]=new SpVect(model.numberOfUnknowns+kp,model.Hs.row[i].nzLength);
+			for(int k=0;k<model.Hs.row[i].nzLength;k++){
+			Ks.row[i].el[k]=model.Hs.row[i].el[k];
+			Ks.row[i].index[k]=model.Hs.row[i].index[k];
+
+			}
+		}
+		
+		SpMat Bs=new SpMat(kp);
+		for(int i=0;i<kp;i++){
+			Vect v=model.Fs.amul(Q.getColVect(i));
+			SpVect vs=new SpVect(v);
+			Bs.row[i]=new SpVect(model.numberOfUnknowns,vs.nzLength);
+			for(int k=0;k<vs.nzLength;k++){
+			Bs.row[i].el[k]=vs.el[k];
+			Bs.row[i].index[k]=vs.index[k];
+			}
+		}
+
+		//model.Rs.show("%8.3e");
+		//model.Rs.shownz();
+
+		SpMat BtB=new SpMat(kp);
+		for(int i=0;i<kp;i++){
+			Vect v1=model.Rs.amul(Q.getColVect(i));
+			Vect v2=Q.transp().mul(v1);
+			SpVect vs=new SpVect(v2);
+			
+			//vs.shownz();
+			int nnz=0;
+			for(int k=0;k<vs.nzLength;k++)
+				if(vs.index[k]<=i){
+					nnz++;
+				}
+			BtB.row[i]=new SpVect(kp,nnz);
+			for(int k=0;k<vs.nzLength;k++){
+				if(vs.index[k]<=i){
+				BtB.row[i].el[k]=vs.el[k];
+				BtB.row[i].index[k]=vs.index[k];
+
+				}
+			}
+			//BtB.row[i].showr();
+		}
+		//Mat BtB=Q.transp().mul(model.Rs.mul(Q));
+		//BtB.shownz();
+		//BtB.show("%8.3e");
+		
+		for(int i=0;i<kp;i++){
+			Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+BtB.row[i].nzLength);
+			for(int k=0;k<Bs.row[i].nzLength;k++){
+				Ks.row[i+model.numberOfUnknowns].el[k]=Bs.row[i].el[k];
+				Ks.row[i+model.numberOfUnknowns].index[k]=Bs.row[i].index[k];
+
+				}
+			for(int j=0;j<BtB.row[i].nzLength;j++){
+			Ks.row[i+model.numberOfUnknowns].el[Bs.row[i].nzLength+j]=BtB.row[i].el[j];
+
+			Ks.row[i+model.numberOfUnknowns].index[Bs.row[i].nzLength+j]=BtB.row[i].index[j]+model.numberOfUnknowns;
+			}
+			
+		}
+
+
+	
+		if(model.RHS.length==model.numberOfUnknowns){		
+			Vect b1=model.RHS.deepCopy();
+		model.RHS=new Vect(b1.length+kp);
+
+		
+		for(int k=0;k<b1.length;k++)
+			model.RHS.el[k]=b1.el[k];
+		}
+		
+
+		if(model.HkAk.length==model.numberOfUnknowns){	
+			Vect b2=model.HkAk.deepCopy();
+		model.HkAk=new Vect(b2.length+kp);
+
+		
+		for(int k=0;k<b2.length;k++)
+			model.HkAk.el[k]=b2.el[k];
+		}
+	
+
+			
+		model.Hs=Ks;
+
+
+	}
+}
 
 }

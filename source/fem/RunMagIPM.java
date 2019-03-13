@@ -223,7 +223,6 @@ public class RunMagIPM {
 				
 					model.setJ(t0+i*model.dt/model.nInc);	
 					if(abs(mechAng)>0 && model.rotateRotor && model.nRotReg>0){
-
 						model.resetMotor();
 						model.setRotorPosition(mechAng);	
 				
@@ -253,6 +252,7 @@ public class RunMagIPM {
 										// x=new Vect(model.numberOfUnknowns);
 
 										x=model.solveMagLin(i-model.nBegin);	
+									
 
 									}
 									else
@@ -307,9 +307,9 @@ public class RunMagIPM {
 								model.writeB(fluxFile);
 
 								
-								String vpotFile = fluxFolder+"\\A"+i+".txt";
+								//String vpotFile = fluxFolder+"\\A"+i+".txt";
 
-								model.writeA(vpotFile);
+								//model.writeA(vpotFile);
 								
 								String meshFile = fluxFolder+"\\bun"+i+".txt";
 								
