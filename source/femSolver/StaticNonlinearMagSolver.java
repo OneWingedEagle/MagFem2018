@@ -21,8 +21,7 @@ public class StaticNonlinearMagSolver{
 	
 	public Vect solve(Model model,Vect x,boolean echo,int step){
 
-		
-
+	
 		DecimalFormat dfB=new DecimalFormat("0.0000");
 		DecimalFormat dfe=new DecimalFormat("0.0E00");
 
@@ -69,8 +68,11 @@ public class StaticNonlinearMagSolver{
 			
 			model.setMagMat();
 		
+			if(model.motor&& model.hasTwoNodeNumb)
+				model.magMat.coupleFSMat(model);
 
 				Ks=model.Hs.deepCopy();
+				//Ks.shownz();
 
 				b=model.RHS.sub(model.HkAk);
 				

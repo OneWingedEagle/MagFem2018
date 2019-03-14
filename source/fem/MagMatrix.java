@@ -33,7 +33,7 @@ public class MagMatrix {
 		
 		setReactMat(model);
 
-		if(model.hasTwoNodeNumb)
+		if(model.hasTwoNodeNumb && model.motor&& model.Rs==null)
 		setConnectionMat(model);
 		
 		if(model.analysisMode>0)
@@ -57,10 +57,7 @@ public class MagMatrix {
 
 			}
 		}
-	
 
-		
-	
 
 	}
 	
@@ -360,6 +357,7 @@ for(int ir=1;ir<=model.numberOfRegions;ir++){
 }
 
 model.Rs=new SpMat(Rs);
+
 
 }
 	
@@ -1511,6 +1509,7 @@ public void coupleFSMat(Model model){
 		double tt1=model.alpha1;
 		double tt2=model.alpha2;
 		double span=tt2-tt1;
+		util.pr(tt1+" ---------- "+tt2);
 
 		kph=(kp-1)/2;
 		
@@ -1678,5 +1677,7 @@ public void coupleFSMat(Model model){
 
 	}
 }
+
+
 
 }

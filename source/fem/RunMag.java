@@ -1,6 +1,7 @@
 package fem;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 
 import java.io.File;
 
@@ -118,6 +119,14 @@ public class RunMag {
 		
 				
 					model.setJ(t0+i*model.dt+i);	
+					
+					if(model.motor && model.rotateRotor && model.nRotReg>0){
+						double mechAng=i*model.dt*model.rotSpeed;
+						model.resetMotor();
+						model.setRotorPosition(mechAng);	
+				
+						//model.setRotorIndex(i/dd);
+					}
 
 					if(!model.loadFlux){
 						
@@ -194,9 +203,16 @@ public class RunMag {
 							if(model.saveFlux){
 								String fluxFile = fluxFolder+"\\flux"+i+".txt";
 								if(i==nBegin)
-									model.writeMesh( fluxFolder+"\\bun.txt");
+									model.writeMesh(fluxFolder+"\\bun"+i+".txt");
+								if(model.motor && model.rotateRotor && model.nRotReg>0){
+									String meshFile = fluxFolder+"\\bun"+i+".txt";	
+									
+									model.writeMesh(meshFile);
+			
+								}
 							
 								model.writeB(fluxFile);
+								
 		
 							}
 

@@ -48,21 +48,21 @@ public class MeshManipulator {
 
 		MeshManipulator mf=new MeshManipulator();
 
-	//	mf.reRegionb();
-		//mf.connectivity(1e-5);	mf.dropUnusedNodes();
+		//mf.reRegionb();
+	//	mf.connectivity(1e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
 		//mf.deform();
 	//	mf.rotate(-3*PI/18);
 	
-		//Model model=mf.rotExtendNfold(1);
-		//model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\extenRot.txt");
+		//Model model=mf.rotExtendNfold(2);
+	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\extenRot.txt");
 		int Nr=10;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
 			regs0[i-1]=i;
 		}
 		//mf.revolveLine(new Vect().linspace(1, 10, Nr+1), regs0, 45, PI/2/45);
-		int[] regs={4,5};
+		//int[] regs={4,5};
 		//mf.extractReg(regs);mf.dropUnusedNodes();
 		String stat="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\statFF.txt";
 		String rot="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\rotFiner.txt";
@@ -1068,13 +1068,14 @@ public void hexaToTetra()
 					else if(tt>6*PI/2/9 && tt<8*PI/2/9) model.element[i].setRegion(3);
 					else model.element[i].setRegion(1);
 				}*/
-				if(ir<4){ model.element[i].setRegion(1);
+				//if(ir<4){ model.element[i].setRegion(1);
 				Vect c=model.getElementCenter(i);	
 				double tt=util.getAng(c);
 				double rr=c.norm();
-				if(rr>1.2 && rr<1.4 && tt>0*PI/18/2 && tt<2*PI/18/2) model.element[i].setRegion(2);
-				else if(rr>1.2 && rr<1.4 && tt>4*PI/18/2 && tt<6*PI/18/2) model.element[i].setRegion(3);
-				}
+				if(ir<4 && tt>PI/6) model.element[i].setRegion(1);
+				//if(rr>1.2 && rr<1.4 && tt>0*PI/18/2 && tt<2*PI/18/2) model.element[i].setRegion(2);
+				//else if(rr>1.2 && rr<1.4 && tt>4*PI/18/2 && tt<6*PI/18/2) model.element[i].setRegion(3);
+			//	}
 				
 				//if(model.getElementArea(i)<1e-7) model.element[i].setRegion(2);
 
