@@ -472,7 +472,14 @@ public Vect add(double a){
 		
 		return v;
 	}
-	
+	public void zero(){
+		for(int i=0;i<length;i++)
+			this.el[i]=0;
+	}
+	public void zero(int start,int end){
+		for(int i=start;i<=end;i++)
+			this.el[i]=0;
+	}
 	public Vect v2(){
 		return new Vect(el[0],el[1]);
 	}

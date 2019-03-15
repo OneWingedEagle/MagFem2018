@@ -29,13 +29,11 @@ public class StaticLinearMagSolver{
 
 	model.magMat.setRHS(model);
 
-	
-
 if(step==0)
 	model.setMagMat();
 
 
-	if(model.motor&& model.hasTwoNodeNumb)
+	if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb)
 	model.magMat.coupleFSMat(model);
 			
 
@@ -79,21 +77,16 @@ if(step==0)
 			for(int k=0;k<vp.length;k++)
 				vp.el[k]=x.el[x.length-vp.length+k];
 
-		Vect y1=model.Q.mul(vp);
-
-		//y1.show();
-
-
+		Vect interfaceA=model.Q.mul(vp);
 		
 		for(int i=1;i<=model.numberOfEdges;i++){
 			
 			if(model.edgeOnFSIndices[i]>=0){	
-				model.edge[i].setA(y1.el[model.edgeOnFSIndices[i]]);
+				model.edge[i].setA(interfaceA.el[model.edgeOnFSIndices[i]]);
 			}
 		}
 
 		}
-
 
 		model.setSolution(x);	
 		

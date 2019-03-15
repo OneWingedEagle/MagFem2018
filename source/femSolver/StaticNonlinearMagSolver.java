@@ -31,7 +31,17 @@ public class StaticNonlinearMagSolver{
 
 		Vect Ci;
 		SpMat L;
-		Vect dA=new Vect(model.numberOfUnknowns);
+		
+		
+		int kx=0;
+		if(model.Q!=null){
+
+			 kx=model.Q.nCol;
+		}
+		
+		Vect dA=new Vect(kx+model.numberOfUnknowns);
+			
+
 
 		Vect[] B1,B2;
 
@@ -68,15 +78,23 @@ public class StaticNonlinearMagSolver{
 			
 			model.setMagMat();
 		
-			if(model.motor&& model.hasTwoNodeNumb)
-				model.magMat.coupleFSMat(model);
+			if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb){
+			//	if(model.Q!=null)
+			//		x.zero();	
+				
+				if(nonLinIter==0)
+					model.magMat.coupleFSMat(model);
+				else
+					model.magMat.reuseFSMat(model);
+			}
+				
 
 				Ks=model.Hs.deepCopy();
 				//Ks.shownz();
 
 				b=model.RHS.sub(model.HkAk);
 				
-	
+
 
 			if(nonLinIter==0){
 				resNR0=b.norm();
@@ -91,7 +109,7 @@ public class StaticNonlinearMagSolver{
 
 			Ci=Ks.scale(b);
 			L=Ks.ichol();
-
+			
 			if(b.abs().max()>1e-11)
 				//dA=model.solver.ICCG(Ks,L, b,model.errCGmax,iterMax);
 				
@@ -101,17 +119,50 @@ public class StaticNonlinearMagSolver{
 
 			if(model.solver.terminate) break;
 
-
 			dA.timesVoid(Ci);
-			util.pr(x.length+"  "+dA.length);
-
-			x=x.add(dA);
-
 			
+/*			if(model.Q!=null){
+
+				int kp=model.Q.nCol;
+				Vect vp=new Vect(kp);
+				for(int k=0;k<vp.length;k++)
+					vp.el[k]=x.el[x.length-vp.length+k];
+
+			Vect interfaceA=model.Q.mul(vp);
+			
+			for(int i=1;i<=model.numberOfEdges;i++){
+				
+				if(model.edgeOnFSIndices[i]>=0){	
+					model.edge[i].setA(interfaceA.el[model.edgeOnFSIndices[i]]);
+				}
+			}
+
+			}*/
+
+			x=x.add(dA);		
 			
 			B1=model.getAllB();
 
 			model.setSolution(x);	
+			
+			if(model.Q!=null){
+
+				int kp=model.Q.nCol;
+				Vect vp=new Vect(kp);
+				for(int k=0;k<vp.length;k++)
+					vp.el[k]=x.el[x.length-vp.length+k];
+
+			Vect interfaceA=model.Q.mul(vp);
+			
+			for(int i=1;i<=model.numberOfEdges;i++){
+				
+				if(model.edgeOnFSIndices[i]>=0){	
+					model.edge[i].setA(interfaceA.el[model.edgeOnFSIndices[i]]);
+				}
+			}
+
+			}
+
 
 			model.setB();	
 			

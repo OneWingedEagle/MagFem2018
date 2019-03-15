@@ -49,7 +49,7 @@ public class MeshManipulator {
 		MeshManipulator mf=new MeshManipulator();
 
 		//mf.reRegionb();
-	//	mf.connectivity(1e-5);	mf.dropUnusedNodes();
+		mf.connectivity(1e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
 		//mf.deform();
 	//	mf.rotate(-3*PI/18);

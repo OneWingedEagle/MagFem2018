@@ -125,7 +125,7 @@ import fem.RunMech;
 			 //mt.runMag(model, this);
 			//	}
 	
-		 if(model.numberOfRegions==17 && model.motor){
+		 if(model.numberOfRegions==17000 && model.motor){
 
 
 		 RunMagIPM mt=new RunMagIPM();

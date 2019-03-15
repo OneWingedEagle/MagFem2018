@@ -32,10 +32,9 @@ public class MagMatrix {
 	public void setMagMat(Model model){
 		
 		setReactMat(model);
-
-		if(model.hasTwoNodeNumb && model.motor&& model.Rs==null)
+		if(!model.rotateConnect && model.hasTwoNodeNumb && model.motor&& model.Rs==null)
 		setConnectionMat(model);
-		
+
 		if(model.analysisMode>0)
 			setConductMat(model);
 		
@@ -1477,7 +1476,7 @@ public void coupleFSMat(Model model){
 	int kp=kk;
 	int kph=0;
 	
-	if(model.motor&& model.hasTwoNodeNumb){
+	//if(model.motor&& model.hasTwoNodeNumb){
 
 		
 		int method=1;
@@ -1501,7 +1500,7 @@ public void coupleFSMat(Model model){
 				
 			if(kp%2==0) kp++;
 		
-			kp=Math.min(kp,61);
+			kp=Math.min(kp,41);
 			
 			Q=new Mat(kk,kp);
 
@@ -1556,7 +1555,7 @@ public void coupleFSMat(Model model){
 		
 		for(int i=1;i<=model.numberOfEdges;i++){
 			if(model.edgeOnFSIndices[i]>=0){	
-						boolean onBoundary=false;
+/*						boolean onBoundary=false;
 				for(int k=0;k<4;k++){
 				if(model.edge[i].node[0].onBound[k]){
 					onBoundary=true;
@@ -1564,15 +1563,19 @@ public void coupleFSMat(Model model){
 				}
 				}
 				
-				if(onBoundary) continue;
+				if(onBoundary) continue;*/
 				
 				jx=model.edgeOnFSIndices[i];
 				
 				Vect v=model.edge[i].node[0].getCoord();
 			double tt=util.getAng(v)-tt1;
+		//	util.pr(tt+"  "+model.rotAng);
+			if(model.edge[i].node[0].rotor){
+				//tt-=(step-1)*model.dt*model.rotSpeed;
 			
+			}
 			int it=(int)Math.floor(tt/dtt);
-		
+	
 			Q.el[jx][it]=1-(tt-it*dtt)/dtt;
 			Q.el[jx][it+1]=1-Q.el[jx][it];
 
@@ -1605,6 +1608,7 @@ public void coupleFSMat(Model model){
 			}
 		}
 
+		model.Bs=Bs;
 		//model.Rs.show("%8.3e");
 		//model.Rs.shownz();
 
@@ -1630,6 +1634,80 @@ public void coupleFSMat(Model model){
 			}
 			//BtB.row[i].showr();
 		}
+		//Mat BtB=Q.transp().mul(model.Rs.mul(Q));
+		//BtB.shownz();
+		model.BtBs=BtB;
+		//BtB.show("%8.3e");
+		
+		for(int i=0;i<kp;i++){
+			Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+BtB.row[i].nzLength);
+			for(int k=0;k<Bs.row[i].nzLength;k++){
+				Ks.row[i+model.numberOfUnknowns].el[k]=Bs.row[i].el[k];
+				Ks.row[i+model.numberOfUnknowns].index[k]=Bs.row[i].index[k];
+
+				}
+			for(int j=0;j<BtB.row[i].nzLength;j++){
+			Ks.row[i+model.numberOfUnknowns].el[Bs.row[i].nzLength+j]=BtB.row[i].el[j];
+
+			Ks.row[i+model.numberOfUnknowns].index[Bs.row[i].nzLength+j]=BtB.row[i].index[j]+model.numberOfUnknowns;
+			}
+			
+		}
+
+
+	
+		if(model.RHS.length==model.numberOfUnknowns){		
+			Vect b1=model.RHS.deepCopy();
+		model.RHS=new Vect(b1.length+kp);
+
+		
+		for(int k=0;k<b1.length;k++)
+			model.RHS.el[k]=b1.el[k];
+		}
+		
+
+		if(model.HkAk.length==model.numberOfUnknowns){	
+			Vect b2=model.HkAk.deepCopy();
+		model.HkAk=new Vect(b2.length+kp);
+
+		
+		for(int k=0;k<b2.length;k++)
+			model.HkAk.el[k]=b2.el[k];
+		}
+	
+
+			
+		model.Hs=Ks;
+
+
+	}
+	
+
+public void reuseFSMat(Model model){
+	SpMat Ks=null;
+	
+	Mat Q=	model.Q;
+	int kp=Q.nCol;
+	SpMat Bs=	model.Bs;
+	SpMat BtB=	model.BtBs;
+	
+
+	 Ks=new SpMat(model.numberOfUnknowns+kp);
+		for(int i=0;i<model.numberOfUnknownEdges;i++){
+			Ks.row[i]=new SpVect(model.numberOfUnknowns+kp,model.Hs.row[i].nzLength);
+			for(int k=0;k<model.Hs.row[i].nzLength;k++){
+			Ks.row[i].el[k]=model.Hs.row[i].el[k];
+			Ks.row[i].index[k]=model.Hs.row[i].index[k];
+
+			}
+		}
+		
+
+
+		//model.Rs.show("%8.3e");
+		//model.Rs.shownz();
+
+
 		//Mat BtB=Q.transp().mul(model.Rs.mul(Q));
 		//BtB.shownz();
 		//BtB.show("%8.3e");
@@ -1675,7 +1753,7 @@ public void coupleFSMat(Model model){
 		model.Hs=Ks;
 
 
-	}
+	
 }
 
 

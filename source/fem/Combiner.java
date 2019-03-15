@@ -311,7 +311,9 @@ public class Combiner {
 
 		
 		boolean[] nodeRotated=new boolean[motor.numberOfNodes+1];
-		
+
+
+
 		if(motor.commonNodes!=null){
 		int nZ=motor.commonNodes.length;
 
@@ -325,7 +327,6 @@ public class Combiner {
 		for(int i=0;i<L;i++){
 			commonNodeIndSorted[motor.commonNodes[iz][0][i]]=i+1;
 		}
-		
 		
 
 		for(int ir=1;ir<=motor.numberOfRegions;ir++)
@@ -421,7 +422,7 @@ public class Combiner {
 				}
 		
 		}
-		}else if(motor.hasTwoNodeNumb){
+		}else/* if(motor.hasTwoNodeNumb)*/{
 
 				
 
@@ -471,8 +472,8 @@ public class Combiner {
 		
 		int nstep=steps;
 		
-		int L=motor.commonNodes[0].length;
-		
+		int L=motor.commonNodes[0][0].length;
+	
 
 	
 		int[] commonNodeIndSorted=new int[motor.numberOfNodes+1];
@@ -776,7 +777,7 @@ public class Combiner {
 			}
 
 		int[] indSorted=angs.bubble();
-angs.show();
+
 
 		int[] BorderNode=new int[L+1];
 		for(int i=1;i<=L;i++)

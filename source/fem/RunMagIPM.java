@@ -222,6 +222,7 @@ public class RunMagIPM {
 				t0=(elAng0)/180*PI/omega;
 				
 					model.setJ(t0+i*model.dt/model.nInc);	
+					mechAng=i*model.dt*model.rotSpeed;
 					if(abs(mechAng)>0 && model.rotateRotor && model.nRotReg>0){
 						model.resetMotor();
 						model.setRotorPosition(mechAng);	

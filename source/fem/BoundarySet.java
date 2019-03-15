@@ -10,7 +10,6 @@ import static java.lang.Math.*;
 public class BoundarySet {
 
 	double epsr=1e-6,epsAng=1e-4;
-	boolean oldMotorWay=true;
 
 	public BoundarySet(){	}
 
@@ -18,7 +17,7 @@ public class BoundarySet {
 
 		if(model.coordCode==1) {
 			setSliceBounds(model);
-			if(oldMotorWay)
+
 			mapCommonNodes(model);	
 
 		}
@@ -792,8 +791,8 @@ public class BoundarySet {
 
 	public void setMagBC(Model model){
 		
-		
-if(model.hasTwoNodeNumb){
+if(model.hasTwoNodeNumb &&  !model.rotateConnect)
+{
 
 
 	//model.rm=1.6250000;
@@ -821,23 +820,16 @@ if(model.hasTwoNodeNumb){
 
 
 	for(int i=1;i<=model.numberOfEdges;i++){
-	
-/*		boolean onBoundary=false;
-		for(int k=0;k<4;k++){
-		if(model.edge[i].node[0].onBound[k]){
-			onBoundary=true;
-			break;
-		}
-		}
-		
-		if(onBoundary) continue;*/
+
 	if(model.edgeOnFSIndices[i]>=0) model.edge[i].setKnownA(0);
 	}
 	}
 	//===========
 
-		if(model.hasPBC || model.hasTwoNodeNumb)
+		if(model.hasPBC || model.hasTwoNodeNumb){
+
 			mapEdges(model);
+		}
 
 		if(model.hasJ || model.hasM || model.stranded)
 			for(int i=1;i<=model.numberOfEdges;i++){
@@ -1242,6 +1234,7 @@ if(model.hasTwoNodeNumb){
 
 
 		model.rm=rm;
+	
 
 		model.alpha1=tmin;
 		model.alpha2=tmax;
@@ -1263,10 +1256,10 @@ if(model.hasTwoNodeNumb){
 	}
 
 	public void mapCommonNodes(Model model){
-		if(oldMotorWay) return;
+
+		if(!model.rotateConnect) return;
 
 		model.commonNodes=getCommonNodeSorted(model);
-		
 		if( !model.hasTwoNodeNumb) return;
 
 		for(int iz=0;iz<model.commonNodes.length;iz++)
@@ -1281,6 +1274,7 @@ if(model.hasTwoNodeNumb){
 	
 	public int[][][] getCommonNodeSorted(Model model){
 	
+
 		int nNodes=model.numberOfNodes;
 		
 		Vect hh=new Vect(model.numberOfNodes);

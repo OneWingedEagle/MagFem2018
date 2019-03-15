@@ -29,6 +29,8 @@ public class RunMag {
 
 			int nTsteps=model.nTsteps;
 		
+			Vect T=new Vect(nTsteps);
+			int ix=0;
 			
 			int nBegin=model.nBegin;
 			int nEnd=model.nEnd;
@@ -118,14 +120,16 @@ public class RunMag {
 				double t0=0;
 		
 				
+				main.gui.tfX[2].setText((i)+"/"+nEnd);
 					model.setJ(t0+i*model.dt+i);	
 					
 					if(model.motor && model.rotateRotor && model.nRotReg>0){
 						double mechAng=i*model.dt*model.rotSpeed;
+
 						model.resetMotor();
 						model.setRotorPosition(mechAng);	
 				
-						//model.setRotorIndex(i/dd);
+					//	model.setRotorIndex(0);
 					}
 
 					if(!model.loadFlux){
@@ -142,15 +146,13 @@ public class RunMag {
 							}
 							
 	
-							if(!model.nonLin || i==nBegin){
-								
+							if(!model.nonLin || i==nBegin || model.Q!=null){
+							
 							
 									if(!model.loadPrevMag){
 										model.saveAp();		
-
-										// x=new Vect(model.numberOfUnknowns);
-										
-										x=model.solveMagLin(i);	
+									
+										x=model.solveMagLin(i-nBegin);	
 
 									}
 									else
@@ -174,7 +176,7 @@ public class RunMag {
 								}
 								else
 									x=this.xp;
-								
+						
 								
 						if(model.coupled){
 
@@ -188,14 +190,16 @@ public class RunMag {
 								
 										model.saveAp();				
 									}
-							
+								
+									if(model.Q!=null)
+										x.zero();	
+								
 									
 									x=model.solveNonLinear(x,true,i-nBegin);
 								}
 
 						if(model.analysisMode>0)
 							model.setJe();
-
 				
 						if(x!=null)
 							this.xp=x.deepCopy();
@@ -222,7 +226,7 @@ public class RunMag {
 						model.resetReluctForce();
 						model.setReluctForce();
 						
-						model.setMSForce();
+						//model.setMSForce();
 						
 						
 				}
@@ -240,7 +244,7 @@ public class RunMag {
 
 							model.setReluctForce();
 
-							model.setMSForce();
+						//	model.setMSForce();
 	
 					}
 					else if(model.loadPotentioal) {
@@ -262,7 +266,7 @@ public class RunMag {
 					
 					util.pr("torque >>>>>>>"+model.TrqZ);
 					
-
+					T.el[ix++]=model.TrqZ;
 					
 	
 					
@@ -300,18 +304,18 @@ public class RunMag {
 
 			}
 			
-		
+				util.plot(T);
+				T.show();
 				
 				Vect errs=new Vect(model.solver.totalIter);
 				
-				util.pr(model.solver.totalIter);
+			//	util.pr(model.solver.totalIter);
 				for(int i=0;i<errs.length;i++)
 					errs.el[i]=model.solver.errs.get(i);
 				
 				util.plot(errs);
 			//	time.show();
 
-				util.pr("-----");
 				
 
 				boolean writeInit=false;

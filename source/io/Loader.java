@@ -204,15 +204,21 @@ public class Loader {
 					}
 				}
 				
+				//line=br.readLine();
+				//if(line==null|| line.equals(""))
+				//model.hasTwoNodeNumb=true;
+				//else
+				//model.hasTwoNodeNumb=getBooleanData(line);
+				
 				line=br.readLine();
 				if(line==null|| line.equals(""))
-				model.hasTwoNodeNumb=true;
+				model.rotateConnect=false;
 				else
-				model.hasTwoNodeNumb=getBooleanData(line);
+				model.rotateConnect=getBooleanData(line);
 		
 				//==============
 			
-				//if(model.motor) model.hasTwoNodeNumb=true;
+				if(model.motor) model.hasTwoNodeNumb=true;
 				//=========
 				
 			System.out.println();
@@ -512,8 +518,10 @@ public class Loader {
 
 				if(model.BCtype[j]==3) model.cpb=-1;
 			}
-			if(model.hasTwoNodeNumb && model.nRotReg>0)
+			if(model.hasTwoNodeNumb && model.rotateConnect && model.nRotReg>0){
+
 			 model.mapCommonNodes();	
+			}
 		}
 		
 		//=====================
@@ -818,7 +826,7 @@ public class Loader {
 
 				if(model.BCtype[j]==3) model.cpb=-1;
 			}
-			if(model.hasTwoNodeNumb && model.nRotReg>0)
+			if(model.hasTwoNodeNumb && model.rotateConnect && model.nRotReg>0)
 			 model.mapCommonNodes();	
 		}
 		
@@ -1033,7 +1041,7 @@ public class Loader {
 				if(model.BCtype[j]==3) model.cpb=-1;
 			}
 			model.setSliceBounds();
-			if(model.hasTwoNodeNumb && model.nRotReg>0)
+			if(model.hasTwoNodeNumb && model.rotateConnect && model.nRotReg>0)
 			 model.mapCommonNodes();	
 		}
 		
@@ -2706,7 +2714,7 @@ if(model.axiSym) model.height=2*Math.PI;
 
 			if(model.BCtype[j]==3) model.cpb=-1;
 		}
-		if(model.hasTwoNodeNumb && model.nRotReg>0)
+		if(model.hasTwoNodeNumb && model.rotateConnect && model.nRotReg>0)
 		 model.mapCommonNodes();	
 	}
 	

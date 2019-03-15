@@ -73,10 +73,10 @@ public class Model{
 	public CurrentWaveForm ia,ib,ic,va,vb,vc;
 	public String elType="hexahedron";
 	public SpMat Hs,Ms,Ks,Ls,Cs,Ss,Ps,Qs,Fs;
-	public SpMat Rs;
+	public SpMat Rs,Bs,BtBs;
 	public Mat eigVects,bigMat,Q;
 	public Vect lams,RHS,bU,bT,HpAp,HkAk;
-	public boolean AC,motor,modal,hasTwoNodeNumb,fullMotor,writeFiles,Tmethod,
+	public boolean AC,motor,modal,hasTwoNodeNumb,rotateConnect,fullMotor,writeFiles,Tmethod,
 	circuit,stranded,wavePC,loadFlux,loadPotentioal,loadPrevMag,loadPrevMech,loadForce,loadDisp,saveFlux,saveForce,saveDisp,saveStress,
 	transfer2DTo3D,magAnalysis,mechAnalysis,rotateRotor,axiSym;
 	public int forceCalcMode=1,dataType,snapShot=0,POD=-1;
