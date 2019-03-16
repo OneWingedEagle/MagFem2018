@@ -1500,15 +1500,14 @@ public void coupleFSMat(Model model){
 				
 			if(kp%2==0) kp++;
 		
-			kp=Math.min(kp,41);
+			kp=Math.min(kp,81);
 			
 			Q=new Mat(kk,kp);
 
 
 		double tt1=model.alpha1;
 		double tt2=model.alpha2;
-		double span=tt2-tt1;
-		util.pr(tt1+" ---------- "+tt2);
+		double period=tt2-tt1;
 
 		kph=(kp-1)/2;
 		
@@ -1521,15 +1520,15 @@ public void coupleFSMat(Model model){
 				jx=model.edgeOnFSIndices[i];
 				
 				Vect v=model.edge[i].node[0].getCoord();
-			double tt=util.getAng(v)-tt1;
+			double tt=util.getAng(v)%period;
 
 				for(int p=0;p<=kph;p++){
 					if(p==0){
 						Q.el[jx][p]=.5;
 					}else{
-				Q.el[jx][p]=Math.cos(2*PI*(p)*tt/span);
+				Q.el[jx][p]=Math.cos(2*PI*(p)*tt/period);
 				
-				Q.el[jx][p+kph]=Math.sin(2*PI*(p)*tt/span);
+				Q.el[jx][p+kph]=1e-3*Math.sin(2*PI*(p)*tt/period);
 					
 				}
 			
@@ -1541,51 +1540,38 @@ public void coupleFSMat(Model model){
 		}
 		}
 		else if(method==2){
-			kp=kk/4;
+			kp=kk/2;
 		
 			Q=new Mat(kk,kp);
 			
 		double tt1=model.alpha1;
 		double tt2=model.alpha2;
-		double span=tt2-tt1;
+		double period=tt2-tt1;
 
-		double dtt=span/(kp-1);
+		double dtt=period/(kp-1);
+		
 		
 		int jx=0;
 		
 		for(int i=1;i<=model.numberOfEdges;i++){
 			if(model.edgeOnFSIndices[i]>=0){	
-/*						boolean onBoundary=false;
-				for(int k=0;k<4;k++){
-				if(model.edge[i].node[0].onBound[k]){
-					onBoundary=true;
-					break;
-				}
-				}
-				
-				if(onBoundary) continue;*/
 				
 				jx=model.edgeOnFSIndices[i];
 				
 				Vect v=model.edge[i].node[0].getCoord();
-			double tt=util.getAng(v)-tt1;
-		//	util.pr(tt+"  "+model.rotAng);
-			if(model.edge[i].node[0].rotor){
-				//tt-=(step-1)*model.dt*model.rotSpeed;
-			
-			}
-			int it=(int)Math.floor(tt/dtt);
-	
-			Q.el[jx][it]=1-(tt-it*dtt)/dtt;
-			Q.el[jx][it+1]=1-Q.el[jx][it];
+			double tt=util.getAng(v);
 
-			
-			
+			for(int p=0;p<kp;p++){
+			Q.el[jx][p]=hatFunc(tt,p,dtt,period);
+			}
+
+	
 		}
 		}
 		}
 		
 		model.Q=Q;
+	
 
 		 Ks=new SpMat(model.numberOfUnknowns+kp);
 		for(int i=0;i<model.numberOfUnknownEdges;i++){
@@ -1616,14 +1602,26 @@ public void coupleFSMat(Model model){
 		for(int i=0;i<kp;i++){
 			Vect v1=model.Rs.amul(Q.getColVect(i));
 			Vect v2=Q.transp().mul(v1);
-			SpVect vs=new SpVect(v2);
 			
-			//vs.shownz();
+			SpVect vs=null;
+			
 			int nnz=0;
+			if(v2.abs().max()!=0){
+			 vs=new SpVect(v2);
+			
 			for(int k=0;k<vs.nzLength;k++)
 				if(vs.index[k]<=i){
 					nnz++;
 				}
+			}
+			else{
+			 vs=new SpVect(kp,1);
+			 vs.el[0]=0;
+			 vs.index[0]=i;
+			 nnz=1;
+			}
+			
+		
 			BtB.row[i]=new SpVect(kp,nnz);
 			for(int k=0;k<vs.nzLength;k++){
 				if(vs.index[k]<=i){
@@ -1634,10 +1632,15 @@ public void coupleFSMat(Model model){
 			}
 			//BtB.row[i].showr();
 		}
-		//Mat BtB=Q.transp().mul(model.Rs.mul(Q));
+		
+		//BtB.addToDiag(new Vect().ones(kp).times(1e3));
+
+		//Mat BtB1=Q.transp().mul(model.Rs.matForm(false).mul(Q));
 		//BtB.shownz();
 		model.BtBs=BtB;
 		//BtB.show("%8.3e");
+		//BtB.diag().show();
+		//BtB.diagSym().show();
 		
 		for(int i=0;i<kp;i++){
 			Ks.row[i+model.numberOfUnknowns]=new SpVect(model.numberOfUnknowns+kp,Bs.row[i].nzLength+BtB.row[i].nzLength);
@@ -1753,6 +1756,27 @@ public void reuseFSMat(Model model){
 		model.Hs=Ks;
 
 
+	
+}
+
+
+private double hatFunc(double tt,int px,double W,double period){
+	double result=0;
+
+	 
+	 tt=(tt-px*W)%period;
+	 
+		if(tt<0) tt+=period;
+		
+
+			if(tt<W || period-tt<W){
+			 if(tt<W && period-tt>W)
+				result=(W-tt)/W;
+			else if(tt>W && period-tt<W)
+				result=1-(period-tt)/W;
+			}
+	
+	return result;
 	
 }
 

@@ -23,7 +23,7 @@ public class Model{
 
 	public MagMatrix magMat;
 	public MechMatrix mechMat;
-	public int dim=3,iterMax=10000,nonLinIterMax=20,cpb=1,nRotReg;
+	public int dim=3,iterMax=10000,nonLinIterMax=30,cpb=1,nRotReg;
 	public double cpm=PI/2,Rg=1e5;
 	public int numberOfRegions, numberOfNodes,numberOfElements,numberOfEdges,nXYedges,
 	nBlocks,nBH,nLam;

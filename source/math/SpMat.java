@@ -909,8 +909,12 @@ public class SpMat  {
 		int I=getnRow();
 		int J=getnCol();
 		if(I!=J) throw new IllegalArgumentException("Matrix is not square");
-		Vect invDS=this.diagSym().abs().sqrt().inv();
-		
+
+		Vect vec=this.diagSym().abs().sqrt();
+		Vect invDS=new Vect(I);
+		for(int i=0;i<I;i++)
+			if(vec.el[i]!=0) invDS.el[i]=1./vec.el[i];
+			else  invDS.el[i]=1.;		
 		DMD(invDS);
 
 		b.timesVoid(invDS);
@@ -922,7 +926,13 @@ public class SpMat  {
 		int I=getnRow();
 		int J=getnCol();
 		if(I!=J) throw new IllegalArgumentException("Matrix is not square");
-		Vect invDS=this.diagSym().abs().sqrt().inv();
+		
+		Vect vec=this.diagSym().abs().sqrt();
+		Vect invDS=new Vect(I);
+		for(int i=0;i<I;i++)
+			if(vec.el[i]!=0) invDS.el[i]=1./vec.el[i];
+			else  invDS.el[i]=1.;		
+
 		DMD(invDS);
 
 

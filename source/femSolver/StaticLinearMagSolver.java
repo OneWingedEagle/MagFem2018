@@ -29,12 +29,15 @@ public class StaticLinearMagSolver{
 
 	model.magMat.setRHS(model);
 
+
 if(step==0)
 	model.setMagMat();
 
 
-	if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb)
+	if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb){
 	model.magMat.coupleFSMat(model);
+
+	}
 			
 
 	//=== known values go to right hand side 

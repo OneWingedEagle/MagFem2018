@@ -146,12 +146,12 @@ public class RunMag {
 							}
 							
 	
-							if(!model.nonLin || i==nBegin || model.Q!=null){
-							
+							if(!model.nonLin || i==nBegin ||model.Q!=null){
+								
 							
 									if(!model.loadPrevMag){
 										model.saveAp();		
-									
+										
 										x=model.solveMagLin(i-nBegin);	
 
 									}
@@ -190,11 +190,7 @@ public class RunMag {
 								
 										model.saveAp();				
 									}
-								
-									if(model.Q!=null)
-										x.zero();	
-								
-									
+				
 									x=model.solveNonLinear(x,true,i-nBegin);
 								}
 
@@ -280,8 +276,8 @@ public class RunMag {
 						model.writeMesh( folder+"\\bun"+i+".txt");
 						String fluxFile =  folder+"\\flux"+i+".txt";
 						model.writeB(fluxFile);
-						model.writeJ0(folder+"\\J"+i+".txt");
-						model.writeJe(folder+"\\Je"+i+".txt");
+					//	model.writeJ0(folder+"\\J"+i+".txt");
+					//	model.writeJe(folder+"\\Je"+i+".txt");
 
 					}
 

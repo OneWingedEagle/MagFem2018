@@ -21,13 +21,16 @@ public class StaticNonlinearMagSolver{
 	
 	public Vect solve(Model model,Vect x,boolean echo,int step){
 
-	
+		boolean old=false;
+		if(old) return solveOld(model, x, echo, step);
+
 		DecimalFormat dfB=new DecimalFormat("0.0000");
 		DecimalFormat dfe=new DecimalFormat("0.0E00");
 
 
 		int iterMax=model.iterMax;
 		int nonLinIterMax=model.nonLinIterMax;
+		
 
 		Vect Ci;
 		SpMat L;
@@ -35,8 +38,8 @@ public class StaticNonlinearMagSolver{
 		
 		int kx=0;
 		if(model.Q!=null){
-
-			 kx=model.Q.nCol;
+		 kx=model.Q.nCol;
+		 x.zero();
 		}
 		
 		Vect dA=new Vect(kx+model.numberOfUnknowns);
@@ -53,8 +56,8 @@ public class StaticNonlinearMagSolver{
 		double errFlux=1;
 
 		int nonLinIter=0;
-		model.errNRmax=1e-6;
-
+		model.errNRmax=1e-3;
+	
 		for( nonLinIter=0; errNR>model.errNRmax && nonLinIter<nonLinIterMax;nonLinIter++)
 
 			
@@ -78,17 +81,15 @@ public class StaticNonlinearMagSolver{
 			
 			model.setMagMat();
 		
+		
 			if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb){
-			//	if(model.Q!=null)
-			//		x.zero();	
-				
+					
 				if(nonLinIter==0)
 					model.magMat.coupleFSMat(model);
 				else
 					model.magMat.reuseFSMat(model);
 			}
-				
-
+		
 				Ks=model.Hs.deepCopy();
 				//Ks.shownz();
 
@@ -108,39 +109,24 @@ public class StaticNonlinearMagSolver{
 
 
 			Ci=Ks.scale(b);
+			
 			L=Ks.ichol();
 			
-			if(b.abs().max()>1e-11)
-				//dA=model.solver.ICCG(Ks,L, b,model.errCGmax,iterMax);
-				
-				//if(b.abs().max()>1e-6)
-				dA=model.solver.err0ICCG(Ks,L,b,1e-3*model.errCGmax,iterMax);	
+			if(b.abs().max()>1e-11){
+				dA=model.solver.ICCG(Ks,L, b,model.errCGmax,iterMax);
 
+			//dA=model.solver.ICCG(Ks,L, b,errNR*model.errNRmax,iterMax);	
+				//if(b.abs().max()>1e-6)
+				//dA=model.solver.err0ICCG(Ks,L,b,errNR*model.errNRmax,iterMax);	
+
+			}
 
 			if(model.solver.terminate) break;
 
 			dA.timesVoid(Ci);
-			
-/*			if(model.Q!=null){
-
-				int kp=model.Q.nCol;
-				Vect vp=new Vect(kp);
-				for(int k=0;k<vp.length;k++)
-					vp.el[k]=x.el[x.length-vp.length+k];
-
-			Vect interfaceA=model.Q.mul(vp);
-			
-			for(int i=1;i<=model.numberOfEdges;i++){
+		
+			x=x.add(dA);	
 				
-				if(model.edgeOnFSIndices[i]>=0){	
-					model.edge[i].setA(interfaceA.el[model.edgeOnFSIndices[i]]);
-				}
-			}
-
-			}*/
-
-			x=x.add(dA);		
-			
 			B1=model.getAllB();
 
 			model.setSolution(x);	
@@ -199,14 +185,13 @@ public class StaticNonlinearMagSolver{
 		System.out.println("=======================================================");
 		System.out.println();
 		
-
-
 		return x;
 
 	}
 
 	
-/*	public Vect solve(Model model,Vect x,boolean echo,int step){
+	public Vect solveOld(Model model,Vect x,boolean echo,int step){
+		
 
 		DecimalFormat dfB=new DecimalFormat("0.0000");
 		DecimalFormat dfe=new DecimalFormat("0.0E00");
@@ -218,7 +203,19 @@ public class StaticNonlinearMagSolver{
 		boolean fluxErr=true;
 		Vect Ci;
 		SpMat L;
-		Vect dA=new Vect(model.numberOfUnknowns);
+
+
+		int kx=0;
+		if(model.Q!=null){
+		 kx=model.Q.nCol;
+		 x.zero();
+		}
+		
+		Vect dA=new Vect(kx+model.numberOfUnknowns);
+			
+	
+		model.magMat.setRHS(model);
+
 
 		Vect[] B1,B2;
 
@@ -234,7 +231,7 @@ public class StaticNonlinearMagSolver{
 
 			
 		{
-			
+			totalNonlinIter++;
 
 			if(echo)
 			{
@@ -251,162 +248,19 @@ public class StaticNonlinearMagSolver{
 
 			model.setMagMat();
 
-
-			Vect dv=new Vect();
-
-			if(model.analysisMode>0)
-			{
-
-
-				if(model.eddyTimeIntegMode==0 || step==0)
-				{
-
-
-					Ks=model.Hs.addNew(model.Ss);
-					Vect vp=model.getUnknownAp();
-
-					Vect vi=model.getUnknownA();
-
-					dv=vp.sub(vi);
+			
+			if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb){
 					
-				
-
-					b=model.b.sub(model.HkAk).add(model.Ss.smul(dv));
-				}
-
-				else if(model.eddyTimeIntegMode==1){
-
-//crank
-					Vect vp=model.getUnknownAp();
-					Vect vi=model.getUnknownA();
-			
-
-					b=model.b.add(model.bT).sub(model.HkAk.add(model.HpAp).times(0.5)).add(model.Ss.smul(vp.sub(vi)));
-
-					Ks=model.Hs.timesNew(.5).addNew(model.Ss);
-
-				}
-
-				else  if(model.eddyTimeIntegMode<=-2){
-
-
-					 Ks=getCircuitHs(model,step);
-
-
-					int nNeut=model.nNeutral;
-					int nUnCur=model.numberOfUnknownCurrents;
-
-
-					Vect vk=model.getUnknownA();
-
-					Vect vk2=new Vect(model.numberOfUnknowns);
-
-					for(int j=0;j<vk.length;j++)
-						vk2.el[j]=vk.el[j];
-
-					
-					Vect vp=model.getUnknownAp();
-
-					Vect vp2=new Vect(model.numberOfUnknowns);
-
-					for(int j=0;j<vp.length;j++)
-						vp2.el[j]=vp.el[j];
-
-					dv=vp2.sub(vk2);
-
-					model.b=model.b.add(model.Ss.smul(dv));
-
-
-					
-					for(int i=0;i<nUnCur;i++){
-						int nr=model.unCurRegNumb[i];
-
-						double vprev=model.region[nr].terminalVoltagep;
-						if(	this.stpNumb==0)
-							vprev=model.region[nr].terminalVoltage;
-						
-				
-						double ip=model.region[nr].currentp;
-
-		
-						if(model.eddyTimeIntegMode==-3){
-														
-							double cf=this.theta;
-							
-							if(model.HpAp!=null){
-								model.b=model.b.sub(model.HpAp.times(1-cf));
-									}
-			
-					
-						model.b.el[model.Hs.nRow-nUnCur+i-nNeut]=cf*(model.lastRows[i].dot(vp2)
-						+(((1-cf)*model.region[nr].getWireRes()*ip
-								+(1-cf)*model.vNeutral
-								-(cf*model.region[nr].terminalVoltage+(1-cf)*vprev)))*model.dt			
-						-this.coilInduct*ip)/model.height;
-											
-
-						model.b=model.b.sub(model.lastRows[i].times((1-cf)*model.region[nr].currentp).vectForm());
-
-						}
-						else{
-				
-							model.b.el[model.Hs.nRow-nUnCur+i-nNeut]=model.lastRows[i].dot(vp2)
-							+((model.vNeutral-model.region[nr].terminalVoltage)*model.dt
-							-this.coilInduct*ip)/model.height;
-
-						}
-
-					}
-
-					SpMat Q=new SpMat(model.b.length,model.b.length);
-					for(int i=0;i<model.b.length;i++){
-						if(i<vk.length)
-							Q.row[i]=null;
-						else
-							Q.row[i]=Ks.row[i].deepCopy();
-					}
-
-			
-					Vect v3=new Vect(model.numberOfUnknowns);
-					for(int j=0;j<vk.length;j++){
-						v3.el[j]=vk.el[j];
-					}
-
-					for(int i=0;i<nUnCur;i++){
-						int nr=model.unCurRegNumb[i];
-						v3.el[vk.length+i]=model.region[nr].current;
-
-					}
-					if(model.nNeutral>0)
-					v3.el[vk.length+nUnCur]=model.vNeutral;
-					
-			
-			
-					model.b=model.b.sub(Q.smul(v3));
-
-
-					if(model.eddyTimeIntegMode==-3){
-				
-						b=model.b.sub(model.HkAk.times((this.theta)));
-
-					}
-					else{
-
-						b=model.b.sub(model.HkAk);
-						
-					}
-			
-
-				}
+				if(nonLinIter==0)
+					model.magMat.coupleFSMat(model);
+				else
+					model.magMat.reuseFSMat(model);
 			}
-
-
-			else
-			{
+	
 				Ks=model.Hs.deepCopy();
 
-				b=model.b.sub(model.HkAk);
-			}
+				b=model.RHS.sub(model.HkAk);
+			
 
 
 
@@ -414,72 +268,46 @@ public class StaticNonlinearMagSolver{
 			Ci=Ks.scale(b);
 			L=Ks.ichol();
 
-			if(b.abs().max()>1e-6)
-				dA=model.solver.err0ICCG(Ks,L,b,1e-3*model.errMax,iterMax);	
+			if(b.abs().max()>1e-11)
+				//dA=model.solver.err0ICCG(Ks,L,b,1e-3*model.errCGmax,iterMax);	
+					dA=model.solver.ICCG(Ks,L, b,model.errCGmax,iterMax);
 
 			if(model.solver.terminate) break;
 
 
 			dA.timesVoid(Ci);
 			
-			
 
-			int nUnCur=model.numberOfUnknownCurrents;
-			int nNeut=model.nNeutral;
-
-			// very important 
-			for(int k=0;k<nUnCur+nNeut;k++){
-			dA.el[dA.length-1-k]=dA.el[dA.length-1-k];
-			}
-			
-		//	dA.show();
 
 			x=x.add(dA);
 			
-			//x=x.times(.5).add(x.add(dA).times(.5));
 
 			model.up=x.deepCopy();
-
-
-			if(model.eddyTimeIntegMode<=-2){
-
-				
-				Vect vk=model.getUnknownA();
-
-				Vect vk2=new Vect(model.numberOfUnknowns);
-
-				for(int j=0;j<vk.length;j++)
-					vk2.el[j]=vk.el[j];
-
-				Vect vp=model.getUnknownAp();
-
-				Vect vp2=new Vect(model.numberOfUnknowns);
-
-				for(int j=0;j<vp.length;j++)
-					vp2.el[j]=vp.el[j];
-
-				dv=vp2.sub(vk2);
-
-				if(nNeut>0)
-					model.vNeutral=x.el[x.length-nNeut];
-
-				for(int k=0;k<nUnCur;k++){
-					int nr=model.unCurRegNumb[k];
-					model.region[nr].inducedVoltage=model.lastRows[k].dot(dv)/model.dt*model.height;
-
-					model.region[nr].current=x.el[x.length-nUnCur-nNeut+k];
-
-				}
-			}
-
-
-
 
 
 			if(fluxErr){
 				B1=model.getAllB();
 
 				model.setSolution(x);	
+				
+				if(model.Q!=null){
+
+					int kp=model.Q.nCol;
+					Vect vp=new Vect(kp);
+					for(int k=0;k<vp.length;k++)
+						vp.el[k]=x.el[x.length-vp.length+k];
+
+				Vect interfaceA=model.Q.mul(vp);
+				
+				for(int i=1;i<=model.numberOfEdges;i++){
+					
+					if(model.edgeOnFSIndices[i]>=0){	
+						model.edge[i].setA(interfaceA.el[model.edgeOnFSIndices[i]]);
+					}
+				}
+
+				}
+
 
 				model.setB();	
 
@@ -490,7 +318,7 @@ public class StaticNonlinearMagSolver{
 			else{
 
 				if(nonLinIter==1){
-					err0=model.b.norm();
+					err0=model.RHS.norm();
 					if(err0<errMax) err0=1;
 				}
 				err=errMax/1e-6*dA.norm()/err0;
@@ -502,28 +330,26 @@ public class StaticNonlinearMagSolver{
 
 		}
 		
-		int nUnCur=model.numberOfUnknownCurrents;
-
-
-		for(int k=0;k<nUnCur;k++){
-			int nr=model.unCurRegNumb[k];
-
-	 model.region[nr].currentp=model.region[nr].current;
-		}
-
 
 		model.HpAp=model.HkAk.deepCopy();
 
 		System.out.println();
-
-		System.out.println("    nonlinear Iteration: "+nonLinIter+"     Bmax: "+dfB.format(model.Bmax)+ "     error: "+dfe.format(err));
-
+		System.out.println("-----------------------------------------------------");
+		System.out.println(" Nonlinear Iteration: "+nonLinIter+
+				"     Bmax: "+dfB.format(model.Bmax)+ "     error: "+dfe.format(err));
+		System.out.println("-----------------------------------------------------");
 		System.out.println();
+		
+		System.out.println();
+		System.out.println("=======================================================");
+		System.out.println("Total number of ICCG iterations: "+model.solver.totalIter);
+		System.out.println("Total number of Nonlinear iterations: "+totalNonlinIter);
+		
 
 		return x;
 	}
 
 
-*/
+
 
 }
