@@ -17,7 +17,7 @@ import math.util;
 public class NolninearMagSolver {
 
 	boolean relaxedNR=true;
-	int totalNonlinIter;
+	int totalNonlinIterx;
 	double coilInduct=0e-2;
 	double theta=.5;
 	
@@ -59,15 +59,13 @@ public class NolninearMagSolver {
 
 		model.solver.terminate(false);
 
-		
-
 		int nonLinIter=0;
 
 
 		for( nonLinIter=0; errNR>errNRMax && nonLinIter<nonLinIterMax;nonLinIter++)
 			
 		{
-			totalNonlinIter++;
+			totalNonlinIterx++;
 
 			if(echo)
 			{
@@ -363,7 +361,7 @@ public class NolninearMagSolver {
 		System.out.println();
 		System.out.println("=======================================================");
 		System.out.println("Total number of ICCG iterations: "+model.solver.totalIter);
-		System.out.println("Total number of Nonlinear iterations: "+totalNonlinIter);
+		System.out.println("Total number of Nonlinear iterations: "+totalNonlinIterx);
 		
 		System.out.println();
 		

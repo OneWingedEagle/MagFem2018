@@ -1479,7 +1479,7 @@ public void coupleFSMat(Model model){
 	//if(model.motor&& model.hasTwoNodeNumb){
 
 		
-		int method=1;
+		int method=2;
 
 
 
@@ -1496,8 +1496,7 @@ public void coupleFSMat(Model model){
 	 
 		else if(method==1){
 			kp=kk/4;
-			
-				
+						
 			if(kp%2==0) kp++;
 		
 			kp=Math.min(kp,81);
@@ -1541,7 +1540,7 @@ public void coupleFSMat(Model model){
 		}
 		else if(method==2){
 			kp=kk/2;
-		
+				
 			Q=new Mat(kk,kp);
 			
 		double tt1=model.alpha1;

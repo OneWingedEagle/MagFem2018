@@ -252,7 +252,7 @@ public class RunMagIPM {
 
 										// x=new Vect(model.numberOfUnknowns);
 
-										x=model.solveMagLin(i-model.nBegin);	
+										x=model.solveMagLin(i-model.nBegin,x);	
 									
 
 									}

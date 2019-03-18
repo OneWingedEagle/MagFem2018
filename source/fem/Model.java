@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import femSolver.FEMsolver;
+import femSolver.StaticNonlinearMagSolver;
 import io.Loader;
 import io.Writer;
 import materialData.BHCurve;
@@ -85,6 +86,7 @@ public class Model{
 	public int[][][] commonNodes;
 	public int[] edgeOnFSIndices=null;
 	public SpMatSolver solver=new SpMatSolver();
+	public StaticNonlinearMagSolver nonlinearSolver=null;
 	FEMsolver femSolver=new FEMsolver();;
 
 	public Vect up,upp,xp,Ci,ud,udd,hp;
@@ -308,6 +310,8 @@ public class Model{
 	public void setNonLin(boolean nonlin){
 
 		nonLin=nonlin;
+		
+		if(nonlin) nonlinearSolver=new StaticNonlinearMagSolver();
 
 		for(int ir=1;ir<=numberOfRegions;ir++){
 			if(region[ir].isNonLinear)
@@ -2211,9 +2215,9 @@ public class Model{
 
 
 
-	public Vect solveMagLin(int n){
+	public Vect solveMagLin(int step,Vect x_init){
 
-		return femSolver.solveMagLin(this, n);
+		return femSolver.solveMagLin(this,step,x_init);
 	}
 
 	public Vect solveNonLinear(Vect x, boolean b,int step){
@@ -2247,6 +2251,25 @@ public class Model{
 
 		if(analysisMode==2)
 			setNodePhi(x);
+		
+		if(this.Q!=null){
+
+			int kp=this.Q.nCol;
+			Vect vp=new Vect(kp);
+			for(int k=0;k<vp.length;k++)
+				vp.el[k]=x.el[x.length-vp.length+k];
+
+		Vect interfaceA=this.Q.mul(vp);
+		
+		for(int i=1;i<=this.numberOfEdges;i++){
+			
+			if(this.edgeOnFSIndices[i]>=0){	
+				this.edge[i].setA(interfaceA.el[this.edgeOnFSIndices[i]]);
+			}
+		}
+
+		}
+		this.setB();	
 
 	}
 
@@ -2428,6 +2451,50 @@ public class Model{
 
 		}
 		return Bmax;
+	}
+	
+	public double getFluxErrSquared(Vect[] u, Vect[] v){	
+
+		double err_sqared=getErrorSquared(u,v)/getSumB_Squared(u,v);
+		
+		return err_sqared;
+	}
+	
+	public double getErrorSquared(Vect[] u, Vect[] v){	
+
+		double sum=0;
+
+		for(int i=0;i<u.length;i++){
+
+
+			sum+=u[i].sub(v[i]).norm2();
+		
+		}
+		return sum;
+	}
+
+	public double getSumB_Squared(Vect[] u, Vect[] v){	
+
+		double sum=0;
+		for(int i=0;i<u.length;i++){
+
+			double Bn2=u[i].norm2()+v[i].norm2();
+			sum+=Bn2;
+
+		}
+		return sum;
+	}
+
+	public double getSumB_Squared(){	
+
+		double sum=0;
+
+		for(int i=1;i<=numberOfElements;i++){
+			double Bn2=element[i].getB().norm2();
+			sum+=Bn2;
+
+		}
+		return sum;
 	}
 
 	public double getRmax(){	

@@ -34,7 +34,7 @@ public class FEMsolver {
 
 
 
-	public Vect solveMagLin(Model model, int step){
+	public Vect solveMagLin(Model model, int step,Vect x_init){
 		
 		Vect x=null;
 	
@@ -48,7 +48,7 @@ public class FEMsolver {
 			else if(model.analysisMode==0){
 			
 			StaticLinearMagSolver solver= new StaticLinearMagSolver();
-				x= solver.solve(model,  step);
+				x= solver.solve(model,  step,x_init);
 			//BlockStaticLinearMagSolver solver=new BlockStaticLinearMagSolver();
 			//solver.solve(model,  step);
 		
@@ -69,8 +69,7 @@ public class FEMsolver {
 		
 		if(model.analysisMode==0){
 	
-			StaticNonlinearMagSolver solver= new StaticNonlinearMagSolver();
-			x= solver.solve(model, x,true,step);
+			model.nonlinearSolver.solve(model, x,true,step);
 			
 		}
 		if(model.analysisMode==1|| model.analysisMode==2){

@@ -623,7 +623,7 @@ public class SpMatSolver {
 		Vect z=solveTriangular(L,r,A);
 		
 		Vect p=z;
-		double resIni=r.norm(),res=resIni;
+		double resIni=b.norm(),res=resIni;
 		int k=0;
 		double temp,alpha,beta;
 		double  error;

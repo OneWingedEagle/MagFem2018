@@ -903,6 +903,23 @@ public class SpMat  {
 		return Ls;
 	}
 
+	public Vect scale(Vect b, Vect x_init){
+		int I=getnRow();
+		int J=getnCol();
+		if(I!=J) throw new IllegalArgumentException("Matrix is not square");
+
+		Vect vec=this.diagSym().abs().sqrt();
+		Vect invDS=new Vect(I);
+		for(int i=0;i<I;i++)
+			if(vec.el[i]!=0) invDS.el[i]=1./vec.el[i];
+			else  invDS.el[i]=1.;		
+		DMD(invDS);
+
+		b.timesVoid(invDS);
+		x_init.timesVoid(invDS);
+
+		return invDS;
+	}
 
 	public Vect scale(Vect b){
 
@@ -921,6 +938,7 @@ public class SpMat  {
 
 		return invDS;
 	}
+	
 	public Vect scale(){
 
 		int I=getnRow();

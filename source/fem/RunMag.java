@@ -146,13 +146,14 @@ public class RunMag {
 							}
 							
 	
-							if(!model.nonLin || i==nBegin ||model.Q!=null){
+							if(!model.nonLin || i==nBegin/* ||model.Q!=null*/){
 								
 							
 									if(!model.loadPrevMag){
 										model.saveAp();		
 										
-										x=model.solveMagLin(i-nBegin);	
+										x=model.solveMagLin(i-nBegin,x);	
+									
 
 									}
 									else
@@ -190,7 +191,7 @@ public class RunMag {
 								
 										model.saveAp();				
 									}
-				
+						
 									x=model.solveNonLinear(x,true,i-nBegin);
 								}
 
@@ -216,8 +217,6 @@ public class RunMag {
 		
 							}
 
-
-							util.pr(" >>>>>>>>>> Bmax >>>>>>>"+model.Bmax);
 
 						model.resetReluctForce();
 						model.setReluctForce();

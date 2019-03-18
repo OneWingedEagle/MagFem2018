@@ -16,9 +16,13 @@ public class StaticLinearMagSolver{
 
 	public StaticLinearMagSolver(){	}
 
-	public Vect solve(Model model, int step ){
+	public Vect solve(Model model,int step,Vect x_init){
 		
 		this.stepNumb=step;
+		
+		if(x_init.length==0)
+			x_init=new Vect(model.numberOfUnknowns);
+
 
 	
 	SpMat L=new SpMat();
@@ -30,16 +34,21 @@ public class StaticLinearMagSolver{
 	model.magMat.setRHS(model);
 
 
-if(step==0)
+if(step==0){
 	model.setMagMat();
+
+}
 
 
 	if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb){
 	model.magMat.coupleFSMat(model);
-
+	
+	if(x_init.length<model.RHS.length){
+	int kp=model.Q.nCol;
+	x_init.extend(new Vect(kp));
 	}
-			
-
+	}
+	
 	//=== known values go to right hand side 
 
 	model.RHS=model.RHS.sub(model.HkAk);
@@ -50,22 +59,24 @@ if(step==0)
 
 	Vect Ci=Ks.scale(model.RHS);
 
-		L=Ks.ichol();
+	x_init.timesVoid(Ci.inv());
+		
+	L=Ks.ichol();
 
 		if(model.RHS.abs().max()>1e-8){
 
 			if(!usePrev || model.xp==null){
-				x=model.solver.ICCG(Ks,L, model.RHS,model.errCGmax,model.iterMax);
+				x=model.solver.ICCG(Ks,L, model.RHS,model.errCGmax,model.iterMax,x_init);
 			}
 			else{
-				//x=model.solver.ICCG(Ks,L, model.RHS,model.errCGmax,model.iterMax,model.xp);
-				x=model.solver.err0ICCG(Ks,L, model.RHS,1e-2*model.errCGmax,model.iterMax,model.xp);	
+				x=model.solver.ICCG(Ks,L, model.RHS,model.errCGmax,model.iterMax,model.xp);
+				//x=model.solver.err0ICCG(Ks,L, model.RHS,1e-2*model.errCGmax,model.iterMax,model.xp);	
 
 			}
 		}
 
 		else
-			x=new Vect(x.length);
+			x=new Vect(x_init.length);
 
 		model.xp=x.deepCopy();
 
@@ -73,30 +84,14 @@ if(step==0)
 		x.timesVoid(Ci);
 		
 
-		if(model.Q!=null){
-
-			int kp=model.Q.nCol;
-			Vect vp=new Vect(kp);
-			for(int k=0;k<vp.length;k++)
-				vp.el[k]=x.el[x.length-vp.length+k];
-
-		Vect interfaceA=model.Q.mul(vp);
-		
-		for(int i=1;i<=model.numberOfEdges;i++){
-			
-			if(model.edgeOnFSIndices[i]>=0){	
-				model.edge[i].setA(interfaceA.el[model.edgeOnFSIndices[i]]);
-			}
-		}
-
-		}
-
 		model.setSolution(x);	
 		
+		
 
-		model.setB();	
 
 		System.out.println("Bmax ( linear analysis): "+model.Bmax);
+		
+
 
 		return x;
 

@@ -180,7 +180,7 @@ public class RunMagGear {
 									model.saveAp();		
 
 
-									x=model.solveMagLin(i);	
+									x=model.solveMagLin(i,x);	
 
 								}
 								else

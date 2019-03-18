@@ -35,17 +35,20 @@ public class StaticNonlinearMagSolver{
 		Vect Ci;
 		SpMat L;
 		
-		
+
 		int kx=0;
 		if(model.Q!=null){
 		 kx=model.Q.nCol;
-		 x.zero();
+		
 		}
 		
+		
 		Vect dA=new Vect(kx+model.numberOfUnknowns);
+		
+		model.setSolution(x);
+
+		 x.zero();
 			
-
-
 		Vect[] B1,B2;
 
 		model.solver.terminate(false);
@@ -53,10 +56,15 @@ public class StaticNonlinearMagSolver{
 		model.magMat.setRHS(model);
 		
 		double errNR=1,resNR=0,resNR0=1;
-		double errFlux=1;
+		double fluxErr=1;
+		
+		boolean useFluxErr=false;
 
 		int nonLinIter=0;
-		model.errNRmax=1e-3;
+		model.errNRmax=1e-3; // not working reliably
+		double convRatio=1e-3;
+		if(model.Q!=null) convRatio=1e-5;
+		double updatedConvCrot=1;
 	
 		for( nonLinIter=0; errNR>model.errNRmax && nonLinIter<nonLinIterMax;nonLinIter++)
 
@@ -70,17 +78,18 @@ public class StaticNonlinearMagSolver{
 				System.out.println();
 				System.out.println("    nonlinear Iteration: "+nonLinIter+
 						"     Bmax: "+dfB.format(model.Bmax)+ "     error: "+dfe.format(errNR));
-				System.out.println(" Flux    error: "+dfe.format(errFlux));
+				System.out.println(" Flux    error: "+dfe.format(fluxErr));
 				System.out.println();
 			}
 
 			SpMat Ks=new SpMat();
 
 			Vect b=new Vect();
-
 			
+
 			model.setMagMat();
 		
+
 		
 			if(!model.rotateConnect && model.motor&& model.hasTwoNodeNumb){
 					
@@ -104,24 +113,32 @@ public class StaticNonlinearMagSolver{
 			
 			resNR=b.norm();
 			
-		
+		if(useFluxErr)
+			errNR=fluxErr;
+		else
 			errNR=resNR/resNR0;
+			
+		
 
-
+			updatedConvCrot=errNR*convRatio;
+			
 			Ci=Ks.scale(b);
 			
 			L=Ks.ichol();
 			
+			
 			if(b.abs().max()>1e-11){
-				dA=model.solver.ICCG(Ks,L, b,model.errCGmax,iterMax);
+			//	dA=model.solver.ICCG(Ks,L, b,model.errCGmax,iterMax);
 
-			//dA=model.solver.ICCG(Ks,L, b,errNR*model.errNRmax,iterMax);	
+				dA=model.solver.ICCG(Ks,L, b,updatedConvCrot,iterMax);	
+			//dA=model.solver.ICCG(Ks,L, b,model.errCGmax*1e-3,iterMax);	
 				//if(b.abs().max()>1e-6)
-				//dA=model.solver.err0ICCG(Ks,L,b,errNR*model.errNRmax,iterMax);	
+			//dA=model.solver.err0ICCG(Ks,L,b,errNR*iccgConvRatio,iterMax);	
 
 			}
 
 			if(model.solver.terminate) break;
+			
 
 			dA.timesVoid(Ci);
 		
@@ -131,30 +148,10 @@ public class StaticNonlinearMagSolver{
 
 			model.setSolution(x);	
 			
-			if(model.Q!=null){
-
-				int kp=model.Q.nCol;
-				Vect vp=new Vect(kp);
-				for(int k=0;k<vp.length;k++)
-					vp.el[k]=x.el[x.length-vp.length+k];
-
-			Vect interfaceA=model.Q.mul(vp);
-			
-			for(int i=1;i<=model.numberOfEdges;i++){
-				
-				if(model.edgeOnFSIndices[i]>=0){	
-					model.edge[i].setA(interfaceA.el[model.edgeOnFSIndices[i]]);
-				}
-			}
-
-			}
-
-
-			model.setB();	
-			
+		
 			B2=model.getAllB();
 			
-			errFlux=model.getDiffMax(B1,B2);
+			fluxErr=model.getFluxErrSquared(B1,B2);
 
 			
 	
@@ -168,7 +165,7 @@ public class StaticNonlinearMagSolver{
 		System.out.println("-----------------------------------------------------");
 		System.out.println(" Nonlinear Iteration: "+nonLinIter+
 				"     Bmax: "+dfB.format(model.Bmax)+ "     error: "+dfe.format(errNR));
-		System.out.println("Flux    error: "+dfe.format(errFlux));
+		System.out.println("Flux    error: "+dfe.format(fluxErr));
 		System.out.println("-----------------------------------------------------");
 		System.out.println();
 		
@@ -309,8 +306,6 @@ public class StaticNonlinearMagSolver{
 				}
 
 
-				model.setB();	
-
 				B2=model.getAllB();
 			
 				err=model.getDiffMax(B1,B2);//+Math.abs(dA.el[dA.length-1]);
@@ -323,7 +318,6 @@ public class StaticNonlinearMagSolver{
 				}
 				err=errMax/1e-6*dA.norm()/err0;
 				model.setSolution(x);	
-				model.setB();	
 
 			}
 

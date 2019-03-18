@@ -664,7 +664,7 @@ public class RunMagIPMforMech {
 
 										// x=new Vect(model.numberOfUnknowns);
 
-										x=model.solveMagLin(i);	
+										x=model.solveMagLin(i,x);	
 
 									}
 									else

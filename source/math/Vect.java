@@ -447,10 +447,18 @@ public Vect add(double a){
 	}
 	
 	public void extend(Vect D){
-		if(length!=D.length) throw new IllegalArgumentException("vectrs have different lengths");
+		Vect temp=this.deepCopy();
 		
-		for(int i=0;i<length;i++)
-			el[i]=el[i]*D.el[i];
+		this.length+=D.length;
+
+		el=new double[this.length];
+		
+		for(int i=0;i<temp.length;i++)
+			el[i]=temp.el[i];
+		
+		int ix=0;
+		for(int i=0;i<D.length;i++)
+			el[ix++]=temp.el[i];
 	}
 
 	public Vect times(Vect D){
