@@ -159,6 +159,25 @@ public class BoundarySet {
 
 
 			double Au0=-1e6;
+			
+			byte b0=0,b1=1,b2=2;
+
+			
+			int[] edgeDir=new int[model.numberOfEdges+1];
+			for(int i=1;i<=model.numberOfElements;i++){
+				int[] edgeNumb=model.element[i].getEdgeNumb();
+				
+			
+				for(int j=0;j<model.nElEdge;j++)
+					if(j<4){
+						edgeDir[edgeNumb[j]]=b0;
+						}
+					else if(j<8)
+						edgeDir[edgeNumb[j]]=b1;
+					else{
+						edgeDir[edgeNumb[j]]=b2;
+					}
+			}
 		
 
 			for(int i=1;i<=model.numberOfEdges;i++){
@@ -168,7 +187,7 @@ public class BoundarySet {
 				if(model.edge[i].node[0].getCoord(2)<.01251 && 
 						model.edge[i].node[1].getCoord(2)<.01251){
 					model.edge[i].edgeKnownT=true;
-					if(	model.edge[i].direction==1){
+					if(	edgeDir[i]==1){
 
 						model.edge[i].T=Au0*model.edge[i].length;
 
@@ -879,6 +898,25 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 
 
 			else if(model.dim==3) {
+				
+				byte b0=0,b1=1,b2=2;
+
+				int[] edgeDir=new int[model.numberOfEdges+1];
+				for(int i=1;i<=model.numberOfElements;i++){
+					int[] edgeNumb=model.element[i].getEdgeNumb();
+					
+				
+					for(int j=0;j<model.nElEdge;j++)
+						if(j<4){
+							edgeDir[edgeNumb[j]]=b0;
+							}
+						else if(j<8)
+							edgeDir[edgeNumb[j]]=b1;
+						else{
+							edgeDir[edgeNumb[j]]=b2;
+						}
+				}
+			
 
 				double Au0=model.unifB.el[0]*(model.spaceBoundary[3]-model.spaceBoundary[2]);
 				double Au2=model.unifB.el[1]*(model.spaceBoundary[5]-model.spaceBoundary[4]);
@@ -900,7 +938,7 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 							model.edge[i].setKnownA(0);
 
 						else if(model.edge[i].node[0].onBound[3] && 
-								model.edge[i].node[1].onBound[3] && model.edge[i].direction==2)
+								model.edge[i].node[1].onBound[3] && edgeDir[i]==b2)
 						{
 							model.edge[i].setKnownA(Au0*model.edge[i].length);
 						}
@@ -921,7 +959,7 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 							model.edge[i].setKnownA(0);
 
 						else if(model.edge[i].node[0].onBound[5] && 
-								model.edge[i].node[1].onBound[5] && model.edge[i].direction==0)
+								model.edge[i].node[1].onBound[5] && edgeDir[i]==b0)
 
 							model.edge[i].setKnownA(Au2*model.edge[i].length);
 					}
@@ -941,7 +979,7 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 							model.edge[i].setKnownA(0);
 
 						else if(model.edge[i].node[0].onBound[1] && 
-								model.edge[i].node[1].onBound[1] && model.edge[i].direction==1)
+								model.edge[i].node[1].onBound[1] && edgeDir[i]==b1)
 						{
 
 							model.edge[i].setKnownA(Au4*model.edge[i].length);

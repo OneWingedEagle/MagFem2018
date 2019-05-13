@@ -89,7 +89,6 @@ import fem.RunMech;
 
 		
 				 if(model.magAnalysis && !model.mechAnalysis) {
-			
 					runMag(); 
 
 					}

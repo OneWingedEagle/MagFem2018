@@ -2,10 +2,16 @@ package math;
 
 import static java.lang.Math.*;
 
+import java.awt.Color;
+
 import io.Loader;
 
 import java.util.Arrays;
 import java.util.Random;
+
+import javax.swing.JFrame;
+
+import org.math.plot.Plot2DPanel;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
@@ -1057,7 +1063,7 @@ x2.hshow();
 		System.out.println();
 	}
 	
-	public void plot(){
+	public void plotx(){
 		
 		for(int i=0;i<this.nRow;i++){
 			for(int j=0;j<this.nCol;j++){
@@ -1069,6 +1075,38 @@ x2.hshow();
 			System.out.println();
 	}
 	}
+	
+	public  void plot(){
+		
+		 Plot2DPanel plot = new Plot2DPanel();
+	
+		 for(int i=0;i<nRow;i++){
+	
+			 int L=nCol;
+			 Vect x=new Vect(L);
+			 Vect y=new Vect(L);
+			 for(int j=0;j<L;j++){
+				
+				 if(el[i][j]==1){
+				 x.el[j]=j;
+				 y.el[j]=i;
+				 }
+				
+			 }
+
+			 
+			 plot.addScatterPlot("",Color.red, x.el, y.el);
+
+			 
+		 }
+
+		  JFrame frame = new JFrame("a plot panel");
+		   frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		  frame.setSize(800,800);
+		  frame.setContentPane(plot);
+		  frame.setVisible(true);
+		}
+	
 	public void rswap(int m, int n){
 		double[] temp=new double[this.nCol];
 		temp=this.el[m];

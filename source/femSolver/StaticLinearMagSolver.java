@@ -3,6 +3,7 @@ package femSolver;
 import static java.lang.Math.PI;
 
 import fem.Model;
+import io.Writer;
 import math.Mat;
 import math.SpMat;
 import math.SpVect;
@@ -53,8 +54,20 @@ if(step==0){
 
 	model.RHS=model.RHS.sub(model.HkAk);
 
-	
+
 	SpMat  Ks=model.Hs.deepCopy();
+
+	if(1>10){
+	//	Ks.plot();
+	Mat M=Ks.matForm();
+	//util.show(M.size());
+	for(int i=0;i<M.nRow;i++) M.el[i][i]*=.5;
+	M=M.add(M.transp());
+	Writer wr=new Writer();
+	wr.writeArray(M.el, "C:\\Users\\Hassan\\Desktop\\Km_hassan3.txt");
+	wr.writeArray(model.RHS.el, "C:\\Users\\Hassan\\Desktop\\Fe_hassan3.txt");
+	}
+	
 
 
 	Vect Ci=Ks.scale(model.RHS);
@@ -67,6 +80,7 @@ if(step==0){
 
 			if(!usePrev || model.xp==null){
 				x=model.solver.ICCG(Ks,L, model.RHS,model.errCGmax,model.iterMax,x_init);
+				//x=model.solver.CG(Ks, model.RHS,model.errCGmax,model.iterMax,x_init);
 			}
 			else{
 				x=model.solver.ICCG(Ks,L, model.RHS,model.errCGmax,model.iterMax,model.xp);

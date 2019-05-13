@@ -34,16 +34,10 @@ int stepNumb;
 
 
 		//=== known values go to right hand side 
-	
-	
+		
 		model.RHS=model.RHS.sub(model.HkAk);
 		
-
-
-
 		if(model.eddyTimeIntegMode==0) {
-				
-
 				
 				
 				if(step==0)

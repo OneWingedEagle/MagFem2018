@@ -9,6 +9,7 @@ public class Element {
 	public byte dim;
 	private int[] vertexNumb;
 	private int[] edgeNumb;
+	private boolean[] edgeReverse;
 	public int[] edgeXYNumb;
 	private Vect nu,sigma,B,J,Je,M;
 	private Vect stress;
@@ -23,34 +24,41 @@ public class Element {
 		if(type.equals("triangle") ){
 			this.vertexNumb=new int[3];
 			this.edgeNumb=new int[3];
+			edgeReverse=new boolean[3];
 			dim=2;
 		}
 			
 		else if(type.equals("quadrangle") ){
 			this.vertexNumb=new int[4];
 			this.edgeNumb=new int[4];
+			edgeReverse=new boolean[4];
 			dim=2;
 		}
 		else if(type.equals("tetrahedron") ){
 			this.vertexNumb=new int[4];
 			this.edgeNumb=new int[6];
+			edgeReverse=new boolean[6];
 			dim=3;
 		}
 		
 		else if(type.equals("prism") ){
 			this.vertexNumb=new int[6];
 			this.edgeNumb=new int[9];
+			edgeReverse=new boolean[9];
 			dim=3;
 		}
 		else if(type.equals("hexahedron") ){
 			this.vertexNumb=new int[8];
 			this.edgeNumb=new int[12];
+			edgeReverse=new boolean[12];
+
 			dim=3;
 		}
 		
 		else if(type.equals("pyramid") ){
 			this.vertexNumb=new int[5];
 			this.edgeNumb=new int[8];
+			edgeReverse=new boolean[8];
 			dim=3;
 		}
 		
@@ -60,6 +68,7 @@ public class Element {
 		this.nu=new Vect().ones(dim);
 
 
+		
 		
 	}
 
@@ -279,6 +288,22 @@ public class Element {
 		for(int i=0;i<nEdge;i++)
 			ne[i]=edgeNumb[i];
 		return  ne;
+	}
+	
+	public void setEdgeReverse(boolean[] er){
+		int nEdge=er.length;
+		edgeReverse=new boolean[nEdge];
+		for(int i=0;i<nEdge;i++){
+			edgeReverse[i]=er[i];
+		}
+	}
+	
+	public boolean[] getEdgeReverse(){
+		int nEdge=edgeReverse.length;
+		boolean[] er=new boolean[nEdge];
+		for(int i=0;i<nEdge;i++)
+			er[i]=edgeReverse[i];
+		return  er;
 	}
 	
 	public void setVertNumb(int[] nv){

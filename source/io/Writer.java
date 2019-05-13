@@ -1397,11 +1397,11 @@ public class Writer {
 		
 		int ix=0;
 
-		for(int i=1;i<=model.numberOfEdges;i++)
+/*		for(int i=1;i<=model.numberOfEdges;i++)
 			if(model.edge[i].direction!=2)
 			{
 				ix++;
-			}
+			}*/
 		
 		
 		
@@ -1423,12 +1423,12 @@ public class Writer {
 				if(mapEdNd[ned]>0) continue;
 			
 			//int[] end=model.edge[ned].endNodeNumber;
-			
+			/*
 			if(model.edge[ned].direction!=2){
 				ix++;
 				nodep[ix]=model.edge[ned].node[0].getCoord().add(model.edge[ned].node[1].getCoord()).times(.5);
 				mapEdNd[ned]=ix;
-			}
+			}*/
 			}
 		}
 		

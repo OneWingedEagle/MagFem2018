@@ -1000,8 +1000,9 @@ public class SpMat  {
 
 	
 	public void plot(){
-		int N=400;
-		if(this.nRow<N)
+		int N=this.nRow;
+		//if(N>10000) N=6000;
+		if(this.nRow<=N)
 			util.plot(this);
 		else{
 			util.pr("Matrix too large to plot. It is plotted partially.");
@@ -1590,6 +1591,35 @@ public class SpMat  {
 			}
 		}
 		return m;
+	}
+	
+	
+	public Vect solveICCG(Vect b){
+
+		Vect x=new Vect(this.nRow);
+	
+
+		 SpMatSolver solver=new SpMatSolver();
+
+		 solver.terminate(false);
+		
+		SpMat  Ks=this.deepCopy();
+
+
+		Vect Ci=Ks.scale(b);
+
+			
+		SpMat L=Ks.ichol();
+
+			if(b.abs().max()>1e-8){
+				x=solver.ICCG(Ks,L, b,1e-6,2000,x);
+				
+			//	x=solver.CG(Ks,b,1e-6,2000,x);
+					
+			}
+		x.timesVoid(Ci);
+			
+		return x;
 	}
 
 }

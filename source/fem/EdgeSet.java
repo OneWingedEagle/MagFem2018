@@ -21,7 +21,12 @@ public class EdgeSet {
 		if(model.elCode==5) {setEdgePyramid(model); return;}
 
 
+		//
+	
 
+	
+
+	
 	}
 
 	public void setEdgeHexa(Model model){
@@ -48,13 +53,17 @@ public class EdgeSet {
 		edgeNodes[0]=new IntVect(numbOfEdges);
 		edgeNodes[1]=new IntVect(numbOfEdges);
 
+		boolean[][] edgeEdgeRev=new boolean[model.numberOfElements+1][model.nElEdge];
 
 		for(int i=1;i<=model.numberOfElements;i++){
 			int[] vertNumb=model.element[i].getVertNumb();
 			for(int j=0;j<model.nElEdge;j++){
 				n1=vertNumb[edgeLocalNodes[j][0]];
 				n2=vertNumb[edgeLocalNodes[j][1]];
-				if(n2<n1) { int tmp=n1; n1=n2; n2=tmp;}
+				if(n2<n1) { 
+					int tmp=n1; n1=n2; n2=tmp;
+					edgeEdgeRev[i][j]=true;
+					}
 				m=util.search(nodeNode[0][n1].el,n2);
 
 				if(m<0){
@@ -88,27 +97,16 @@ public class EdgeSet {
 
 		for(int i=1;i<=nEdge;i++){
 		//	model.edge[i]=new Edge(edgeNodes[0].el[i],edgeNodes[1].el[i]);
+	
 			model.edge[i]=new Edge(model.node[edgeNodes[0].el[i]],model.node[edgeNodes[1].el[i]]);
 			model.edge[i].setLength(model.edgeLength(i));
+		//	util.pr("edge "+i+" ("+model.edge[i].node[0].id+"¨"+model.edge[i].node[1].id+")");
 		}
-
-		byte b0=0,b1=1,b2=2;
 
 		for(int i=1;i<=model.numberOfElements;i++){
-			int[] edgeNumb=model.element[i].getEdgeNumb();
-			for(int j=0;j<model.nElEdge;j++)
-				if(j<4){
-					model.edge[edgeNumb[j]].setDirection(b0);
-					}
-				else if(j<8)
-					model.edge[edgeNumb[j]].setDirection(b1);
-				else{
-					model.edge[edgeNumb[j]].setDirection(b2);
-				}
+			model.element[i].setEdgeReverse(edgeEdgeRev[i]);
+			
 		}
-
-		
-	
 			
 		model.setMinEdge();
 		model.setMaxEdge();
@@ -128,12 +126,14 @@ public class EdgeSet {
 		int n1,n2,m;
 		int[][] edgeNodes=new int[20*model.numberOfNodes+1][2];
 
-		for(int i=1;i<=model.numberOfElements;i++){
+		boolean[][] edgeEdgeRev=new boolean[model.numberOfElements+1][model.nElEdge];
+
+			for(int i=1;i<=model.numberOfElements;i++){
 			int[] vertNumb=model.element[i].getVertNumb();
 			for(int j=0;j<model.nElEdge;j++){
 				n1=vertNumb[edgeLocalNodes[j][0]];
 				n2=vertNumb[edgeLocalNodes[j][1]];
-				if(n2<n1) { int tmp=n1; n1=n2; n2=tmp;}
+				if(n2<n1) { int tmp=n1; n1=n2; n2=tmp; edgeEdgeRev[i][j]=true;}
 				m=util.search(nodeNode[0][n1],n2);
 
 				if(m<0){
@@ -163,6 +163,10 @@ public class EdgeSet {
 
 		}
 
+		for(int i=1;i<=model.numberOfElements;i++){
+			model.element[i].setEdgeReverse(edgeEdgeRev[i]);
+			
+		}
 
 		model.setMinEdge();
 		model.setMaxEdge();
@@ -180,12 +184,14 @@ public class EdgeSet {
 		int n1,n2,m;
 		int[][] edgeNodes=new int[10*model.numberOfNodes+1][2];
 
+		boolean[][] edgeEdgeRev=new boolean[model.numberOfElements+1][model.nElEdge];
+
 		for(int i=1;i<=model.numberOfElements;i++){
 			int[] vertNumb=model.element[i].getVertNumb();
 			for(int j=0;j<model.nElEdge;j++){
 				n1=vertNumb[edgeLocalNodes[j][0]];
 				n2=vertNumb[edgeLocalNodes[j][1]];
-				if(n2<n1) { int tmp=n1; n1=n2; n2=tmp;}
+				if(n2<n1) { int tmp=n1; n1=n2; n2=tmp;edgeEdgeRev[i][j]=true;}
 				m=util.search(nodeNode[0][n1],n2);
 
 				if(m<0){
@@ -215,6 +221,13 @@ public class EdgeSet {
 			model.edge[i].setLength(model.edgeLength(i));
 
 		}
+		
+		for(int i=1;i<=model.numberOfElements;i++){
+			
+			model.element[i].setEdgeReverse(edgeEdgeRev[i]);
+			
+		}
+
 
 
 		model.setMinEdge();
@@ -235,12 +248,14 @@ public class EdgeSet {
 		int n1,n2,m;
 		int[][] edgeNodes=new int[20*model.numberOfNodes+1][2];
 
+		boolean[][] edgeEdgeRev=new boolean[model.numberOfElements+1][model.nElEdge];
+
 		for(int i=1;i<=model.numberOfElements;i++){
 			int[] vertNumb=model.element[i].getVertNumb();
 			for(int j=0;j<model.nElEdge;j++){
 				n1=vertNumb[edgeLocalNodes[j][0]];
 				n2=vertNumb[edgeLocalNodes[j][1]];
-				if(n2<n1) { int tmp=n1; n1=n2; n2=tmp;}
+				if(n2<n1) { int tmp=n1; n1=n2; n2=tmp; edgeEdgeRev[i][j]=true;}
 				m=util.search(nodeNode[0][n1],n2);
 
 				if(m<0){
@@ -271,18 +286,10 @@ public class EdgeSet {
 
 		}
 
-
-		byte b0=0,b1=1,b2=2;
 		for(int i=1;i<=model.numberOfElements;i++){
-			int[] edgeNumb=model.element[i].getEdgeNumb();
-			for(int j=0;j<model.nElEdge;j++)
-				if(j==0|| j==3)
-					model.edge[edgeNumb[j]].setDirection(b0);
-				else if(j==1 || j==4)
-					model.edge[edgeNumb[j]].setDirection(b1);
-				else if(j>5)
-					model.edge[edgeNumb[j]].setDirection(b2);
-
+			
+			model.element[i].setEdgeReverse(edgeEdgeRev[i]);
+			
 		}
 
 		model.setMinEdge();
@@ -339,10 +346,10 @@ public class EdgeSet {
 
 		}
 
-		byte b2=2;
+/*		byte b2=2;
 		for(int i=1;i<=model.numberOfEdges;i++){
 			model.edge[i].setDirection(b2);
-		}
+		}*/
 
 		int ned=model.numberOfEdges;
 

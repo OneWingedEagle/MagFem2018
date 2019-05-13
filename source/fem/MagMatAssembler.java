@@ -15,13 +15,13 @@ import math.util;
  * @author Hassan.
  *         Created Aug 20, 2012.
  */
-public class MagMatrix {
+public class MagMatAssembler {
 
 	private Calculator calc;
 
-	public  MagMatrix(){}
+	public  MagMatAssembler(){}
 
-	public  MagMatrix(Model model){
+	public  MagMatAssembler(Model model){
 
 		this.calc=new Calculator(model);
 	}
@@ -147,16 +147,12 @@ public class MagMatrix {
 							Ak= model.edge[model.edge[columnEdgeNumb].map].A;
 						}
 						
-	
-						
-						
 						model.HkAk.el[matrixRow]+=H1[j][k]*Ak;
 
 						if(model.edge[columnEdgeNumb].edgeKnown  ){
 						
 							continue;
 						}
-
 
 
 						//=======================
@@ -532,6 +528,7 @@ model.Rs=new SpMat(Rs);
 				
 				if(hasJ){
 					J=model.element[i].getJ();
+		
 				}
 
 
@@ -573,7 +570,6 @@ model.Rs=new SpMat(Rs);
 					if(hasJ ){
 
 						model.RHS.el[matrixRow]+=Cj[j];	
-
 
 					}
 

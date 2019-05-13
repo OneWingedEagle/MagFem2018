@@ -24,6 +24,16 @@ public class RunMag {
 
 	public void runMag(Model model, Main main){
 		
+		if(model.POD==1){
+
+				POD pod=new POD();
+				if(model.AC)
+				pod.setMagPOD_AC(model,main);	
+			
+	
+			return;
+		}
+		
 			String folder=model.resultFolder;
 
 
@@ -115,7 +125,6 @@ public class RunMag {
 
 
 				for(int i=nBegin;i<=nEnd;i+=inc){
-
 					
 				double t0=0;
 		
@@ -151,7 +160,6 @@ public class RunMag {
 							
 									if(!model.loadPrevMag){
 										model.saveAp();		
-										
 										x=model.solveMagLin(i-nBegin,x);	
 									
 
@@ -275,7 +283,7 @@ public class RunMag {
 						model.writeMesh( folder+"\\bun"+i+".txt");
 						String fluxFile =  folder+"\\flux"+i+".txt";
 						model.writeB(fluxFile);
-					//	model.writeJ0(folder+"\\J"+i+".txt");
+						model.writeJ0(folder+"\\J"+i+".txt");
 					//	model.writeJe(folder+"\\Je"+i+".txt");
 
 					}

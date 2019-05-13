@@ -95,6 +95,8 @@ public class Calculator {
 
 
 		if(hasM){ M=model.element[ie].getM();}
+		
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
 
 		int n;
 
@@ -199,13 +201,14 @@ public class Calculator {
 					jac=jacobian(vertexNode,localCo);
 
 					detJac=abs(jac.determinant());
-
+				//	if(ie==1) jac.show("%10.5e");
 					wsJ=ws*detJac;
 
 
-					rotNe=rotNe(jac,localCo);
+					rotNe=rotNe(jac,localCo,edgeDir);
+					//if(ie==1) rotNe[0].hshow();
 					if(hasJ || eddy)
-						Ne=Ne(jac,localCo);
+						Ne=Ne(jac,localCo,edgeDir);
 
 					for(int i=0;i<model.nElEdge;i++){
 
@@ -223,7 +226,8 @@ public class Calculator {
 
 							term1=wsJ*rotNe[i].times(nu).dot(rotNe[j]);
 							H1[i][j]+=term1;
-
+						
+			
 							if(nonLinear){
 								term2=wsJ*rotNe[i].dot(B)*rotNe[j].dot(B.times(nuVar));
 								H2[i][j]+=term2;
@@ -248,13 +252,18 @@ public class Calculator {
 		if(eddy){
 			lowSym(H3);
 		}
-
+		
 		model.H2=H2;
 		model.H3=H3;
 		model.C=C;
 		model.Cj=Cj;
 
-
+/*if(ie==1) {
+	int[] nn=model.element[ie].getVertNumb();
+	for (int j=0;j<nn.length;j++)
+		model.node[nn[j]].getCoord().hshow();
+}*/
+		//if(ie==1) util.show(H1);
 
 		return H1;
 
@@ -276,6 +285,8 @@ public class Calculator {
 
 		Node[] vertexNode=model.elementNodes(ie);
 		Edge[] elemEdges=model.elementEdges(ie);
+		
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
 		
 		double sigma=model.element[ie].getSigma().el[0];
 
@@ -327,7 +338,7 @@ public class Calculator {
 
 					wsJ=ws*detJac;
 
-					Ne=Ne(jac,localCo);
+					Ne=Ne(jac,localCo,edgeDir);
 
 					for(int j=0;j<model.nElVert;j++){
 						gradN[j]=G.mul(localGradsN[j]);
@@ -474,6 +485,8 @@ public class Calculator {
 		double E=model.element[ie].getYng().el[0];
 		double v=model.element[ie].getPois().el[0];
 
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
+
 		double G=E/(1+v);
 
 
@@ -578,9 +591,9 @@ public class Calculator {
 						ws=detJac;
 
 
-					rotNe=rotNe(jac,localCo);
+					rotNe=rotNe(jac,localCo,edgeDir);
 					if(hasJ || eddy)
-						Ne=Ne(jac,localCo);
+						Ne=Ne(jac,localCo,edgeDir);
 
 					for(int i=0;i<model.nElEdge;i++){
 
@@ -632,6 +645,8 @@ public class Calculator {
 		Vect nu=new Vect(2),nuVar=new Vect(2);
 		Vect B=new Vect();
 		Vect M=new Vect();		
+
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
 
 
 
@@ -730,7 +745,7 @@ public class Calculator {
 
 				wsJ=ws*detJac;
 
-				rotNe=rotNe(jac,localCo);
+				rotNe=rotNe(jac,localCo,edgeDir);
 				if(hasJ || eddy)
 					Ne=NeQuad(localCo);
 
@@ -991,6 +1006,9 @@ public class Calculator {
 		Vect  M=new Vect();		
 
 		if(hasM){ M=model.element[ie].getM();}
+		
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
+
 
 		int n3ang=this.PW3ang.length; 		
 
@@ -1107,9 +1125,9 @@ public class Calculator {
 				wsJ=ws*detJac;
 
 
-				rotNe=rotNePrism(jac,localCo);
+				rotNe=rotNePrism(jac,localCo,edgeDir);
 				if(hasJ || eddy)
-					Ne=NePrism(jac,localCo);
+					Ne=NePrism(jac,localCo,edgeDir);
 
 				for(int i=0;i<model.nElEdge;i++){
 
@@ -1181,7 +1199,9 @@ public class Calculator {
 		if(eddy)
 			sigma=model.element[ie].getSigma().el[2];
 
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
 
+		
 		Node[] vertexNode=model.elementNodes(ie);
 		double[][] H1=new double[model.nElEdge][model.nElEdge];
 		double[][] H2=new double[model.nElEdge][model.nElEdge];
@@ -1262,7 +1282,7 @@ public class Calculator {
 					ws=detJac;
 
 
-				rotNe=rotNe(jac,localCo);
+				rotNe=rotNe(jac,localCo,edgeDir);
 
 				if(hasJ || eddy)
 					Ne=NeQuad(localCo);
@@ -2010,10 +2030,10 @@ public class Calculator {
 
 	
 
-	public  Vect[] rotNe(Mat jac, Vect localCo){
+	public  Vect[] rotNe(Mat jac, Vect localCo, boolean[] edgeReverse){
 
 		if(this.elCode==1) return rotNeQuad(jac,localCo);
-		if(this.elCode==3) return rotNePrism(jac,localCo);
+		if(this.elCode==3) return rotNePrism(jac,localCo,edgeReverse);
 		Vect[] rotNe=new Vect[this.nElEdge];
 
 		double a=localCo.el[0];
@@ -2027,8 +2047,6 @@ public class Calculator {
 		for(int j=0;j<3;j++)
 			grad[j]=invJac.getColVect(j);
 
-
-
 		rotNe[0]= grad[1].times(-(1-c)).add(grad[2].times(-(1-b))).times(0.125).cross(grad[0]); 
 		rotNe[1]= grad[1].times((1-c)).add(grad[2].times(-(1+b))).times(0.125).cross(grad[0]);
 		rotNe[2]= grad[1].times(-(1+c)).add(grad[2].times(+(1-b))).times(0.125).cross(grad[0]);
@@ -2041,6 +2059,11 @@ public class Calculator {
 		rotNe[9]= grad[0].times((1-b)).add(grad[1].times(-(1+a))).times(0.125).cross(grad[2]);
 		rotNe[10]= grad[0].times(-(1+b)).add(grad[1].times(+(1-a))).times(0.125).cross(grad[2]);
 		rotNe[11]= grad[0].times((1+b)).add(grad[1].times(+(1+a))).times(0.125).cross(grad[2]);
+
+	
+		for(int k=0;k<rotNe.length;k++)
+			if(edgeReverse[k])
+				rotNe[k].timesVoid(-1);
 
 
 		return rotNe;
@@ -2089,7 +2112,7 @@ public class Calculator {
 
 
 
-	public Vect[] rotNePrism(Mat jac,Vect localCo){
+	public Vect[] rotNePrism(Mat jac,Vect localCo,boolean[] edgeReverse){
 
 		double c=localCo.el[2];
 
@@ -2115,6 +2138,10 @@ public class Calculator {
 		rotNe[6]=grad[0].cross(grad[2]);
 		rotNe[7]=grad[1].cross(grad[2]);
 		rotNe[8]=grad[0].add(grad[1]).times(-1).cross(grad[2]);
+
+		for(int k=0;k<rotNe.length;k++)
+			if(edgeReverse[k])
+				rotNe[k].timesVoid(-1);
 
 
 		return rotNe;
@@ -2326,7 +2353,7 @@ public class Calculator {
 		return N;
 	}
 
-	public  Vect[] Ne(Mat jac,Vect localCo){
+	public  Vect[] Ne(Mat jac,Vect localCo, boolean[] edgeReverse){
 		double a=localCo.el[0];
 		double b=localCo.el[1];
 		double c=localCo.el[2];
@@ -2350,13 +2377,18 @@ public class Calculator {
 		Ne[9]= grad[2].times((1+a)*(1-b)*0.125); 
 		Ne[10]= grad[2].times((1-a)*(1+b)*0.125); 
 		Ne[11]= grad[2].times((1+a)*(1+b)*0.125); 
+		
+		for(int k=0;k<Ne.length;k++)
+			if(edgeReverse[k])
+				Ne[k].timesVoid(-1);
 
 
 		return Ne;
 
 	}
 
-	public  Vect[] NePrism(Mat jac,Vect localCo){
+	public  Vect[] NePrism(Mat jac,Vect localCo, boolean[] edgeReverse)
+	{
 
 		double a=localCo.el[0];
 		double b=localCo.el[1];
@@ -2384,6 +2416,10 @@ public class Calculator {
 		Ne[6]= grad[2].times(a);
 		Ne[7]= grad[2].times(b);
 		Ne[8]= grad[2].times(1-a-b);
+		
+		for(int k=0;k<Ne.length;k++)
+			if(edgeReverse[k])
+				Ne[k].timesVoid(-1);
 
 		return Ne;
 
@@ -2946,6 +2982,9 @@ public class Calculator {
 		Node[] vertexNode=model.elementNodes(ie);
 		Edge[] elemEdges=model.elementEdges(ie);
 		Vect elemVec=new Vect(this.nElVert);
+		
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
+
 
 		double detJac,ws=1;
 		int n=this.PW[0].length;	
@@ -2979,7 +3018,7 @@ public class Calculator {
 
 					gradN=gradN(jac,localCo);
 
-					Ne=Ne(jac,localCo);
+					Ne=Ne(jac,localCo,edgeDir);
 					
 					for(int i=0;i<this.nElVert;i++)
 						for(int j=0;j<this.nElEdge;j++)	
@@ -3074,6 +3113,8 @@ public class Calculator {
 		Node[] vertexNode=model.elementNodes(ie);
 		double[][] M=new double[this.nElVert][this.nElEdge];
 
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
+
 		double detJac,ws=1;
 
 		Mat jac;
@@ -3100,7 +3141,7 @@ public class Calculator {
 					else
 						ws=detJac;
 
-					Ne=Ne(jac,localCo);
+					Ne=Ne(jac,localCo,edgeDir);
 
 
 					gradN=gradN(jac,localCo);
@@ -4503,6 +4544,8 @@ public class Calculator {
 		if(model.fluxLoaded || model.elCode==0) return model.element[i].getB();
 		else if(this.elCode==3) model.element[i].getB();
 
+		boolean[] edgeDir=model.element[i].getEdgeReverse();
+
 		Vect B=new Vect(this.dim);
 		Mat jac=new Mat(this.dim,this.dim);
 		Node[] vertex=model.elementNodes(i);
@@ -4510,7 +4553,7 @@ public class Calculator {
 		Vect[] rotNe=new Vect[this.nElEdge];
 		if(this.dim==3){
 			jac=jacobian(vertex,lc);
-			rotNe=rotNe(jac,lc);
+			rotNe=rotNe(jac,lc,edgeDir);
 		}
 		else if(this.elCode==1){
 			jac=jacobian(vertex,lc);
@@ -4542,6 +4585,7 @@ public class Calculator {
 
 
 
+		boolean[] edgeDir=model.element[ie].getEdgeReverse();
 
 
 		int n=this.PWNL[0].length; 
@@ -4576,7 +4620,7 @@ public class Calculator {
 					wsJ=ws*detJac;
 
 
-					rotNe=rotNe(jac,localCo);
+					rotNe=rotNe(jac,localCo,edgeDir);
 
 
 					for(int i=0;i<model.nElEdge;i++){

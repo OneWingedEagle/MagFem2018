@@ -53,10 +53,10 @@ public class MeshConverter {
 		MeshConverter mf=new MeshConverter();
 	//	mf.hexaToTetraNeu();
 		
-	mf.quadToTriang();
+	//mf.quadToTriang();
 	//mf.triToQuad();
 
-		
+		//mf.prismToHexa();
 	
 	//mf.hexaToTetra();
 		
@@ -110,6 +110,19 @@ public class MeshConverter {
 		writer.writeMeshHexaToPyramid(model,pyrMesh);
 	}
 	
+	public void prismToHexa(){
+		String bun=util.getFile();
+		if(bun==null || bun.equals("") )return;
+		Model model=new Model();
+		model.loadMesh(bun);
+
+		String folder=new File(bun).getParentFile().getPath();
+		String pyrMesh = folder + "//hexa.txt";
+
+		if(model.elCode==3)
+			writer.writeMeshPrismToHexa(model,pyrMesh);
+		}
+		
 public void hexaToTetra()
 	
 	{

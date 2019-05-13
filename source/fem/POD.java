@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
 
 import Jama.Matrix;
 import Jama.QRDecomposition;
+import femSolver.ACMagSolver;
 import femSolver.StaticMORNonlinearMagSolver;
 import main.Main;
 import math.Complex;
@@ -624,6 +625,208 @@ public class POD {
 			}
 		 
 		 return W2;
+	}
+	
+	public void setMagPOD_AC(Model model, Main main){
+		
+		
+		double tStart=System.currentTimeMillis();
+
+		String fluxFolder="";
+		
+		if(model.saveFlux){
+			fluxFolder = System.getProperty("user.dir")+"\\fluxes";
+		
+		File dfolder = new File(fluxFolder);
+		if(dfolder.exists())
+			util.deleteDir(dfolder);
+		dfolder.mkdir();
+
+	}
+		
+		//model.writeMesh(fluxFolder+File.separator+"bun.txt");
+		
+
+		String solutionfile=fluxFolder +"\\snaps.txt";
+
+		model.setMagBC();
+		
+		int L=model.numberOfUnknowns;
+
+		int D1=model.snapShot;
+		
+		//Mat	As=new Mat(model.loader.loadArrays(L,D1, solutionfile));
+		Mat	As=new Mat(L,D1);
+
+
+		ACMagSolver solver=new ACMagSolver();
+		model.dt=1e-2;
+		Vect x;
+		for(int i=0;i<D1;i++){
+			model.setJ(i*model.dt);
+			x=solver.solve(model, i);
+			util.pr(x.length+"  "+L);
+			As.setCol(x, i);
+			model.dt/=10;
+			
+		}
+
+
+
+
+
+		util.pr(" Using "+D1+" raw basis.");
+		
+
+
+		
+
+		Vect A=new Vect(model.numberOfUnknowns);
+		Vect Ap=new Vect(model.numberOfUnknowns);
+		MatSolver ms=new MatSolver();
+		
+
+
+	
+		int jx=0;
+
+		
+		if(model.analysisMode>0){
+			model.magMat.setConductMat(model);
+			model.Ss.times(model.nInc);
+			}
+
+
+		Mat W=new Mat(L,D1);
+		
+		
+		for(int j=0;j<D1;j++){
+			W.setCol(As.getColVect(j), j);
+		}
+
+		W.normalizeColumns();
+	
+		
+		
+		Mat C=W.transp().mul(W).times(1.0/D1);
+			
+		 Eigen eg2=new Eigen(C);
+		 
+		 Mat Q=eg2.V;
+		 
+		 Mat Phi=W.mul(Q);
+
+
+		//W=indepW(W,1e-2);
+		
+		// W=indepWC(W,1e-6);
+
+
+		 Mat PhiT=Phi.transp();
+
+	
+		double dts=model.dt/model.nInc;
+
+
+		Mat Mr=PhiT.mul(model.Hs.smul(Phi));
+
+
+		
+		Mat Sr=null;
+		
+		if(model.analysisMode>0)
+			Sr=PhiT.mul(model.Ss.smul(Phi));
+		
+		if(model.analysisMode>0){
+			Mr=Mr.add(Sr);
+		}
+
+
+		for(int i=	model.nBegin;i<=	model.nEnd;	i+=model.nInc){
+
+
+			
+			double t1=i*dts;
+			
+			
+			int last=0;
+			
+			if(i+model.nInc>=model.nEnd) last=1;
+			
+				
+			main.gui.tfX[0].setText(Integer.toString(i)+"/"+(model.nEnd));
+			main.gui.tfX[1].setText(formatter.format(model.TrqZ));
+				
+		
+	
+	
+		//	model.setdJfromCurrentWaves(t1);
+			model.setJ(t1);
+		
+
+			model.magMat.setRHS(model,false);
+					
+			Vect br=null;
+			if(model.analysisMode==0){
+				br=PhiT.mul(model.RHS);
+			}
+			else{
+				br=PhiT.mul(model.RHS.add(model.Ss.smul(Ap)));
+			}
+
+	
+			Vect Ar;
+
+			if(br.norm()>1e-6){
+
+				Ar=ms.gaussel(Mr, br);
+			}
+			else
+				Ar=new Vect(br.length);	
+
+			
+			Ap=A.deepCopy();
+		    A=Phi.mul(Ar);
+		 
+
+		
+		    model.setSolution(A);
+				
+			model.setB();
+				
+		
+
+
+				if(model.saveFlux)
+					if(model.saveFlux){
+						String fluxFile = fluxFolder+"\\flux"+i+".txt";
+					
+						model.writeB(fluxFile);
+					}
+
+
+				if(model.solver.terminate) break;
+
+		
+			
+			if(model.solver.terminate) break;
+
+			}
+		
+		
+
+		
+		double tEnd=System.currentTimeMillis();
+		
+		util.pr("-------------------");
+		util.pr("Elaspsed Time (sec):");
+		util.pr((tEnd-tStart)/1000.0);
+		
+/*		 Complex[] Y=DFT.dft(TB.el);
+		 int N=Y.length;
+		  for(int k=0;k<Y.length;k++){
+				 util.pr(Y[k].norm()/N);
+		}*/
 	}
 	
 	

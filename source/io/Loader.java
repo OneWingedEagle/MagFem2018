@@ -252,13 +252,17 @@ public class Loader {
 			BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
 			String line;
 			line=getNextDataLine(br);
+			util.pr("// data type (0: Magnetic)");
+			util.pr(line);
 			int dataType =getIntData(line);
 			model.dataType=dataType;
 			
 			line=getNextDataLine(br);
+			util.pr("// dimension (2: 2D, 3:3D ");
 			int dim =getIntData(line);
 
 			line=getNextDataLine(br);
+			util.pr("// coordCode (0: Cartesian, 1: Cylindrical ");
 			int coordCode =getIntData(line);
 			model.coordCode=coordCode;
 			
@@ -295,10 +299,15 @@ public class Loader {
 
 	
 			line=getNextDataLine(br);
+			
+			util.pr("// ANALYSIS MODE (0: Magnetostatic, 1:  A-method,  2: A-fi-method ");
+			
 			int am =getIntData(line);
 			model.analysisMode=am;
 			
 			line=getNextDataLine(br);
+			util.pr("// NONLINEAR (0: Linear , 1: Nonliear ");
+
 			boolean nonlin=getBooleanData(line);;
 			
 			model.setNonLin(nonlin);
@@ -1560,18 +1569,6 @@ public void average(String bun1, String bun2,String bun3){
 			}
 	
 
-/*			for(int i=1;i<=model.numberOfNodes;i++){
-
-				model.node[i].setU_is_known(true);
-
-			}
-			int nNode;
-			while(scr.hasNext()){
-				nNode=Integer.parseInt(scr.next());
-				model.node[nNode].setU_is_known(false);
-			}
-
-			model.setNodalStress();*/
 
 			scr.close();
 
@@ -2007,9 +2004,16 @@ public void average(String bun1, String bun2,String bun3){
 		boolean b=false;
 		String[] sp=line.split(regex);	
 		
-		if(sp[sp.length-1].startsWith("t"))	
+		if(sp[sp.length-1].startsWith("t") || sp[sp.length-1].equals("1"))	
 			b=true;
-		
+		else 	if(sp[sp.length-1].startsWith("f") || sp[sp.length-1].equals("0"))	
+			b=false;
+		else {
+			System.err.println(line);
+			System.err.println(" Bad input!");
+			System.exit(1);
+			return false;
+		}
 		return b;
 
 	}

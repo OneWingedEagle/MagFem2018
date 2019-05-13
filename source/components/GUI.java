@@ -73,26 +73,7 @@ public class GUI extends JFrame implements ActionListener{
 					//dataFile= System.getProperty("user.dir") + "\\dataCondSurf.txt";
 					dataFile= System.getProperty("user.dir") + "\\inputs\\mesh\\dataModel2D.txt";
 					
-					//meshFile= System.getProperty("user.dir") + "\\bunLabyringth.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataCondDular.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataCondSurf.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataLabyringth.txt";
-					//meshFile= System.getProperty("user.dir") + "\\prob20.txt";
-					////dataFile= System.getProperty("user.dir") + "\\dataProb20.txt";
-					
-					//meshFile= System.getProperty("user.dir") + "\\coilcoreY1.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataCoilCoreY.txt";
-					
-					
-					//meshFile= System.getProperty("user.dir") + "\\prismEl3layer.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataPrismJ.txt";
-					
-					
-					
-					//meshFile= System.getProperty("user.dir") + "\\inputs\\mesh\\cube_unif.txt";
-					//dataFile= System.getProperty("user.dir") + "\\inputs\\data\\data_unif.txt";
-					//meshFile= System.getProperty("user.dir") + "\\inputs\\mesh\\model3D2.txt";
-					//dataFile= System.getProperty("user.dir") + "\\inputs\\data\\dataModel3D2.txt";
+
 				}
 				
 				else if(tag==1){
@@ -139,19 +120,24 @@ public class GUI extends JFrame implements ActionListener{
 				else if(tag==3){
 					
 				//	meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\mot4th2D1piece.txt";
+					//meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\oldWay//motor2parts2.txt";
 					meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\motor2parts.txt";
 				//	meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\mot4th2DFine.txt";
 					dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\dataMot4th2Dpbc.txt";
-			//	meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\oldway_fine\\mot4th2DFine.txt";
+					//dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\oldWay\\dataMot4th2D.txt";
 				//dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\oldway_fine\\dataMot4th2Dpbc.txt";
 					
-				//	meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\motorFiner90.txt";
-				//	dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\dataMotor.txt";
+				//	meshFile="D:\\JavaWorks\\FEM problems\\AL sheet\\static\\bb\\bun.txt";
+				//	dataFile="D:\\JavaWorks\\FEM problems\\AL sheet\\static\\bb\\data.txt";
+					
+					meshFile="D:\\JavaWorks\\FEM problems\\Hamed solver\\circular\\bun.txt";
+					dataFile="D:\\JavaWorks\\FEM problems\\Hamed solver\\circular\\data.txt";
+
 				}
 				else if(tag==4){
 					
-					meshFile= System.getProperty("user.dir") + "\\statFrameSegPrismFinIns.txt";
-					dataFile= System.getProperty("user.dir") + "\\dataMechStatFrameSeg3DLamin.txt";
+					//meshFile= System.getProperty("user.dir") + "\\statFrameSegPrismFinIns.txt";
+					//dataFile= System.getProperty("user.dir") + "\\dataMechStatFrameSeg3DLamin.txt";
 				}
 				
 			else if(tag==5){

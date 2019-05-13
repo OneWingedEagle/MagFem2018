@@ -3,7 +3,7 @@ package fem;
 import math.util;
 
 public class Edge {
-	public byte direction;
+	
 	public double  length,A,Ap,T;
 	//public int[] endNodeNumber=new int[2];
 	public Node[] node=new Node[2];
@@ -14,8 +14,7 @@ public class Edge {
 	public Edge(Node n1,Node n2)
 	{
 
-		node[0]=n1;
-		node[1]=n2;
+
 	if(n1.id<n2.id){
 		node[0]=n1;
 		node[1]=n2;
@@ -26,20 +25,6 @@ public class Edge {
 	}
 	}
 
-/*	public Edge(int n1,int n2)
-	{
-
-	if(n1<n2){
-	endNodeNumber[0]=n1;
-	endNodeNumber[1]=n2;
-	}
-	else{
-		endNodeNumber[0]=n2;
-		endNodeNumber[1]=n1;
-	}
-
-	}
-	*/
 	public void setKnownA(double A){
 		edgeKnown=true;
 		this.A=A;
@@ -60,10 +45,6 @@ public class Edge {
 		this.length=length;
 	}
 	
-	public void setDirection(byte i){
-		
-		this.direction=i;
-	}
 	
 	public double getDiffA(){
 

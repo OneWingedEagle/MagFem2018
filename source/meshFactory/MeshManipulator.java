@@ -48,6 +48,8 @@ public class MeshManipulator {
 
 		MeshManipulator mf=new MeshManipulator();
 
+		//Model model=new Model("D:\\JavaWorks\\FEM problems\\Hamed solver\\bun1elem.txt");
+		//model.setEdge();
 		//mf.reRegionb();
 		mf.connectivity(1e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
@@ -100,6 +102,7 @@ public class MeshManipulator {
 		//mf.pileRotate(10, PI/18);
 
 
+		//mf.reRegionb();
 
 	}
 	
@@ -1058,6 +1061,32 @@ public void hexaToTetra()
 
 			for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 
+				if(i==-1){
+					int[] nn=model.element[i].getVertNumb();
+					int[] nn2=new int[nn.length];
+	/*				nn2[0]=nn[4];
+					nn2[1]=nn[7];
+					nn2[2]=nn[6];
+					nn2[3]=nn[5];
+					nn2[4]=nn[0];
+					nn2[5]=nn[3];
+					nn2[6]=nn[2];
+					nn2[7]=nn[1];*/
+					nn2[0]=nn[4];
+					nn2[1]=nn[5];
+					nn2[2]=nn[6];
+					nn2[3]=nn[7];
+					nn2[4]=nn[0];
+					nn2[5]=nn[1];
+					nn2[6]=nn[2];
+					nn2[7]=nn[3];
+					model.element[i].setVertNumb(nn2);
+				}
+				
+				model.element[i].setRegion(2);
+				Vect c=model.getElementCenter(i);
+				//util.pr(c.v2().norm());
+				if(c.v2().norm()<.5) model.element[i].setRegion(1);
 /*				if(ir>7) model.element[i].setRegion(5);
 				else if(ir==7) model.element[i].setRegion(4);
 				else if(ir<4) model.element[i].setRegion(1);
@@ -1069,10 +1098,10 @@ public void hexaToTetra()
 					else model.element[i].setRegion(1);
 				}*/
 				//if(ir<4){ model.element[i].setRegion(1);
-				Vect c=model.getElementCenter(i);	
+				// c=model.getElementCenter(i);	
 				double tt=util.getAng(c);
 				double rr=c.norm();
-				if(ir<4 && tt>PI/6) model.element[i].setRegion(1);
+			//	if(ir<4 && tt>PI/6) model.element[i].setRegion(1);
 				//if(rr>1.2 && rr<1.4 && tt>0*PI/18/2 && tt<2*PI/18/2) model.element[i].setRegion(2);
 				//else if(rr>1.2 && rr<1.4 && tt>4*PI/18/2 && tt<6*PI/18/2) model.element[i].setRegion(3);
 			//	}
@@ -1117,8 +1146,10 @@ public void hexaToTetra()
 		}
 
 
-			reRegionGroupEls(model);
-		String bunFilePath = System.getProperty("user.dir") + "//bunReReg.txt";
+		reRegionGroupEls(model);
+		String folder=new File(bun).getParentFile().getPath();
+
+		String bunFilePath = folder + "//bunReReg.txt";
 
 
 		model.writeMesh(bunFilePath);

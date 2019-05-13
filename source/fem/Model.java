@@ -22,7 +22,7 @@ import static java.lang.Math.*;
 
 public class Model{
 
-	public MagMatrix magMat;
+	public MagMatAssembler magMat;
 	public MechMatrix mechMat;
 	public int dim=3,iterMax=10000,nonLinIterMax=30,cpb=1,nRotReg;
 	public double cpm=PI/2,Rg=1e5;
@@ -361,7 +361,7 @@ public class Model{
 
 
 	public void setMagMech(){
-		magMat=new MagMatrix(this);
+		magMat=new MagMatAssembler(this);
 		mechMat=new MechMatrix(this);
 	}
 
@@ -886,15 +886,14 @@ public class Model{
 		else if(elCode==1) setQuadElementAxiB(i);
 		else if(elCode==3) setPrismElementB(i);
 		else{
+			boolean[] edgeDir=element[i].getEdgeReverse();
+
 			Node[] vertexNode=elementNodes(i);
 			Vect zero=new Vect(3);
 			Mat jac=femCalc.jacobian(vertexNode,zero);
 			Vect B;
-			Vect[] rotNe=femCalc.rotNe(jac,zero);
+			Vect[] rotNe=femCalc.rotNe(jac,zero,edgeDir);
 			B=getElementB(i,rotNe);
-
-			// B=new Vect(0,0,getElementA(i).el[1]);
-
 			element[i].setB(B);
 
 
@@ -980,8 +979,9 @@ public class Model{
 		Node[] vertexNode=elementNodes(i);
 		Vect zero=new Vect(3);
 		Mat jac=femCalc.jacobian(vertexNode,zero);
-		
-		Vect[] rotNe=femCalc.rotNePrism(jac,zero);
+		boolean[] edgeDir=element[i].getEdgeReverse();
+
+		Vect[] rotNe=femCalc.rotNePrism(jac,zero,edgeDir);
 		Vect B=getElementB(i,rotNe);
 
 		//B=this.getElementCenter(i).times(new Vect(1,1,0)).normalized().times(-1);
@@ -1074,7 +1074,6 @@ public class Model{
 		Edge[] edge=elementEdges(i);
 		Vect B=new Vect(dim);
 		for(int j=0;j<nElEdge;j++)		{
-		//	B=B.add(rotNe[j].times(edge[j].length));
 		B=B.add(rotNe[j].times(edge[j].A));
 		}
 	
@@ -1295,10 +1294,12 @@ public class Model{
 
 		if(this.elCode!=4) return;
 
+		boolean[] edgeDir=element[i].getEdgeReverse();
+
 		Node[] vertexNode=elementNodes(i);
 		Vect zero=new Vect(3);
 		Mat jac=femCalc.jacobian(vertexNode,zero);
-		Vect[] rotNe=femCalc.rotNe(jac,zero);
+		Vect[] rotNe=femCalc.rotNe(jac,zero,edgeDir);
 
 		Edge[] edge=elementEdges(i);
 		Vect J=new Vect(dim);
@@ -1307,8 +1308,6 @@ public class Model{
 		}
 
 		element[i].setJ(J);
-
-
 
 	}
 
@@ -1728,7 +1727,7 @@ public class Model{
 		for(int j=0;j<nElEdge;j++)
 			dAe[j]=edge[j].getDiffA();
 
-		dA=getElementdA(vertex,dAe);
+		dA=getElementdA(vertex,dAe,i);
 
 		double rdt=1.0/dt;
 
@@ -1756,7 +1755,8 @@ public class Model{
 		}
 		Node[] vertexNode=elementNodes(i);
 		Edge[] elemEdges=elementEdges(i);
-		
+		boolean[] edgeDir=element[i].getEdgeReverse();
+
 		double[] A=new double[this.nElEdge];
 		for(int j=0;j<this.nElEdge;j++)	
 			A[j]=elemEdges[j].getA();
@@ -1774,7 +1774,7 @@ public class Model{
 			Mat jac=femCalc.jacobian(vertexNode,localCo);
 
 			
-			Vect[] Ne=femCalc.Ne(jac,localCo);
+			Vect[] Ne=femCalc.Ne(jac,localCo,edgeDir);
 			
 			Vect Adot=new Vect(dim);
 			
@@ -1839,12 +1839,14 @@ public class Model{
 
 	public Vect getElementA(int ie){
 
+		boolean[] edgeDir=element[ie].getEdgeReverse();
+
 		Vect A=new Vect(dim);
 		Vect zero=new Vect(dim);
 		Node[] vertexNode=this.elementNodes(ie);
 		Edge[] edge=this.elementEdges(ie);
 		Mat jac=femCalc.jacobian(vertexNode,zero);
-		Vect[] Ne=femCalc.Ne(jac,zero);
+		Vect[] Ne=femCalc.Ne(jac,zero,edgeDir);
 
 		for(int j=0;j<nElEdge;j++)	{		
 			A= A.add(Ne[j].times(edge[j].A));
@@ -1883,12 +1885,14 @@ public class Model{
 
 	}
 
-	public Vect getElementdA(Node[] vertexNode,double[] Ae){
+	public Vect getElementdA(Node[] vertexNode,double[] Ae,int i){
+
+		boolean[] edgeDir=element[i].getEdgeReverse();
 
 		Vect dA=new Vect(dim);
 		Vect zero=new Vect(dim);
 		Mat jac=femCalc.jacobian(vertexNode,zero);
-		Vect[] Ne=femCalc.Ne(jac,zero);
+		Vect[] Ne=femCalc.Ne(jac,zero,edgeDir);
 
 		for(int j=0;j<nElEdge;j++)	{		
 			dA= dA.add(Ne[j].times(Ae[j]));
@@ -2269,6 +2273,19 @@ public class Model{
 		}
 
 		}
+		
+/*		for(int i=1;i<=this.numberOfEdges;i++){
+			Vect v1=this.edge[i].node[0].getCoord();
+			Vect v2=this.edge[i].node[1].getCoord();
+			Vect edv=v2.sub(v1);
+			double xx=v1.add(v2).el[0]/2;
+			Vect A=new Vect(0,0,xx);
+		//	double a=A.dot(edv);
+			//this.edge[i].setA(a);
+			util.pr(i+" , "+this.edge[i].A);
+
+		}*/
+			
 		this.setB();	
 
 	}

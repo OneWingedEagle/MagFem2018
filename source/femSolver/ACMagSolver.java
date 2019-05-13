@@ -35,9 +35,8 @@ public class ACMagSolver {
 
 
 		model.freq=1.0/model.dt;
-
+		util.pr("frequency ="+model.freq);
 		double  w=2*Math.PI*model.freq;
-		util.pr(w);
 		
 
 		SpMatComp Ks=new SpMatComp(model.Hs,model.Ss.timesNew(w));
@@ -86,6 +85,7 @@ public class ACMagSolver {
 		for(int i=0;i<m;i++){
 			vr.el[i]=xc.el[i].re;
 		}
+		
 
 		model.setSolution(vr);	
 

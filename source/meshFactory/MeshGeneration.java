@@ -48,9 +48,9 @@ public class MeshGeneration {
 		
 		MeshGeneration mf=new MeshGeneration();
 
-		mf.meshQ();
+		//mf.meshQ();
 		//mf.mesh16WiresTwisted();
-		//mf.meshHexa();
+		mf.meshHexa();
 		
 	}
 	
@@ -1346,7 +1346,7 @@ for(int j=0;j<bb.length;j++){
 	
 	public void meshHexa(){
 
-	double[][] bb={{0,100,0,20,0,10},{100,120,0,70,0,40}};
+	double[][] bb={{-250,250,-250,250,0,600},{-50,50,-50,50,0,600}};
 	//	double[][] bb={{-100,100,-100,100,-100,100},{-30,30,-30,30,-5,5}};
 
 
@@ -1354,7 +1354,7 @@ for(int j=0;j<bb.length;j++){
 	//	scale=1000;
 
 		for(int j=0;j<bb.length;j++)
-			for(int k=0;k<bb[0].length;k++){
+			for(int k=0;k<bb[j].length;k++){
 				bb[j][k]*=scale;
 			
 			}
@@ -1368,15 +1368,15 @@ for(int j=0;j<bb.length;j++){
 		
 for(int j=0;j<bb.length;j++){
 			
-			for(int k=0;k<bb[0].length;k++){
+			for(int k=0;k<bb[j].length;k++){
 			
 		
-			//mg.baseLeft[j][k]=1;
-			//mg.baseRight[j][k]=1;
+			mg.baseLeft[j][k]=1;
+			mg.baseRight[j][k]=1;
 	
-			if(j==1){
-				mg.minMeshRight[j][k]=5;
-				mg.minMeshLeft[j][k]=5;
+			if(j!=-1){
+				mg.minMeshRight[j][k]=99;
+				mg.minMeshLeft[j][k]=99;
 			} else {
 				//mg.minMeshRight[j][k]=.3;
 				//mg.minMeshLeft[j][k]=.3;

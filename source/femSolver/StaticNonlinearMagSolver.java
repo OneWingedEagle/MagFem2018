@@ -55,9 +55,10 @@ public class StaticNonlinearMagSolver{
 
 		model.magMat.setRHS(model);
 		
-		double errNR=1,resNR=0,resNR0=1;
+		double errNR=1;
 		double fluxErr=1;
 		
+		double residual;
 		boolean useFluxErr=false;
 
 		int nonLinIter=0;
@@ -65,6 +66,11 @@ public class StaticNonlinearMagSolver{
 		double convRatio=1e-3;
 		if(model.Q!=null) convRatio=1e-5;
 		double updatedConvCrot=1;
+		
+		double residual0=model.RHS.norm();
+			model.solver.resRef=residual0;
+		
+		
 	
 		for( nonLinIter=0; errNR>model.errNRmax && nonLinIter<nonLinIterMax;nonLinIter++)
 
@@ -104,19 +110,15 @@ public class StaticNonlinearMagSolver{
 
 				b=model.RHS.sub(model.HkAk);
 				
+				residual=b.norm();
 
 
-			if(nonLinIter==0){
-				resNR0=b.norm();
-				model.solver.resRef=resNR0;
-			}
-			
-			resNR=b.norm();
+
 			
 		if(useFluxErr)
 			errNR=fluxErr;
 		else
-			errNR=resNR/resNR0;
+			errNR=residual/residual0;
 			
 		
 
@@ -127,7 +129,7 @@ public class StaticNonlinearMagSolver{
 			L=Ks.ichol();
 			
 			
-			if(b.abs().max()>1e-11){
+			if(b.abs().sum()>1e-11){
 			//	dA=model.solver.ICCG(Ks,L, b,model.errCGmax,iterMax);
 
 				dA=model.solver.ICCG(Ks,L, b,updatedConvCrot,iterMax);	
@@ -177,7 +179,7 @@ public class StaticNonlinearMagSolver{
 		
 		System.out.println();
 	
-		System.out.println(" Final NR residual: "+resNR);
+		System.out.println(" Final NR residual: "+residual0);
 		
 		System.out.println("=======================================================");
 		System.out.println();
