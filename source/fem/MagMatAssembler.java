@@ -1754,6 +1754,48 @@ public void reuseFSMat(Model model){
 	
 }
 
+public void setMagBCUniform(Model model){
+
+	if(model.hasBunif){
+
+	
+		double Bx=model.unifB.el[0];
+		double By=model.unifB.el[1];
+		double Bz=0;
+		if(model.dim==3)
+			Bz=model.unifB.el[2];
+		double Ax,Ay,Az;
+		double x,y,z;
+		Vect A=new Vect(3);
+		for(int i=1;i<=model.numberOfEdges;i++){
+
+			if(!model.edge[i].edgeKnown) continue;
+	
+			Vect edgeVect=model.edge[i].node[1].getCoord().sub(model.edge[i].node[0].getCoord());
+
+			Vect center=model.edge[i].node[1].getCoord().add(model.edge[i].node[0].getCoord()).times(.5);
+			x=center.el[0];
+			y=center.el[1];
+	
+			Az=y*Bx-x*By;
+			if(model.dim==3){
+				z=center.el[2];
+				Ax=x*By;
+				Ay=y*Bz;
+				A=new Vect(Ax,Ay,Az);
+			}else{
+				A=new Vect(0,0,Az);
+			}
+		
+			double a=edgeVect.dot(A);
+			
+			model.edge[i].setKnownA(a);
+
+		}
+	}
+
+
+}
 
 private double hatFunc(double tt,int px,double W,double period){
 	double result=0;

@@ -50,9 +50,9 @@ public class CLNStaticMagSolver{
 		if(RHS.norm()/RHS.length>.01){
 			x=model.solver.ICCG(Ks,L, RHS,model.errCGmax,model.iterMax);
 			
-		}else if(RHS.norm()>1e-6)
+		}else if(RHS.norm()>1e-11)
 			x=model.solver.ICCGr0max(Ks, L, RHS,model.errCGmax*1e-2,model.iterMax);
-
+	//	x=model.solver.ICCG(Ks,L, RHS,model.errCGmax,model.iterMax);
 		else
 			x=new Vect(x.length);
 

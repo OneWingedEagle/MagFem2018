@@ -7,6 +7,8 @@ import math.Vect;
 import math.util;
 import static java.lang.Math.*;
 
+import java.util.Arrays;
+
 public class BoundarySet {
 
 	double epsr=1e-6,epsAng=1e-4;
@@ -650,7 +652,6 @@ public class BoundarySet {
 
 
 	public void setMagIndice(Model model){
-
 		
 		
 		if(model.analysisMode==2){
@@ -810,6 +811,9 @@ public class BoundarySet {
 
 	public void setMagBC(Model model){
 		
+		detectFarboundaryEdges(model);
+
+		
 if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 {
 
@@ -850,148 +854,34 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 			mapEdges(model);
 		}
 
-		if(model.hasJ || model.hasM || model.stranded)
+		if(model.hasJ || model.hasM || model.stranded){
+			
+			int nNeumann=0;
+			int nDirichlet=0;
 			for(int i=1;i<=model.numberOfEdges;i++){
 				for(int j=0;j<model.nBoundary;j++){
 
 					if(model.BCtype[j]==1 && model.edge[i].node[0].onBound[j] && 
 							model.edge[i].node[1].onBound[j]){
 						model.edge[i].setKnownA(0);
-
-						break;					
-					}					
+						nDirichlet++;
+					//	break;					
+					}		
+					else if(model.BCtype[j]==0 && model.edge[i].node[0].onBound[j] && 
+							model.edge[i].node[1].onBound[j]){
+						model.edge[i].edgeKnown=false;
+						nNeumann++;
+						//break;					
+					}			
 				}
 			}
+			
+			util.pr("Number of edges on Bn0 boundary = "+nDirichlet);
+			util.pr("Number of edges on Ht0 boundary = "+nNeumann);
+
+		}
 		else if(model.hasBunif){
-			
-			if(model.dim==2){
-
-
-				double Au0=model.unifB.el[0]*(model.spaceBoundary[3]-model.spaceBoundary[2]);
-				double Au1=model.unifB.el[1]*(model.spaceBoundary[1]-model.spaceBoundary[0]);	
-
-	
-					for(int i=1;i<=model.numberOfEdges;i++){
-						if (model.edge[i].node[0].onBound[3] && 
-								model.edge[i].node[1].onBound[3])
-							model.edge[i].setKnownA(Au0);
-						else if(model.edge[i].node[0].onBound[2] && 
-								model.edge[i].node[1].onBound[2] )
-							model.edge[i].setKnownA(0);
-
-					}
-
-
-				
-					for(int i=1;i<=model.numberOfEdges;i++){
-						if(model.edge[i].node[0].onBound[0] && 
-								model.edge[i].node[1].onBound[0])
-							model.edge[i].setKnownA(Au1);
-						else if(model.edge[i].node[0].onBound[1] && 
-								model.edge[i].node[1].onBound[1])
-							model.edge[i].setKnownA(0);
-
-					}
-
-
-			}
-
-
-			else if(model.dim==3) {
-				
-				byte b0=0,b1=1,b2=2;
-
-				int[] edgeDir=new int[model.numberOfEdges+1];
-				for(int i=1;i<=model.numberOfElements;i++){
-					int[] edgeNumb=model.element[i].getEdgeNumb();
-					
-				
-					for(int j=0;j<model.nElEdge;j++)
-						if(j<4){
-							edgeDir[edgeNumb[j]]=b0;
-							}
-						else if(j<8)
-							edgeDir[edgeNumb[j]]=b1;
-						else{
-							edgeDir[edgeNumb[j]]=b2;
-						}
-				}
-			
-
-				double Au0=model.unifB.el[0]*(model.spaceBoundary[3]-model.spaceBoundary[2]);
-				double Au2=model.unifB.el[1]*(model.spaceBoundary[5]-model.spaceBoundary[4]);
-				double Au4=model.unifB.el[2]*(model.spaceBoundary[1]-model.spaceBoundary[0]);	
-
-
-				if(model.BCtype[0]==0)
-					for(int i=1;i<=model.numberOfEdges;i++){
-						if(model.edge[i].node[0].onBound[4] && 
-								model.edge[i].node[1].onBound[4]||
-								model.edge[i].node[0].onBound[5] && 
-								model.edge[i].node[1].onBound[5]   )
-
-							model.edge[i].setKnownA(0);
-
-						else if(model.edge[i].node[0].onBound[2] && 
-								model.edge[i].node[1].onBound[2])
-
-							model.edge[i].setKnownA(0);
-
-						else if(model.edge[i].node[0].onBound[3] && 
-								model.edge[i].node[1].onBound[3] && edgeDir[i]==b2)
-						{
-							model.edge[i].setKnownA(Au0*model.edge[i].length);
-						}
-					}
-
-
-				if(model.BCtype[2]==0)
-					for(int i=1;i<=model.numberOfEdges;i++){
-						if((model.edge[i].node[0].onBound[0] && 
-								model.edge[i].node[1].onBound[0]||
-								model.edge[i].node[0].onBound[1] && 
-								model.edge[i].node[1].onBound[1])  )
-							model.edge[i].setKnownA(0);
-
-						else if(model.edge[i].node[0].onBound[4] && 
-								model.edge[i].node[1].onBound[4] )
-
-							model.edge[i].setKnownA(0);
-
-						else if(model.edge[i].node[0].onBound[5] && 
-								model.edge[i].node[1].onBound[5] && edgeDir[i]==b0)
-
-							model.edge[i].setKnownA(Au2*model.edge[i].length);
-					}
-
-				if(model.BCtype[4]==0)
-					for(int i=1;i<=model.numberOfEdges;i++){
-
-						if((model.edge[i].node[0].onBound[2] && 
-								model.edge[i].node[1].onBound[2]||
-								model.edge[i].node[0].onBound[3] && 
-								model.edge[i].node[1].onBound[3])  )
-							model.edge[i].setKnownA(0);
-
-						else if(model.edge[i].node[0].onBound[0] && 
-								model.edge[i].node[1].onBound[0])
-
-							model.edge[i].setKnownA(0);
-
-						else if(model.edge[i].node[0].onBound[1] && 
-								model.edge[i].node[1].onBound[1] && edgeDir[i]==b1)
-						{
-
-							model.edge[i].setKnownA(Au4*model.edge[i].length);
-
-						}
-					}
-
-			}
-			
-			
-
-
+			model.magMat.setMagBCUniform(model);
 		}
 		
 
@@ -1666,7 +1556,96 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 
 	}
 
-	
+	private void detectFarboundaryEdges(Model model){
+
+		if(model.elCode<2)  return;
+		
+		int nEdge=model.numberOfEdges;
+
+		int ns=6;
+
+		if(model.elCode==2) ns=4;
+		if(model.elCode==3) ns=6;
+		else if(model.elCode==4) ns=6;
+		else if(model.elCode==5) ns=5;
+		
+		IntVect[] edgeElement=new IntVect[nEdge+1];
+		for(int i=1;i<=nEdge;i++)
+			edgeElement[i]=new IntVect(ns);
+
+
+		boolean[] edgeCounted=new boolean[nEdge+1];
+		int[] indx=new int[nEdge+1];
+		
+		for(int ir=1;ir<=model.numberOfRegions;ir++){
+
+		for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
+			
+			int[] edgeNumb=model.element[i].getEdgeNumb();
+
+			for(int j=0;j<model.nElEdge;j++){
+				int ne=edgeNumb[j];
+				if(indx[ne]==edgeElement[ne].length-1)
+					edgeElement[ne].extend(ns);
+
+				edgeElement[ne].el[(indx[ne]++)]=i;
+				edgeCounted[ne]=true;
+			}			
+		}
+		}
+
+		
+		int nx=0;
+		int k;
+		boolean[] onSurf=new boolean[nEdge+1];
+
+		for(int i=1;i<=nEdge;i++){
+			if(!edgeCounted[i]) continue;
+			k=0;
+			for(int j=0;j<indx[i];j++)
+				if(edgeElement[i].el[j]>0)
+					k++;
+			int[] nn=new int[2*indx[i]];
+			int jx=0;
+			int n1=model.edge[i].node[0].id;
+			for(int j=0;j<indx[i];j++){
+				int[] edgeNumb=model.element[edgeElement[i].el[j]].getEdgeNumb();
+				for(int p=0;p<model.nElEdge;p++){
+					int ep=edgeNumb[p];
+					if(ep==i) continue;
+					if(model.edge[ep].node[0].id==n1) {
+					nn[jx++]=model.edge[ep].node[1].id;
+					}
+					else{
+						if(model.edge[ep].node[1].id==n1) 
+							nn[jx++]=model.edge[ep].node[0].id;
+											}
+				}
+
+			}
+			Arrays.sort(nn);
+			int q=0;
+			for(int p=1;p<nn.length;p++)
+				if(nn[p]!=nn[p-1]) q++;
+
+		if(q==indx[i])
+			
+			{
+			
+				onSurf[i]=true;
+				nx++;
+			}
+
+		}
+		
+		for(int i=1;i<=nEdge;i++){
+			if(onSurf[i]) model.edge[i].setKnownA(0);
+
+		}
+		util.pr("Number of edges on far boundary = "+nx);
+
+
+}	
 
 
 }

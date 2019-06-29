@@ -518,10 +518,10 @@ public class RunCLN {
 
 
 		phiSolver.setRHS0(model);
-		phiSolver.conductiveMat.show("%1.2e");
+	//	phiSolver.conductiveMat.show("%1.2e");
 		//phiSolver.RHS.timesVoid(2.84191e-05);
 
-		phiSolver.RHS.show();
+	//	phiSolver.RHS.show();
 		Vect x=phiSolver.solve(model);
 
 		phiSolver.setSolution(model,x);
@@ -608,7 +608,7 @@ else
 			//phiSolver.RHS.show();
 			//phiSolver.conductiveMat.show();
 			x=phiSolver.solve(model);
-			x.show();
+		//	x.show();
 
 			ii=new Vect(model.network.indep_elems.length);
 			
