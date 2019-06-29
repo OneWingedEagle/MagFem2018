@@ -81,13 +81,13 @@ import fem.RunMech;
 				double t_start= System.currentTimeMillis();
 				
 				Main.this.model.loadMesh(model.meshFilePath);
-			
-	
+
 				prepare();
 				
 				model.loadData(model.dataFilePath);
 
-		
+
+	
 				 if(model.magAnalysis && !model.mechAnalysis) {
 					runMag(); 
 
@@ -98,7 +98,6 @@ import fem.RunMech;
 
 					}
 				else if(!model.magAnalysis && !model.mechAnalysis) {
-
 
 					runCLN(); 
 

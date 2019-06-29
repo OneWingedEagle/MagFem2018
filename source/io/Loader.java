@@ -247,7 +247,7 @@ public class Loader {
 
 	public void loadData(Model model,String dataFilePath){
 		int dim0=model.dim;
-
+		
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
 			String line;
@@ -257,8 +257,10 @@ public class Loader {
 			int dataType =getIntData(line);
 			model.dataType=dataType;
 			
-			line=getNextDataLine(br);
+		
 			util.pr("// dimension (2: 2D, 3:3D ");
+			line=getNextDataLine(br);
+
 			int dim =getIntData(line);
 
 			line=getNextDataLine(br);
@@ -267,6 +269,7 @@ public class Loader {
 			model.coordCode=coordCode;
 			
 			if(dim!=dim0){
+
 				System.err.println("Mesh and Data do not match in dimension: "+dim0+" and "+dim);
 			}
 		
@@ -296,7 +299,6 @@ public class Loader {
 		int dim=model.dim;
 
 		try {
-
 	
 			line=getNextDataLine(br);
 			
@@ -668,6 +670,7 @@ public class Loader {
 			
 			line=getNextDataLine(br);;
 			int nRegions =getIntData(line);		
+
 			if(nRegions!=model.numberOfRegions){
 				System.err.println("Mesh and Data do not match in the number of regions: "+model.numberOfRegions+" and "+nRegions);
 			}
@@ -718,8 +721,9 @@ public class Loader {
 			}
 			
 			line=getNextDataLine(br);
+		
 			int numbRegsWithJ=Integer.parseInt(line);
-			
+		
 			model.phiCoils=new PhiCoil[numbRegsWithJ];
 			
 			
@@ -785,6 +789,7 @@ public class Loader {
 			}
 
 			line=getNextDataLine(br);
+		
 			model.hasBunif=getBooleanData(line);
 			if(model.hasBunif){
 				line=getNextDataLine(br);
@@ -811,6 +816,7 @@ public class Loader {
 			}
 		}
 		line=getNextDataLine(br);
+
 		if(line==null|| line.equals("")) 
 			model.open_vps=true;
 		else
@@ -2011,7 +2017,9 @@ public void average(String bun1, String bun2,String bun3){
 		else {
 			System.err.println(line);
 			System.err.println(" Bad input!");
-			System.exit(1);
+			
+			wait(10000*10000);
+
 			return false;
 		}
 		return b;
@@ -2959,5 +2967,15 @@ else{
 
 
 }
+
+
+public void wait(int ms){
+	try {
+		Thread.sleep(ms);
+	} catch (InterruptedException e) {
+		e.printStackTrace();
+	}
+}
+
 
 }

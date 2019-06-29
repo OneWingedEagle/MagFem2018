@@ -132,6 +132,9 @@ public class GUI extends JFrame implements ActionListener{
 					
 					meshFile="D:\\JavaWorks\\FEM problems\\Hamed solver\\circular\\bun.txt";
 					dataFile="D:\\JavaWorks\\FEM problems\\Hamed solver\\circular\\data.txt";
+					
+					meshFile="D:\\JavaWorks\\FEM problems\\CLN\\bun.txt";
+						dataFile="D:\\JavaWorks\\FEM problems\\CLN\\data.txt";
 
 				}
 				else if(tag==4){

@@ -1675,7 +1675,7 @@ public class Model{
 			setElementJe(i);
 
 			Vect Je=element[i].getJe();
-			//Je.hshow();
+
 			if(element[i].isConductor()){
 				Jn2=Je.dot(Je);
 				if(Jn2>Jmax2)
@@ -1730,20 +1730,28 @@ public class Model{
 		dA=getElementdA(vertex,dAe,i);
 
 		double rdt=1.0/dt;
+		
+		Vect Je=dA.deepCopy();
 
-		if(analysisMode==1){
-			element[i].setJe(dA.times(element[i].getSigma()).times(-rdt));
 
-		}
-		else if(analysisMode==2){
-			double[] nodePhi=new double[nElVert];
-			Vect gradPhi=new Vect(dim);
+		if(analysisMode==2){
+		double[] nodePhi=new double[nElVert];
+		Vect gradPhi=new Vect(dim);
 
-			for(int j=0;j<nElVert;j++)
-				nodePhi[j]=vertex[j].getPhi();
-			gradPhi=femCalc.gradPhi(vertex,nodePhi);
-			element[i].setJe((dA.times(rdt).add(gradPhi)).times(element[i].getSigma()).times(-1));
-		}
+		for(int j=0;j<nElVert;j++)
+			nodePhi[j]=vertex[j].getPhi();
+		
+		gradPhi=femCalc.gradPhi(vertex,nodePhi);
+		
+		
+		Je=Je.add(gradPhi);
+	}
+		
+		Vect sigma=element[i].getSigma();
+				
+		Je=Je.times(sigma.times(-rdt));
+
+		element[i].setJe(Je);
 
 	}
 

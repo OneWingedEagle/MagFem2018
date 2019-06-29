@@ -147,11 +147,11 @@ public class RunMag {
 							model.setMagBC();
 							
 							if(i==nBegin){
-							if(main.console)
-								io.Console.redirectOutput(main.gui.paramArea);
-							model.reportData();
-							if(main.console)
-								io.Console.redirectOutput(main.gui.progressArea);
+							//if(main.console)
+							//	io.Console.redirectOutput(main.gui.paramArea);
+								model.reportData();
+						//	if(main.console)
+							//	io.Console.redirectOutput(main.gui.progressArea);
 							}
 							
 	
