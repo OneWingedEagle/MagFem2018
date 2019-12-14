@@ -3739,6 +3739,32 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 
 
 	}
+
+public Vect runContact(){
+
+	boolean dyn=false;
+
+	if(this.Ks==null)
+		this.setStiffMat(dyn);
+	
+	Vect u=this.mechMat.runContact(this, solver,defMode);
+
+	this.setU(u);	
+	
+	double un,umax=0; int im=1;
+	for(int i=1;i<=this.numberOfNodes;i++){
+		if(this.node[i].u!=null ){
+			un=this.node[i].u.norm();
+
+			if(un>umax) {umax=un; im=i;}
+		}
+	}
+
+	System.out.println("Deformation Max: "+umax+" at node "+im);
+
+
+	return u;
 }
 
+}
 

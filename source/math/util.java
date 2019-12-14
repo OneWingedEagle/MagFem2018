@@ -1609,6 +1609,7 @@ public class util {
 			int ir=i;
 			int L=A.row[ir].nzLength;
 
+			if(L>0){
 			Vect x=new Vect(L);
 			Vect y=new Vect(L);
 			for(int j=0;j<L;j++){
@@ -1617,10 +1618,10 @@ public class util {
 
 
 			}
-
+			
 			//if(i==N-1)
 			plot.addScatterPlot("",Color.red, x.el, y.el);
-
+			}
 
 		}
 

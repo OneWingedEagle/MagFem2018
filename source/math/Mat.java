@@ -1087,7 +1087,7 @@ x2.hshow();
 			 Vect y=new Vect(L);
 			 for(int j=0;j<L;j++){
 				
-				 if(el[i][j]==1){
+				 if(el[i][j]!=0){
 				 x.el[j]=j;
 				 y.el[j]=i;
 				 }

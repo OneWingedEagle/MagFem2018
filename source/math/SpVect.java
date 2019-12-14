@@ -312,6 +312,7 @@ public class SpVect {
 		if(length!=v.length) throw new IllegalArgumentException("Vectrs have different lengths.");
 		
 	 SpVect sum= new SpVect(this.vectForm().add(v.vectForm()));
+	/// sum.trim();
 	 
 	 return sum;
 	 

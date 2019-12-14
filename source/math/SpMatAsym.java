@@ -116,9 +116,9 @@ public class SpMatAsym  {
 	
 	
 
-	public SpMat transpose(int cLmax){
+	public SpMatAsym transpose(int cLmax){
 
-		SpMat T=new SpMat(getnCol(),nRow,cLmax);
+		SpMatAsym T=new SpMatAsym(getnCol(),nRow,cLmax);
 		int[] nz=new int[nRow];
 		for(int i=0;i<nRow;i++)
 			for(int j=0;j<row[i].nzLength;j++){
@@ -318,10 +318,19 @@ public class SpMatAsym  {
 		for(int i=0;i<nRow;i++)
 			row[i].shownz();
 	}
+	
+	public void shownzA(){
+		System.out.format(" Asymmetric Matrix ( %d x %d ) \n",nRow, getnCol());
+		for(int i=0;i<nRow;i++)
+				for(int j=0;j<row[i].nzLength;j++)
+				///	if(row[i].el[j]!=0)
+				System.out.format(" ( %d  %d )  %25.12e\n",i,row[i].index[j], row[i].el[j]);
+	}
 
 	public void showcl(){
 
 		for(int i=0;i<nRow;i++)
+			if(row[i].nzLength>0)
 			row[i].showr();
 	}
 

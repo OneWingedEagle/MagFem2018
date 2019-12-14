@@ -2002,7 +2002,8 @@ public class Writer {
 			else if(mode==3)
 				pw.println("nodal");
 			else if(mode==-1)
-				pw.println("displacement");
+				pw.println("nodal");
+			//	pw.println("displacement");
 
 
 			pw.println(dim);
@@ -2052,7 +2053,7 @@ public class Writer {
 				
 				}
 				
-				if(mode==-1) v=v.times(1e9);
+				///if(mode==-1) v=v.times(1e9);
 		
 				pw.format("%d\t",n);
 

@@ -273,7 +273,8 @@ public class Loader {
 				System.err.println("Mesh and Data do not match in dimension: "+dim0+" and "+dim);
 			}
 		
-		
+
+
 			if(dataType==0)
 				setDataMag( model,br);
 			else if(dataType==1)
@@ -663,12 +664,12 @@ public class Loader {
 
 		String line;
 		String s;
-		int dim=model.dim;
 		try {
 
 			model.analysisMode=0;
-			
-			line=getNextDataLine(br);;
+			util.pr(" ---0000000000-----> "+model.dim);
+			line=getNextDataLine(br);
+			util.pr(" ------------> "+line);
 			int nRegions =getIntData(line);		
 
 			if(nRegions!=model.numberOfRegions){
@@ -1603,16 +1604,26 @@ public void average(String bun1, String bun2,String bun3){
 		if(rotating)
 			R=util.rotMat2D(angDeg*Math.PI/180);
 	
+		String str;
 
 		try{
 	
 
 			Scanner scr=new Scanner(new FileReader(nodalFilePath));
+			str=scr.next();
+			if(!str.startsWith("nodal")) {
+				String msg="File does not contain nodal field.";
+				System.err.println(msg);
+				//JOptionPane.showMessageDialog(null, msg," ", JOptionPane. INFORMATION_MESSAGE);
+				return false;
+			}
 
-			scr.next();
-			int dim=Integer.parseInt(scr.next());
-			
-			int nNodes=Integer.parseInt(scr.next());
+			str=scr.next();
+			int dim=Integer.parseInt(str);
+			//util.pr(str);
+			str=scr.next();
+			int nNodes=Integer.parseInt(str);
+			//util.pr(str);
 			if(nNodes!=model.numberOfNodes || dim!=model.dim) {
 				String msg="Nodal field file does not match the mesh";
 				System.err.println(msg);
@@ -1623,11 +1634,16 @@ public void average(String bun1, String bun2,String bun3){
 			double sn2=0,smax2=0,smin2=0;
 		
 			while(scr.hasNext()){
-	
-				nn=Integer.parseInt(scr.next());
+				str=scr.next();
+				//util.pr(str);
+				nn=Integer.parseInt(str);
+		
 					Vect v=new Vect(dim);
-					for(int j=0;j<dim;j++)
-						v.el[j]=Double.parseDouble(scr.next());			
+					for(int j=0;j<dim;j++){
+						str=scr.next();
+					//	util.pr(str);
+						v.el[j]=Double.parseDouble(str);		
+			}
 			
 				
 					if(model.coordCode==1){
@@ -2505,9 +2521,9 @@ public void setDataMag2D(Model model,BufferedReader br){
 		line=br.readLine();
 		line=br.readLine();
 		model.motor=getBooleanData(line);
+		line=br.readLine();
+		line=br.readLine();
 		
-		line=br.readLine();
-		line=br.readLine();
 		int nRegions =getIntData(line);		
 		if(nRegions!=model.numberOfRegions){
 			System.err.println("Mesh and Data do not match in the number of regions: "+model.numberOfRegions+" and "+nRegions);

@@ -60,7 +60,7 @@ public class GUI extends JFrame implements ActionListener{
 				String dataFile= "";
 
 
-			int	tag=3;	
+			int	tag=4;	
 				
 				if(tag==0){
 					//meshFile= System.getProperty("user.dir") + "\\quiz.txt";
@@ -138,7 +138,8 @@ public class GUI extends JFrame implements ActionListener{
 
 				}
 				else if(tag==4){
-					
+					meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\bun.txt";
+					dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\data_2D.txt";
 					//meshFile= System.getProperty("user.dir") + "\\statFrameSegPrismFinIns.txt";
 					//dataFile= System.getProperty("user.dir") + "\\dataMechStatFrameSeg3DLamin.txt";
 				}

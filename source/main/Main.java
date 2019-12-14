@@ -45,7 +45,7 @@ import fem.RunMech;
 	private int nMesh=0,iterMax=2000;	
 	private double  errMax;
 	private String path = System.getProperty("user.dir");
-	public  boolean console=true,dated=false;
+	public  boolean console=false,dated=false;
 
 	public Main()
 	{		

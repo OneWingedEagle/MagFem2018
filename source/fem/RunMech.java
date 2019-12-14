@@ -116,8 +116,6 @@ public class RunMech {
 
 		else{
 
-
-
 			Vect u=new Vect();
 
 			int N=model.nTsteps;
@@ -125,14 +123,9 @@ public class RunMech {
 			Vect T=new Vect(N);
 			model.writeMesh( model.resultFolder+"\\bun.txt");
 
-
-
-
 			int ix=0;
 
-
 			//	model.setNodalMass();
-
 
 			if(model.loadPrevMech){
 
@@ -140,7 +133,6 @@ public class RunMech {
 				model.loader.loadPrevMech(model,initfile);
 
 			}
-
 
 			Vect UU=new Vect(model.nTsteps);
 
@@ -206,9 +198,15 @@ public class RunMech {
 
 
 					System.gc();
+					
+					boolean contact=true;
+					
+					if(contact){
+						u=model.runContact();
+					}
 
 
-					if(model.timeIntegMode==0){
+					else if(model.timeIntegMode==0){
 						u=model.setDeformation();
 
 
@@ -217,10 +215,6 @@ public class RunMech {
 						u=model.setVibration(ix);
 
 
-
-					/*	int jx=ix/10;
-			if(jx<D && ix%10==0 && ix>1)
-				int jx=ix/10;*/
 					if(snap && ix<D)
 						W.setCol(u, ix);
 
@@ -259,7 +253,7 @@ public class RunMech {
 				model.writer.writeArray(W.el, solutions);
 			}
 
-			model.writeData(model.resultFolder+"\\data.txt");
+			model.writeData(model.resultFolder+"\\data_out.txt");
 
 			UU.timesVoid(1e9);
 			util.plot(UU);

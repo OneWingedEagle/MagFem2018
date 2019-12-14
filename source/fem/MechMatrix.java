@@ -7,6 +7,7 @@ import math.Mat;
 import math.MatSolver;
 import math.SpBlockMat;
 import math.SpMat;
+import math.SpMatAsym;
 import math.SpMatSolver;
 import math.SpVect;
 import math.Vect;
@@ -1298,9 +1299,6 @@ public class MechMatrix {
 
 		double dt=model.dt;
 
-
-
-
 		Vect bU1=model.bU.add(model.getbUt(mode));
 
 
@@ -1378,8 +1376,525 @@ public class MechMatrix {
 		Vect v1=f.sub(model.Ks.smul(u).add(model.Cs.smul(v)));
 		return v1;
 	}
+	
+	
+
+	public Vect runContact( Model model,SpMatSolver solver,int mode){
+
+		
+		SpMat Ks=null;
+		
+		SpMat Kc=null;
+		SpMat Kcf=null;
+		
+		double pf=1e8;
+		double pft=1e8;
+		
+		Vect bU1=model.bU.add(model.getbUt(mode));
+
+		
+		Vect u=new Vect(model.Ks.nRow);
+		
+		Vect lamN=new Vect(model.Ks.nRow);
+		Vect lamT=new Vect(model.Ks.nRow);
+		
+		
+		solver.terminate(false);
+		System.out.println(" Calculating deformation....");
+
+		int numSn=17;
+		int numMed=8;
+		int[] slaveNodes=new int[numSn];
+		for(int k=0;k<slaveNodes.length;k++)
+			slaveNodes[k]=357+k;
+
+		int[][] masterEdges=new int[numMed][2];
+		for(int k=0;k<masterEdges.length;k++){
+			masterEdges[k][0]=406+k;
+			masterEdges[k][1]=masterEdges[k][0]+1;
+			//util.hshow(masterEdges[k]);
+		}
+		//masterEdges[0][0]=127;
+		//masterEdges[0][1]=128;
+
+		///masterEdges[1][0]=136;
+		//masterEdges[1][1]=137;
 
 
+		int[] normalIndex=new int[numSn];
+		
+		Vect[] normals=new Vect[numMed];
+		for(int k=0;k<masterEdges.length;k++){
+			int mn1=masterEdges[k][0];
+			int mn2=masterEdges[k][1];
+			Vect v1=model.node[mn1].getCoord();
+			Vect v2=model.node[mn2].getCoord();
+			Vect v12=v2.sub(v1);
+			Vect normal=new Vect(-v12.el[1],v12.el[0]).normalized();
+			normals[k]=normal;
+		}
+		
+		int dof=model.Ks.nRow;
+		
+
+		int nnSize=model.numberOfNodes+1;
+		SpMatAsym node_node=new SpMatAsym(nnSize,nnSize);
+	//	node_node.lower=false;
+		int numContacting=0;
+		
+		for(int i=0;i<slaveNodes.length;i++){
+			int sn=slaveNodes[i];
+			Vect v=model.node[sn].getCoord().add(model.node[sn].u);
+			for(int k=0;k<masterEdges.length;k++){
+				int mn1=masterEdges[k][0];
+				int mn2=masterEdges[k][1];
+				Vect v1=model.node[mn1].getCoord().add(model.node[mn1].u);
+				Vect v2=model.node[mn2].getCoord().add(model.node[mn2].u);
+				Vect v12=v2.sub(v1);
+				Vect v1v=v.sub(v1);
+				Vect v2v=v.sub(v2);
+		
+				double dot1=v1v.dot(v12);
+				double dot2=v2v.dot(v12);
+				if(dot1*dot2>0) continue;
+				
+		
+				Vect normal=new Vect(-v12.el[1],v12.el[0]).normalized();
+				normals[k]=normal;
+				
+				double pen=v1v.dot(normal);
+				
+				if(pen>0) continue;
+				
+				normalIndex[i]=k;
+	
+				double beta=0;
+				double alpha=0;
+				double v1n=v1v.norm();
+
+				if(v1n<1e-8){
+					 beta=0;
+					 alpha=1;
+				}
+				///if(sn>=120) util.pr(sn+"   "+v1n);
+				else{
+				beta=dot1/=(v1v.norm()*v12.norm());
+				
+				alpha=1-beta;
+				}
+				
+				Vect relation=new Vect(nnSize);
+				relation.el[mn1]=alpha;
+				relation.el[mn2]=beta;
+				
+				node_node.row[sn]=new SpVect(nnSize,2);
+				node_node.row[sn].index[0]=mn1;
+				node_node.row[sn].index[1]=mn2;
+				node_node.row[sn].el[0]=alpha;
+				node_node.row[sn].el[1]=beta;
+				//break;//
+				numContacting++;
+
+			}
+			
+		}
+		//node_node.shownzA();
+		
+		//node_node.matForm().plot();
+		
+		int dim=model.dim;
+
+		SpMatAsym Gc=new SpMatAsym(dof,dof);
+		SpMatAsym Gcf=new SpMatAsym(dof,dof);
+		
+		int itmax=5;
+		int nr_itmax=5;
+		
+		Vect err=new Vect(itmax);
+		
+		Vect errf=new Vect(itmax);
+		
+		Vect nr_err=new Vect(itmax*nr_itmax);
+		
+		int totalNRIter=0;
+		
+for(int cont_iter=0; cont_iter<itmax; cont_iter++){
+	
+	
+	
+	
+	for(int nrt_iter=0; nrt_iter<nr_itmax; nrt_iter++){	
+		for(int i=0;i<slaveNodes.length;i++){
+			int sn=slaveNodes[i];
+
+			if(node_node.row[sn].nzLength>0){
+				
+				int index=model.U_unknownIndex[sn]-1;
+				if(index<0) continue;
+				
+				int com_index=dim*index;
+
+				
+				Vect normal=normals[normalIndex[i]];
+				
+				int mn1=masterEdges[normalIndex[i]][0];
+				int mn2=masterEdges[normalIndex[i]][1];
+				
+				
+				int index1=model.U_unknownIndex[mn1]-1;
+				int index2=model.U_unknownIndex[mn2]-1;
+				int com_index1=dim*index1;
+				int com_index2=dim*index2;
+				
+				double alpha=node_node.row[sn].el[0];
+				double beta=node_node.row[sn].el[1];
+				
+
+				Gc.row[com_index]=new SpVect(nnSize,6);
+				int kx=0;
+				Gc.row[com_index].index[kx]=com_index;
+				Gc.row[com_index].el[kx++]=normal.el[0];
+				Gc.row[com_index].index[kx]=com_index+1;
+				Gc.row[com_index].el[kx++]=normal.el[1];
+		
+				Gc.row[com_index].index[kx]=com_index1;
+				Gc.row[com_index].el[kx++]=-alpha*normal.el[0];
+				Gc.row[com_index].index[kx]=com_index1+1;
+				Gc.row[com_index].el[kx++]=-alpha*normal.el[1];
+				
+				Gc.row[com_index].index[kx]=com_index2;
+				Gc.row[com_index].el[kx++]=-beta*normal.el[0];
+				Gc.row[com_index].index[kx]=com_index2+1;
+				Gc.row[com_index].el[kx++]=-beta*normal.el[1];
+				
+				
+				Vect tang=new Vect(-normal.el[1],normal.el[0]);
+				Gcf.row[com_index]=new SpVect(nnSize,6);
+				 kx=0;
+				Gcf.row[com_index].index[kx]=com_index;
+				Gcf.row[com_index].el[kx++]=tang.el[0];
+				Gcf.row[com_index].index[kx]=com_index+1;
+				Gcf.row[com_index].el[kx++]=tang.el[1];
+		
+				Gcf.row[com_index].index[kx]=com_index1;
+				Gcf.row[com_index].el[kx++]=-alpha*tang.el[0];
+				Gcf.row[com_index].index[kx]=com_index1+1;
+				Gcf.row[com_index].el[kx++]=-alpha*tang.el[1];
+				
+				Gcf.row[com_index].index[kx]=com_index2;
+				Gcf.row[com_index].el[kx++]=-beta*tang.el[0];
+				Gcf.row[com_index].index[kx]=com_index2+1;
+				Gcf.row[com_index].el[kx++]=-beta*tang.el[1];
+				//util.pr(sn+"   "+index);
+				//Gc.row[index].showr();
+				//Gc.row[index].shownz();
+			}
+		}
+		
+		//Gc.shownzA();
+
+
+		
+
+	
+		/*for(int i=0;i<0*slaveNodes.length;i++){
+			int sn=slaveNodes[i];
+			if(node_node.row[sn].nzLength>0){
+				
+				int index=model.U_unknownIndex[sn]-1;
+				if(index<0) continue;
+				
+				int com_index=dim*index;
+				
+				Vect normal=normals[normalIndex[i]];
+				
+				Vect tang=new Vect(-normal.el[1],normal.el[0]);
+				
+				int mn1=masterEdges[normalIndex[i]][0];
+				int mn2=masterEdges[normalIndex[i]][1];
+				
+				
+				int index1=model.U_unknownIndex[mn1]-1;
+				int index2=model.U_unknownIndex[mn2]-1;
+				int com_index1=dim*index1;
+				int com_index2=dim*index2;
+				
+				double alpha=node_node.row[sn].el[0];
+				double beta=node_node.row[sn].el[1];
+				
+
+				///normal.el[0]=1e-5;
+				//alpha+=1e-5;
+				//beta+=1e-5;
+				Gcf.row[com_index]=new SpVect(nnSize,6);
+				int kx=0;
+				Gcf.row[com_index].index[kx]=com_index;
+				Gcf.row[com_index].el[kx++]=tang.el[0];
+				Gcf.row[com_index].index[kx]=com_index+1;
+				Gcf.row[com_index].el[kx++]=tang.el[1];
+		
+				Gcf.row[com_index].index[kx]=com_index1;
+				Gcf.row[com_index].el[kx++]=-alpha*tang.el[0];
+				Gcf.row[com_index].index[kx]=com_index1+1;
+				Gcf.row[com_index].el[kx++]=-alpha*tang.el[1];
+				
+				Gcf.row[com_index].index[kx]=com_index2;
+				Gcf.row[com_index].el[kx++]=-beta*tang.el[0];
+				Gcf.row[com_index].index[kx]=com_index2+1;
+				Gcf.row[com_index].el[kx++]=-beta*tang.el[1];
+				//util.pr(sn+"   "+index);
+			//	Gcf.row[index].showr();
+			//	Gcf.row[index].shownz();
+			}
+		}*/
+
+		//SpMatAsym Gct=Gc.transpose(100);
+	//	Gc.shownzA();
+	
+		//GcT.shownzA();
+		
+		//Gc.plot();
+		if(numContacting!=0){
+			
+	boolean densway=false;
+			
+	if(densway)
+	{
+
+		//Gc.shownzA();
+		
+		Mat G1=Gc.matForm();
+	///	new SpMat(G1).shownzA();
+		Mat G2=G1.transp();
+	//	new SpMat(G2).shownzA();
+		
+		Mat K1=G2.mul(G1).times(pf);
+		
+		for(int i=0;i<K1.nRow;i++)
+
+			for(int k=0;k<K1.nCol;k++){
+				
+				if(k>i) K1.el[i][k]=0;
+				
+			}
+		
+	//	K1.plot();
+		
+		//new SpMat(K1).shownzA();
+		Mat M=model.Ks.matForm();
+		
+		Mat Gt1=Gcf.matForm();
+
+		Mat Gt2=Gt1.transp();
+
+	
+		Mat K1t=Gt2.mul(Gt1).times(pft);
+		
+		for(int i=0;i<K1t.nRow;i++)
+			for(int k=0;k<K1t.nCol;k++){			
+				if(k>i) K1t.el[i][k]=0;				
+			}
+		
+		M=M.add(K1.add(K1t));
+		
+		Ks= new SpMat(M);
+		Ks.plot();
+	}else{
+			
+		SpMatAsym Gct=Gc.transpose(100);
+		
+		//Gct.shownzA();
+	
+		Kc=new SpMat(dof,dof); // Gct*Gc
+		
+		for(int i=0;i<Gct.nRow;i++){
+			if(Gct.row[i].nzLength>0){
+				SpVect spv=new SpVect(dof,100);
+			
+				int kx=0;
+				for(int j=0;j<=i;j++){
+					if(Gct.row[j].nzLength>0){
+						
+						double dot=Gct.row[i].dot(Gct.row[j]);
+						if(dot==0) continue;
+					//	util.pr(i+" ---- "+j);
+						spv.index[kx]=j;
+						spv.el[kx++]=dot;
+					}
+				}
+				spv.trim(kx);
+				Kc.row[i]=spv.deepCopy();
+				
+			}
+		}
+		
+		Kc.times(pf);
+		
+		
+		SpMatAsym Gcft=Gcf.transpose(100);
+		
+Kcf=new SpMat(dof,dof); // Gct*Gc
+		
+		for(int i=0;i<Gcft.nRow;i++){
+			if(Gcft.row[i].nzLength>0){
+				SpVect spv=new SpVect(dof,100);
+			
+				int kx=0;
+				for(int j=0;j<=i;j++){
+					if(Gcft.row[j].nzLength>0){
+						
+						double dot=Gcft.row[i].dot(Gcft.row[j]);
+						if(dot==0) continue;
+					//	util.pr(i+" ---- "+j);
+						spv.index[kx]=j;
+						spv.el[kx++]=dot;
+					}
+				}
+				spv.trim(kx);
+				Kcf.row[i]=spv.deepCopy();
+				
+			}
+		}
+		
+		Kcf.times(pft);
+	//	Kc.shownzA();
+	//	Kc.plot();
+		
+		//Mat M=model.Ks.matForm();
+		
+	//	M=M.add(Kc.matForm());
+		
+		//Ks= new SpMat(M);
+
+	
+		 Ks=model.Ks.addGeneral(Kc.addGeneral(Kcf));
+		 
+		// Ks.plot();
+	}
+
+		}
+		else
+		Ks=model.Ks.deepCopy();
+	
+		//Ks.plot();
+		
+	///	util.wait(10000);
+		//model.Ks.matForm(true).show();
+		
+	//	model.Ks.showcl();
+	
+		boolean solve=true;
+		
+		
+		if(solve){
+
+		
+		Vect Fint=Ks.smul(u);
+
+
+		Vect dF=bU1.sub(Fint);
+				
+		if(Kc!=null){
+		Vect Fc=Kc.smul(u);
+	
+		Vect Fcf=Kcf.smul(u);
+		
+		Vect F_aug=Gc.mul(lamN);
+		Vect F_augf=Gcf.mul(lamT);
+		
+		//lamN=lamN.add(Fc);
+	//	lamT=lamT.add(Fcf);
+		dF=dF.sub(Fc).sub(Fcf).sub(F_aug).sub(F_augf);
+		//dF=dF.sub(lamN).sub(lamT);
+
+		}
+
+	
+		
+		double er=dF.norm()/bU1.norm();
+		nr_err.el[totalNRIter]=er;
+		
+	//	if(er<.01) break;
+		
+		totalNRIter++;
+
+
+		model.Ci=Ks.scale(dF);
+	
+		
+		Vect du;
+		if(model.Ls==null)
+		model.Ls=Ks.ichol();
+
+
+		if(dF.abs().max()!=0){
+		//if(model.xp==null){
+			du=solver.ICCG(Ks,model.Ls, dF,model.errCGmax,model.iterMax);
+	//	}
+		//else{
+			//	u=solver.ICCG(model.Ks,model.Ls, bU1,2e-3,model.iterMax,model.xp);
+		//	du=model.solver.err0ICCG(Ks,model.Ls, dF,model.errCGmax*1e-3,model.iterMax,model.xp);	
+
+		//}
+		}
+		else
+			du=new Vect(Ks.nRow);
+
+		model.xp=du.deepCopy();
+
+		du.timesVoid(model.Ci);
+		
+		u=u.add(du);
+		
+		model.setU(u);
+		
+			
+		}
+		
+				
+	}
+		Vect gap=Gc.mul(u);
+		
+//		lamN=lamN.add(Fc);
+		//lamN=lamN.add(Kc.smul(u));
+
+		err.el[cont_iter]=gap.abs().max();
+		
+		
+		//lamT=lamT.add(Kcf.smul(u));
+		
+		Vect sld=Gcf.mul(u);
+		errf.el[cont_iter]=sld.abs().max();
+		
+		if(Kc!=null){
+	
+		Vect g=Gc.mul(u).times(pf);
+		Vect s=Gcf.mul(u).times(pft);
+
+		lamN=lamN.add(g);
+		lamT=lamT.add(s);
+		}
+
+
+	
+}
+
+err.times(1e6).show();
+
+		util.plot(err);
+		
+errf.times(1e6).show();
+
+util.plot(errf);
+
+nr_err.show();
+
+//u=lamN.deepCopy();
+
+return u;
+
+	}
+	
 }
 
 

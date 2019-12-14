@@ -808,6 +808,19 @@ public class SpMat  {
 		return B;
 	}
 	
+	public SpMat addGeneral(SpMat M){
+		SpMat B=this.deepCopy();
+		for(int i=0;i<nRow;i++)
+			if(M.row[i]!=null){
+			
+				B.row[i]=B.row[i].addGeneral(M.row[i]);
+
+	
+			}
+		
+		return B;
+	}
+	
 	public void add(Vect D){
 		if(nRow!=D.length) throw new IllegalArgumentException("Dimensions do not agree.");
 		for(int i=0;i<nRow;i++)
@@ -998,6 +1011,13 @@ public class SpMat  {
 		M.show();
 	}
 
+	public void shownzA(){
+		System.out.format(" Sparse Matrix ( %d x %d ) \n",nRow, getnCol());
+		for(int i=0;i<nRow;i++)
+				for(int j=0;j<row[i].nzLength;j++)
+				//	if(row[i].el[j]!=0)
+				System.out.format(" ( %d  %d )  %25.12e\n",i,row[i].index[j], row[i].el[j]);
+	}
 	
 	public void plot(){
 		int N=this.nRow;
