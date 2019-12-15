@@ -138,9 +138,10 @@ public class GUI extends JFrame implements ActionListener{
 
 				}
 				else if(tag==4){
-					meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\bun.txt";
-					dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\data_2D.txt";
-					
+					//meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\bun.txt";
+					//dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\data_2D.txt";
+					meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\punch\\bun.txt";
+					dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\punch\\data_2D.txt";
 					//meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\bun.txt";
 					//dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\data_2D.txt";
 					//meshFile= System.getProperty("user.dir") + "\\statFrameSegPrismFinIns.txt";

@@ -2214,6 +2214,52 @@ public double[] loadArray(){
 	if(file==null || file.equals("") )  throw new NullPointerException("file not found.");
 	return loadArray(file);
 }
+public int[][] loadIntArray(String arrayPath,int nRow,int nCol,int skip){
+	try{
+		FileReader fr=new FileReader(arrayPath);
+		BufferedReader br = new BufferedReader(fr);
+		String line;
+
+		
+		int[][] data=new int[nRow][nCol];
+		
+		line=br.readLine();
+
+		int i=0;
+		while(line!=null && i<skip){
+			i++;
+			line=br.readLine();
+			
+		}
+			
+	//	util.pr(i);
+		//util.pr(line);
+		String[] sp;
+		
+		i=0;
+		while(line!=null){
+			if(i>nRow-1) break;
+			sp=line.split(regex2);
+			for(int k=0;k<sp.length;k++)
+				data[i][k]=Integer.parseInt(sp[k]);
+			
+			i++;
+			line=br.readLine();
+			
+		}
+		
+	br.close();
+	fr.close();
+			return data;
+			
+	}
+	catch(IOException e){
+		e.printStackTrace();//System.err.println("Error in loading model file.");
+	}
+
+
+	return null;
+}
 
 public double[] loadArray(String arrayPath){
 

@@ -1388,12 +1388,14 @@ public class MechMatrix {
 		SpMat Kc=null;
 		SpMat Kcf=null;
 		
-		double pf=1e6;
-		double pft=1e6;
+		double pf=1e8;
+		double pft=1e8;
+		
+		
 		
 		Vect bU1=model.bU.add(model.getbUt(mode));
 		
-		bU1.timesVoid(100);
+		bU1.timesVoid(1e5);
 
 		
 		Vect u=new Vect(model.Ks.nRow);
@@ -1439,32 +1441,133 @@ public class MechMatrix {
 				//util.hshow(masterEdges[k]);	
 			}
 		}
-		//masterEdges[0][0]=127;
-		//masterEdges[0][1]=128;
+		
+		boolean ipm=false;
+		if(ipm){
+			 numSn=70;
+			 numMed=36;
+			 
+			// numSn=3;
+			// numMed=3;
+			 slaveNodes=new int[numSn];
+/*			 int kx1=0;
+			 slaveNodes[kx1++]=1298;
+			 slaveNodes[kx1++]=2408;
+			 slaveNodes[kx1++]=1272;*/
+	
+			 String file="D:\\JavaWorks\\FEM problems\\structural\\2D-contact\\ipm\\cont.txt";
+			 int[][] data=model.loader.loadIntArray(file, numSn, 1,1);
+			
+			for(int k=0;k<slaveNodes.length;k++)
+				slaveNodes[k]=data[k][0];
+		
+			data=model.loader.loadIntArray(file, numMed, 2,numSn+2);
+		
+			masterEdges=new int[numMed][2];
+			for(int k=0;k<masterEdges.length;k++){
+				masterEdges[k][0]=data[k][0];
+				masterEdges[k][1]=data[k][1];
+				//util.hshow(masterEdges[k]);	
+			}	
+		
+		}
+		boolean punch=true;
+		if(punch){
+			 numSn=22;
+			 numMed=20;
+			 
+			// numSn=3;
+			// numMed=3;
+			 slaveNodes=new int[numSn];
+/*			 int kx1=0;
+			 slaveNodes[kx1++]=1298;
+			 slaveNodes[kx1++]=2408;
+			 slaveNodes[kx1++]=1272;*/
+	
+			 String file="D:\\JavaWorks\\FEM problems\\structural\\2D-contact\\punch\\cont.txt";
+			 int[][] data=model.loader.loadIntArray(file, numSn, 1,1);
+			
+			for(int k=0;k<slaveNodes.length;k++)
+				slaveNodes[k]=data[k][0];
+		
+			data=model.loader.loadIntArray(file, numMed, 2,numSn+2);
+		
+			masterEdges=new int[numMed][2];
+			for(int k=0;k<masterEdges.length;k++){
+				masterEdges[k][0]=data[k][0];
+				masterEdges[k][1]=data[k][1];
+				//util.hshow(masterEdges[k]);	
+			}	
+		
+		}
+		
+		 pf=0;
 
-		///masterEdges[1][0]=136;
-		//masterEdges[1][1]=137;
+		for(int i=0;i<slaveNodes.length;i++){
+			int sn=slaveNodes[i];
+			int index=model.U_unknownIndex[sn]-1;
+			if(index<0) continue;
+			int xind=2*index;
+			int yind=2*index+1;
+			double val1=model.Ks.row[xind].el[model.Ks.row[xind].nzLength-1];
+			double val2=model.Ks.row[yind].el[model.Ks.row[yind].nzLength-1];
+			
+			if(val1>pf) pf=val1;
+			if(val2>pf) pf=val2;
+		}
 
+		pf/=slaveNodes.length;//
+		pft=1.*pf;
+		
+		util.pr("pf :"+pf);
+		util.pr("pft :"+pft);
 
 		int[] normalIndex=new int[numSn];
 		
 		Vect[] normals=new Vect[numMed];
-		for(int k=0;k<masterEdges.length;k++){
-			int mn1=masterEdges[k][0];
-			int mn2=masterEdges[k][1];
-			Vect v1=model.node[mn1].getCoord();
-			Vect v2=model.node[mn2].getCoord();
-			Vect v12=v2.sub(v1);
-			Vect normal=new Vect(-v12.el[1],v12.el[0]).normalized();
-			normals[k]=normal;
-		}
-		
+
 		int dof=model.Ks.nRow;
 		
 
 		int nnSize=model.numberOfNodes+1;
 		SpMatAsym node_node=new SpMatAsym(nnSize,nnSize);
 	//	node_node.lower=false;
+
+		
+		//node_node.shownzA();
+		
+		//node_node.matForm().plot();
+		
+		int dim=model.dim;
+
+		SpMatAsym Gc=new SpMatAsym(dof,dof);
+		SpMatAsym Gcf=new SpMatAsym(dof,dof);
+		SpMatAsym Gct=null;
+		SpMatAsym Gcft=null;
+		int itmax=10;
+		int nr_itmax=10;
+		int nLoads=10;
+		
+		Vect err=new Vect(itmax);
+		
+		Vect errf=new Vect(itmax);
+		
+		Vect nr_err=new Vect(nLoads*itmax*nr_itmax);
+		
+		int totalNRIter=0;
+Vect load=bU1.deepCopy();
+for(int load_iter=0; load_iter<nLoads; load_iter++){
+	
+double factor=(load_iter+1.)/nLoads;
+	bU1=load.times(factor);
+
+for(int cont_iter=0; cont_iter<itmax; cont_iter++){
+	
+util.pr("cont_iter: "+cont_iter);
+
+	for(int nr_iter=0; nr_iter<nr_itmax; nr_iter++){	
+		util.pr("nr_iter: "+nr_iter);
+
 		int numContacting=0;
 		
 		for(int i=0;i<slaveNodes.length;i++){
@@ -1489,17 +1592,23 @@ public class MechMatrix {
 		
 				Vect normal=new Vect(-v12.el[1],v12.el[0]).normalized();
 				normals[k]=normal;
+				//if(v1.el[1]<.0201) 
+					normals[k].timesVoid(-1);
+			//	normals[k].hshow();
 				
 				double pen=v1v.dot(normal);
 				
 				if(pen>0) continue;
+				
+				double edgeLength=v12.norm();
+
+				if(pen<-10*edgeLength) continue;
 				
 				normalIndex[i]=k;
 	
 				double beta=0;
 				double alpha=0;
 				double v1n=v1v.norm();
-				double edgeLength=v12.norm();
 
 				if(v1n==0){
 					 beta=0;
@@ -1510,8 +1619,9 @@ public class MechMatrix {
 				beta=v1v.dot(edgeDir)/edgeLength;			
 				alpha=1-beta;
 				}
-				util.pr((sn)+" ---  "+ mn1+"  "+mn2);
-				util.pr((sn)+" ---  "+ alpha+"  "+beta);
+				//util.pr((sn)+" -edgeLength--  "+ edgeLength);
+				//util.pr((sn)+" ---  "+ mn1+"  "+mn2);
+				//util.pr((sn)+" ---  "+ alpha+"  "+beta);
 				Vect relation=new Vect(nnSize);
 				relation.el[mn1]=alpha;
 				relation.el[mn2]=beta;
@@ -1527,31 +1637,9 @@ public class MechMatrix {
 			}
 			
 		}
-		//node_node.shownzA();
 		
-		//node_node.matForm().plot();
-		
-		int dim=model.dim;
+		util.pr("numContacting:   "+numContacting);
 
-		SpMatAsym Gc=new SpMatAsym(dof,dof);
-		SpMatAsym Gcf=new SpMatAsym(dof,dof);
-		SpMatAsym Gct=null;
-		SpMatAsym Gcft=null;
-		int itmax=50;
-		int nr_itmax=5;
-		
-		Vect err=new Vect(itmax);
-		
-		Vect errf=new Vect(itmax);
-		
-		Vect nr_err=new Vect(itmax*nr_itmax);
-		
-		int totalNRIter=0;
-		
-for(int cont_iter=0; cont_iter<itmax; cont_iter++){
-	
-
-	for(int nr_iter=0; nr_iter<nr_itmax; nr_iter++){	
 		for(int i=0;i<slaveNodes.length;i++){
 			int sn=slaveNodes[i];
 
@@ -1588,16 +1676,20 @@ for(int cont_iter=0; cont_iter<itmax; cont_iter++){
 				Gc.row[com_index].index[kx]=com_index+1;
 				Gc.row[com_index].el[kx++]=normal.el[1];
 		
+				if(com_index1>=0){
 				Gc.row[com_index].index[kx]=com_index1;
 				Gc.row[com_index].el[kx++]=-alpha*normal.el[0];
 				Gc.row[com_index].index[kx]=com_index1+1;
 				Gc.row[com_index].el[kx++]=-alpha*normal.el[1];
-				
+				}
+				if(com_index2>=0){
 				Gc.row[com_index].index[kx]=com_index2;
 				Gc.row[com_index].el[kx++]=-beta*normal.el[0];
 				Gc.row[com_index].index[kx]=com_index2+1;
 				Gc.row[com_index].el[kx++]=-beta*normal.el[1];
-				
+				}
+				Gc.row[com_index].sortAndTrim(kx);;
+
 				
 			//	util.pr((sn)+"    "+(com_index)+"  ===== "+ (com_index1+1)+"  "+(com_index2+1));
 			//	util.pr((sn)+"    "+(com_index)+"  ===== "+ alpha+"  "+beta);
@@ -1611,16 +1703,22 @@ for(int cont_iter=0; cont_iter<itmax; cont_iter++){
 				Gcf.row[com_index].index[kx]=com_index+1;
 				Gcf.row[com_index].el[kx++]=tang.el[1];
 		
+				if(com_index1>=0){
 				Gcf.row[com_index].index[kx]=com_index1;
 				Gcf.row[com_index].el[kx++]=-alpha*tang.el[0];
 				Gcf.row[com_index].index[kx]=com_index1+1;
 				Gcf.row[com_index].el[kx++]=-alpha*tang.el[1];
-				
+				}
+				if(com_index2>=0){
 				Gcf.row[com_index].index[kx]=com_index2;
 				Gcf.row[com_index].el[kx++]=-beta*tang.el[0];
 				Gcf.row[com_index].index[kx]=com_index2+1;
 				Gcf.row[com_index].el[kx++]=-beta*tang.el[1];
+				}
 				
+				Gcf.row[com_index].sortAndTrim(kx);;
+
+	
 				//if(mn1==408) util.pr((com_index1+1)+" ---  "+ alpha+"  "+beta);
 			//	if(mn2==408) util.pr((com_index2+1)+" ---  "+ alpha+"  "+beta);
 				//util.pr(sn+"   "+index);
@@ -1632,8 +1730,8 @@ for(int cont_iter=0; cont_iter<itmax; cont_iter++){
 		if(numContacting!=0){
 			
 		//Gc.shownzA();
-		Gct=new SpMatAsym(Gc.matForm().transp());
-	//	Gct=Gc.transpose(100);
+	//	Gct=new SpMatAsym(Gc.matForm().transp());
+		Gct=Gc.transpose(500);
 		
 		//Gct.shownzA();
 	
@@ -1663,7 +1761,7 @@ for(int cont_iter=0; cont_iter<itmax; cont_iter++){
 		Kc.times(pf);
 		
 		
-		Gcft=Gcf.transpose(100);
+		Gcft=Gcf.transpose(500);
 		
 Kcf=new SpMat(dof,dof); // Gct*Gc
 		
@@ -1736,48 +1834,19 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 		//Gct.shownzA();
 				
 		if(Kc!=null){
-/*		Fc=Kc.smul(u);
-	
-		Fcf=Kcf.smul(u);
 
-		aug_N=aug_N.times(1).add(Fc);;
-		aug_T=aug_T.times(1).add(Fcf);*/
-		//if(nr_iter==0){
-		//aug_N=aug_N.add(Fc);;
+
+		//Fc=Kc.smul(u).times(.5);
+		
+		//aug_N=aug_N.add(Fc);
+		
+		//Fcf=Kcf.smul(u).times(.5);
+		
 		//aug_T=aug_T.add(Fcf);
-		//{
-		if(true){
-		Vect g=Gc.mul(u).times(pft);
-	//	util.pr("g702= "+u.el[703]+" - "+u.el[795]+" =? "+(g.el[702]/pf));
-	//	util.pr("g704= "+u.el[705]+" - "+u.el[795]+" =? "+(g.el[704]/pf));
-	//	util.pr("g706= "+u.el[707]+" - "+u.el[797]+" =? "+(g.el[706]/pf));
-		Vect s=Gcf.mul(u).times(pft);
 
-		lamN=lamN.add(g);
-		lamT=lamT.add(s);
-		//aug_N=Gc.mul(lamN);;
-		//aug_T=Gcf.mul(lamT);;
-		
-		//for(int i=0;i<Fc.length-1;i++)
-			//Fc.el[i+1]=-g.el[i];
-		//Fc=Gct.mul(g).times(pf);
-		Fc=Kc.smul(u).times(.5);
-		
-		aug_N=aug_N.add(Fc);
-		
-		Fcf=Kcf.smul(u).times(.5);
-		aug_T=aug_T.add(Fcf);
-		//Vect s=Gcf.mul(u).times(pft);
 
-		}
-		
-		
-		//lamN=lamN.add(Fc);
-	//	lamT=lamT.add(Fcf);
-		//dF=dF.sub(Fc).sub(Fcf).sub(aug_N).sub(aug_T);
 		dF=dF.sub(aug_N).sub(aug_T);
-	//	dF=dF.sub(Fc.times(.5));//.sub(Fcf);
-	///	new SpVect(Fc).shownz();
+
 
 
 		}
@@ -1787,7 +1856,7 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 		double er=dF.norm()/bU1.norm();
 		nr_err.el[totalNRIter]=er;
 		
-		if(er<1e-6) break;
+		if(er<1e-3) break;
 		
 		totalNRIter++;
 
@@ -1796,7 +1865,7 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 	
 		
 		Vect du;
-		if(model.Ls==null)
+		//if(model.Ls==null)
 		model.Ls=Ks.ichol();
 
 
@@ -1810,8 +1879,10 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 
 		//}
 		}
-		else
+		else{
+			util.pr("Solution is zero!");
 			du=new Vect(Ks.nRow);
+		}
 
 		model.xp=du.deepCopy();
 
@@ -1835,44 +1906,30 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 		err.el[cont_iter]=gap.abs().max();
 		
 		
+		
 		//lamT=lamT.add(Kcf.smul(u));
 		
 		Vect sld=Gcf.mul(u);
 		errf.el[cont_iter]=sld.abs().max();
 		
+		if(err.el[cont_iter]<1e-6 && (errf.el[cont_iter]<1e-4)) break;
+		
 		if(Kc!=null){
 			
 			Vect g=Gc.mul(u).times(pf);
 			Vect s=Gcf.mul(u).times(pft);
-		//	util.pr("g702= "+u.el[703]+" - "+u.el[795]+" =? "+(g.el[702]/pf));
-		//	util.pr("g704= "+u.el[705]+" - "+u.el[795]+" =? "+(g.el[704]/pf));
-		//	util.pr("g706= "+u.el[707]+" - "+u.el[797]+" =? "+(g.el[706]/pf));
-
 			lamN=lamN.add(g);
 			lamT=lamT.add(s);
-			//aug_N=Gc.mul(lamN);;
-			//aug_T=Gcf.mul(lamT);;
-			//Fc=Gct.mul(g);
-			//Fcf=Gcf.mul(s);
-	
-/*		Vect g=Gc.mul(u).times(pf);
-		Vect s=Gcf.mul(u).times(pft);
+			aug_N=Gct.mul(lamN);;
+			aug_T=Gcft.mul(lamT);;
 
-		lamN=lamN.add(g);
-		lamT=lamT.add(s);*/
 		}
 
 
 	
 }
 
-util.pr("Gap[micon] vs aug_iter");
-err.times(1e6).show();
-//util.plot(err);
-	
-util.pr("slide[micon] vs aug_iter");
-errf.times(1e6).show();
-//util.plot(errf);
+	}
 
 
 util.pr("NR error");
@@ -1889,7 +1946,17 @@ for(int k=0;k<nr_err.length;k++)
 
 nr_distilled.show();
 util.plot(nr_distilled);
-//u=Fc.deepCopy();
+//u=aug_N.add(aug_T);
+
+
+util.pr("Gap[micon] vs aug_iter");
+err.times(1e6).show();
+//util.plot(err);
+	
+util.pr("slide[micon] vs aug_iter");
+errf.times(1e6).show();
+//util.plot(errf);
+
 
 return u;
 
