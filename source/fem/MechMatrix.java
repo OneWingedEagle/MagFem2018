@@ -1395,7 +1395,7 @@ public class MechMatrix {
 		
 		Vect bU1=model.bU.add(model.getbUt(mode));
 		
-		bU1.timesVoid(1e5);
+		bU1.timesVoid(1e4);
 
 		
 		Vect u=new Vect(model.Ks.nRow);
@@ -1501,6 +1501,14 @@ public class MechMatrix {
 		
 		}
 		
+
+		int nout=2601-2551+1;
+		Vect xr=new Vect(nout);
+		for(int k=0;k<xr.length;k++){
+			int n=2551+k;
+			 xr.el[k]=model.node[n].getCoord(0);
+		}
+		
 		 pf=0;
 
 		for(int i=0;i<slaveNodes.length;i++){
@@ -1516,8 +1524,9 @@ public class MechMatrix {
 			if(val2>pf) pf=val2;
 		}
 
+		pf*=10;
 		pf/=slaveNodes.length;//
-		pft=1.*pf;
+		pft=1.e-2*pf;
 		
 		util.pr("pf :"+pf);
 		util.pr("pft :"+pft);
@@ -1544,10 +1553,15 @@ public class MechMatrix {
 		SpMatAsym Gcf=new SpMatAsym(dof,dof);
 		SpMatAsym Gct=null;
 		SpMatAsym Gcft=null;
-		int itmax=10;
-		int nr_itmax=10;
-		int nLoads=10;
+		int itmax=1;
+		int nr_itmax=3;
+		int nLoads=1;
 		
+		Vect[] urs=new Vect[itmax];
+		for(int i=0;i<itmax;i++)
+			urs[i]=new Vect(xr.length);
+
+		int num_augs_run=0;
 		Vect err=new Vect(itmax);
 		
 		Vect errf=new Vect(itmax);
@@ -1836,15 +1850,20 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 		if(Kc!=null){
 
 
-		//Fc=Kc.smul(u).times(.5);
+		Fc=Kc.smul(u).times(1);
 		
 		//aug_N=aug_N.add(Fc);
 		
-		//Fcf=Kcf.smul(u).times(.5);
+		Fcf=Kcf.smul(u).times(1);
+		Vect g=Gc.mul(u).times(pf);
+		Vect s=Gcf.mul(u).times(pft);
+		lamN=lamN.add(g);
+		lamT=lamT.add(s);
+		aug_N=Gct.mul(lamN);;
+		aug_T=Gcft.mul(lamT);;
+
+		dF.sub(Fc).sub(Fcf);
 		
-		//aug_T=aug_T.add(Fcf);
-
-
 		dF=dF.sub(aug_N).sub(aug_T);
 
 
@@ -1870,14 +1889,14 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 
 
 		if(dF.abs().max()!=0){
-		//if(model.xp==null){
+		if(model.xp==null){
 			du=solver.ICCG(Ks,model.Ls, dF,model.errCGmax,model.iterMax);
-	//	}
-		//else{
+		}
+		else{
 			//	u=solver.ICCG(model.Ks,model.Ls, bU1,2e-3,model.iterMax,model.xp);
-		//	du=model.solver.err0ICCG(Ks,model.Ls, dF,model.errCGmax*1e-3,model.iterMax,model.xp);	
+			du=model.solver.err0ICCG(Ks,model.Ls, dF,model.errCGmax*1e-3,model.iterMax,model.xp);	
 
-		//}
+		}
 		}
 		else{
 			util.pr("Solution is zero!");
@@ -1911,10 +1930,8 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 		
 		Vect sld=Gcf.mul(u);
 		errf.el[cont_iter]=sld.abs().max();
-		
-		if(err.el[cont_iter]<1e-6 && (errf.el[cont_iter]<1e-4)) break;
-		
-		if(Kc!=null){
+
+/*		if(Kc!=null){
 			
 			Vect g=Gc.mul(u).times(pf);
 			Vect s=Gcf.mul(u).times(pft);
@@ -1923,10 +1940,21 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 			aug_N=Gct.mul(lamN);;
 			aug_T=Gcft.mul(lamT);;
 
+		}*/
+		for(int k=0;k<xr.length;k++){
+			int n=2551+k;
+			 
+			int index=model.U_unknownIndex[n]-1;
+				if(index<0) continue;
+				
+				
+				int com_index=dim*index;
+				urs[cont_iter].el[k]=-Math.abs(u.el[com_index])*1e6;
+			
 		}
+		num_augs_run++;
 
-
-	
+		if(err.el[cont_iter]<1e-8 && (errf.el[cont_iter]<1e-8)) break;
 }
 
 	}
@@ -1957,6 +1985,25 @@ util.pr("slide[micon] vs aug_iter");
 errf.times(1e6).show();
 //util.plot(errf);
 
+
+//ur.show();
+double[][] data=new double[xr.length][itmax+1];
+for(int k=0;k<xr.length;k++){
+
+	 data[k][0]=xr.el[k];
+
+	 for(int i=0;i<itmax;i++)
+		data[k][i+1]= urs[i].el[k];
+
+}
+//util.show(data);
+util.plotBunch(data);
+//util.plot(x,ur);
+
+model.setU(aug_N.add(aug_T));
+	model.writeNodalField( model.resultFolder+"\\contac_force.txt",-1);
+
+model.setU(u);
 
 return u;
 
