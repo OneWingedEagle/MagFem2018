@@ -199,7 +199,7 @@ public class RunMech {
 
 					System.gc();
 					
-					boolean contact=true;
+					boolean contact=(model.timeIntegMode==-4);
 					
 					if(contact){
 						u=model.runContact();
