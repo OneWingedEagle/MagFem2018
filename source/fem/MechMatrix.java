@@ -1391,11 +1391,15 @@ public class MechMatrix {
 		double pf=1e8;
 		double pft=1e8;
 		
+		Mat LU=null;
 		
+		int skip=1;
+		
+		MatSolver matSolver=new MatSolver();
 		
 		Vect bU1=model.bU.add(model.getbUt(mode));
 		
-		bU1.timesVoid(1e4);
+		bU1.timesVoid(1e5);
 
 		
 		Vect u=new Vect(model.Ks.nRow);
@@ -1451,7 +1455,7 @@ public class MechMatrix {
 			// numMed=3;
 			 slaveNodes=new int[numSn];
 /*			 int kx1=0;
-			 slaveNodes[kx1++]=1298;
+			 slaveNodes[kx1++]=1298;;;
 			 slaveNodes[kx1++]=2408;
 			 slaveNodes[kx1++]=1272;*/
 	
@@ -1554,7 +1558,7 @@ public class MechMatrix {
 		SpMatAsym Gct=null;
 		SpMatAsym Gcft=null;
 		int itmax=1;
-		int nr_itmax=3;
+		int nr_itmax=10;
 		int nLoads=1;
 		
 		Vect[] urs=new Vect[itmax];
@@ -1745,7 +1749,7 @@ util.pr("cont_iter: "+cont_iter);
 			
 		//Gc.shownzA();
 	//	Gct=new SpMatAsym(Gc.matForm().transp());
-		Gct=Gc.transpose(500);
+		Gct=Gc.transpose(50);
 		
 		//Gct.shownzA();
 	
@@ -1775,7 +1779,7 @@ util.pr("cont_iter: "+cont_iter);
 		Kc.times(pf);
 		
 		
-		Gcft=Gcf.transpose(500);
+		Gcft=Gcf.transpose(50);
 		
 Kcf=new SpMat(dof,dof); // Gct*Gc
 		
@@ -1812,8 +1816,19 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 
 	
 		//if(Ksb==null){
+		if(nr_iter%skip==0){
 		 Ks=model.Ks.addGeneral(Kc.addGeneral(Kcf));
-			Ksb=Ks.deepCopy();
+		 
+		 LU=Ks.matForm();
+		 LU.lu();
+		 
+		 
+		
+		}/*else{
+		 Ks=Ksb.deepCopy();//model.Ks.addGeneral(Kc.addGeneral(Kcf));
+
+		}*/
+		Ksb=Ks.deepCopy();
 
 		//}
 	//	 else
@@ -1872,6 +1887,7 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 
 	
 		
+		
 		double er=dF.norm()/bU1.norm();
 		nr_err.el[totalNRIter]=er;
 		
@@ -1879,11 +1895,15 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 		
 		totalNRIter++;
 
+		Vect du;
+
+		if(nr_iter%skip!=0){
+			du=matSolver.solvelu(LU,dF);
+		}else{
 
 		model.Ci=Ks.scale(dF);
 	
 		
-		Vect du;
 		//if(model.Ls==null)
 		model.Ls=Ks.ichol();
 
@@ -1906,6 +1926,7 @@ Kcf=new SpMat(dof,dof); // Gct*Gc
 		model.xp=du.deepCopy();
 
 		du.timesVoid(model.Ci);
+		}
 		
 		u=u.add(du);
 		

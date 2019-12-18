@@ -3747,8 +3747,12 @@ public Vect runContact(){
 	if(this.Ks==null)
 		this.setStiffMat(dyn);
 	
-	Vect u=this.mechMat.runContact(this, solver,defMode);
+	
+	ContactAnalysis contact=new ContactAnalysis();
 
+	Vect u=contact.solve(this, solver,defMode);
+
+	
 	this.setU(u);	
 	
 	double un,umax=0; int im=1;
