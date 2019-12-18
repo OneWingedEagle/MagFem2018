@@ -47,6 +47,9 @@ public class ContactAnalysis {
 	int[][] masterEdges;
 	int[] normalIndex;
 	int[][] u_index;
+	
+	boolean[] rmv=null;
+	boolean[] contacting=null;
 
 	Vect[] normals;
 
@@ -61,6 +64,9 @@ public class ContactAnalysis {
 
 
 		this.model=model;
+		
+		contacting=new boolean[model.numberOfNodes+1];
+		 rmv=new boolean[model.numberOfNodes+1];
 
 		u_index=new int[model.numberOfNodes+1][model.dim];
 		for(int i=1;i<=model.numberOfNodes;i++)
@@ -134,9 +140,9 @@ public class ContactAnalysis {
 			if(val2>pf) pf=val2;
 		}
 
-		pf*=1;
+		pf*=.01;
 		pf/=slaveNodes.length;//
-		pft=1.e-2*pf;
+		pft=1.e0*pf;
 
 		util.pr("pf :"+pf);
 		util.pr("pft :"+pft);
@@ -165,8 +171,8 @@ public class ContactAnalysis {
 		Gc=new SpMatAsym(dof,dof);
 		Gcf=new SpMatAsym(dof,dof);
 
-		int itmax=1;
-		int nr_itmax=10;
+		int itmax=5;
+		int nr_itmax=30;
 		int nLoads=1;
 
 		Vect[] urs=new Vect[itmax];
@@ -327,6 +333,19 @@ public class ContactAnalysis {
 
 							Fcf=Kcf.smul(u).times(1);
 							Vect g=Gc.mul(u).times(pf);
+							
+							for(int i=1;i<=model.numberOfNodes;i++){
+								//for(int k=0;k<model.dim;k++){
+									int p=u_index[i][0];
+									if(p<0) continue;
+									if(g.el[p]>0 && !rmv[i]){
+									//	contacting[i]=false;
+									//	rmv[i]=true;
+										}
+								
+						
+							}
+							
 							Vect s=Gcf.mul(u).times(pft);
 							lamN=lamN.add(g);
 							lamT=lamT.add(s);
@@ -511,6 +530,12 @@ for(int k=0;k<slaveNodes.length;k++){
 		
 		for(int i=0;i<slaveNodes.length;i++){
 			int sn=slaveNodes[i];
+			
+			if(rmv[sn]){
+				rmv[sn]=false;
+				continue;
+			}
+			
 			Vect v=model.node[sn].getCoord().add(model.node[sn].u);
 			for(int k=0;k<masterEdges.length;k++){
 				int mn1=masterEdges[k][0];
@@ -537,7 +562,7 @@ for(int k=0;k<slaveNodes.length;k++){
 
 				double pen=v1v.dot(normal);
 
-				if(pen>0) continue;
+				if(pen>0e-8/* && !contacting[sn]*/) continue;
 				
 
 				double edgeLength=v12.norm();
@@ -566,6 +591,8 @@ for(int k=0;k<slaveNodes.length;k++){
 				node_node.row[sn].index[1]=mn2;
 				node_node.row[sn].el[0]=alpha;
 				node_node.row[sn].el[1]=beta;
+				
+				contacting[sn]=true;
 
 				numContacting++;
 				//	break;//
@@ -702,8 +729,8 @@ for(int k=0;k<slaveNodes.length;k++){
 
 		boolean ipm=true;
 		if(ipm){
-			numSn=26;
-			numMed=27;
+			numSn=73;
+			numMed=82;
 
 			// numSn=3;
 			// numMed=3;
