@@ -43,27 +43,75 @@ public class ContactAnalysis {
 	private Vect Fc;
 	private Vect Fcf;
 	
-	int[] slaveNodes;
-	int[][] masterEdges;
-	int[] normalIndex;
+	public int numContacts;
+	public double[] penFactor;
+	public double[] fric_coef;
+	public Node[][] slaveNodes;
+	public Edge[][] masterEdges;
+	
+	public Element[][] edgeElems;
+	//int[] slaveNodes;
+	//int[][] masterEdges;
+	int[][] normalIndex;
 	int[][] u_index;
 	
 	boolean[] rmv=null;
 	boolean[] contacting=null;
 
-	Vect[] normals;
+	Vect[][] normals;
 
 	
 	Model model;
 	double pf=1e8;
 	double pft=1e8;
 
+	boolean check_double=false;
 
 
 	public Vect solve( Model model,SpMatSolver solver,int mode){
 
 
 		this.model=model;
+		
+		int[][] ne=new int[model.numberOfNodes+1][20];
+		int[] nz=new int[model.numberOfNodes+1];
+
+
+		 for(int i=1;i<=model.numberOfElements;i++){
+			 int[] vn=model.element[i].getVertNumb();
+			 for(int j=0;j<vn.length;j++){
+				 ne[vn[j]][nz[vn[j]]++]=i;
+					 
+				 }
+			 }
+		
+		edgeElems=new Element[numContacts][];
+		 for(int contId=0;contId<numContacts;contId++){
+			 edgeElems[contId]=new Element[masterEdges[contId].length];
+		 
+				for(int k=0;k<masterEdges[contId].length;k++){
+					
+					Node node1=masterEdges[contId][k].node[0];
+					Node node2=masterEdges[contId][k].node[1];
+					int ie=0;
+					 for(int j=0;j<nz[node1.id];j++){
+						 for(int p=0;p<nz[node2.id];p++){
+						
+							 if(ne[node1.id][j]==ne[node2.id][p]){
+								 ie=ne[node1.id][j];
+								 break;
+							 }
+							 if(ie>0) break;
+						 }
+				}
+					 
+					 if(ie>0) 
+						 edgeElems[contId][k]=model.element[ie];
+					 
+
+			 }
+		 }
+		 
 		
 		contacting=new boolean[model.numberOfNodes+1];
 		 rmv=new boolean[model.numberOfNodes+1];
@@ -95,7 +143,7 @@ public class ContactAnalysis {
 
 		Vect bU1=model.bU.add(model.getbUt(mode));
 
-		bU1.timesVoid(1e5);
+		bU1.timesVoid(1e4);
 
 
 		Vect u=new Vect(model.Ks.nRow);
@@ -113,22 +161,28 @@ public class ContactAnalysis {
 		System.out.println(" Contact analysis....");
 
 
-		readContact();
+		//readContact();
 
 
 		int nout=2601-2551+1;
 		Vect xr=new Vect(nout);
-/*		for(int k=0;k<xr.length;k++){
+		
+		boolean punch=true;
+		if(punch)
+		for(int k=0;k<xr.length;k++){
 			int n=2551+k;
 			xr.el[k]=model.node[n].getCoord(0);
 		}
 		
-		*/
+		
 
 		pf=0;
+		
 
-		for(int i=0;i<slaveNodes.length;i++){
-			int sn=slaveNodes[i];
+		 for(int contId=0;contId<numContacts;contId++)
+		for(int i=0;i<slaveNodes[contId].length;i++){
+			int sn=slaveNodes[contId][i].id;
+
 			int index=model.U_unknownIndex[sn]-1;
 			if(index<0) continue;
 			int xind=2*index;
@@ -140,20 +194,26 @@ public class ContactAnalysis {
 			if(val2>pf) pf=val2;
 		}
 
-		pf*=.01;
-		pf/=slaveNodes.length;//
-		pft=1.e0*pf;
+		pf*=1;
+		//pf/=slaveNodes[0].length;//
+		pft=.1*pf;
 
 		util.pr("pf :"+pf);
 		util.pr("pft :"+pft);
 		
-		int numSn=slaveNodes.length;
-		int numMed=masterEdges.length;
+		
+		normalIndex=new int[numContacts][];
 
-		normalIndex=new int[numSn];
+		normals=new Vect[numContacts][];
 
-		normals=new Vect[numMed];
+		 for(int contId=0;contId<numContacts;contId++){
+				int numSn=slaveNodes[contId].length;
+				int numMed=masterEdges[contId].length;
+				normalIndex[contId]=new int[numSn];
 
+				normals[contId]=new Vect[numMed];
+
+		 }
 		int dof=model.Ks.nRow;
 
 
@@ -171,8 +231,8 @@ public class ContactAnalysis {
 		Gc=new SpMatAsym(dof,dof);
 		Gcf=new SpMatAsym(dof,dof);
 
-		int itmax=5;
-		int nr_itmax=30;
+		int itmax=1;
+		int nr_itmax=10;
 		int nLoads=1;
 
 		Vect[] urs=new Vect[itmax];
@@ -205,6 +265,8 @@ public class ContactAnalysis {
 					util.pr("numContacting:   "+numContacting);
 
 					assembleConstraintMats();
+					
+					
 
 					if(numContacting!=0){
 
@@ -322,33 +384,44 @@ public class ContactAnalysis {
 
 						Vect dF=bU1.sub(Fint);
 
-						//Gct.shownzA();
+						
+						boolean opened=false;
 
 						if(Kc!=null){
 
 
 							Fc=Kc.smul(u).times(1);
-
-							//aug_N=aug_N.add(Fc);
-
 							Fcf=Kcf.smul(u).times(1);
-							Vect g=Gc.mul(u).times(pf);
-							
+						
+							Vect g=Gc.mul(u);
+		
+							for(int i=0;i<g.length;i++){
+								if(g.el[i]>0){
+									//util.pr(i+"  "+g.el[i]);
+									//lamN.el[i]=0;
+								//	lamT.el[i]=0;
+								//	opened=true;
+								}
+							}
+						
+							if(check_double)
 							for(int i=1;i<=model.numberOfNodes;i++){
 								//for(int k=0;k<model.dim;k++){
 									int p=u_index[i][0];
 									if(p<0) continue;
 									if(g.el[p]>0 && !rmv[i]){
-									//	contacting[i]=false;
-									//	rmv[i]=true;
+										contacting[i]=false;
+										lamN.el[p]=0;
+										lamT.el[p]=0;
+										rmv[i]=true;
+										//opened=true;
 										}
 								
 						
 							}
 							
-							Vect s=Gcf.mul(u).times(pft);
-							lamN=lamN.add(g);
-							lamT=lamT.add(s);
+					
+
 							aug_N=Gct.mul(lamN);;
 							aug_T=Gcft.mul(lamT);;
 
@@ -368,7 +441,7 @@ public class ContactAnalysis {
 						
 						util.pr("nr_iter: "+nr_iter+"           nr_err: "+er);
 
-						if(er<1e-3) break;
+						if(!opened && er<1e-3) break;
 
 						totalNRIter++;
 
@@ -414,49 +487,33 @@ public class ContactAnalysis {
 
 
 				}
+
 				Vect gap=Gc.mul(u);
 
-//Gc.shownzA();
-
-for(int k=0;k<slaveNodes.length;k++){
-	int sn=slaveNodes[k];
-	int index=model.U_unknownIndex[sn]-1;
-	util.pr(sn+"    "+index*2);
-}
-			
-				//		lamN=lamN.add(Fc);
-				//lamN=lamN.add(Kc.smul(u));
 
 				err.el[cont_iter]=gap.abs().max();
 
 
-				
-			//	Fc=Gc.mul(gap);
-
-				//lamT=lamT.add(Kcf.smul(u));
-
 				Vect sld=Gcf.mul(u);
 				errf.el[cont_iter]=sld.abs().max();
 
-				/*		if(Kc!=null){
+	if(Kc!=null){
 
-			Vect g=Gc.mul(u).times(pf);
-			Vect s=Gcf.mul(u).times(pft);
-			lamN=lamN.add(g);
-			lamT=lamT.add(s);
-			aug_N=Gct.mul(lamN);;
-			aug_T=Gcft.mul(lamT);;
+			lamN=lamN.add(gap.times(pf));
+			lamT=lamT.add(sld.times(pft));
 
-		}*/
+
+		}
+				if(punch)
 				for(int k=0;k<xr.length;k++){
-/*					int n=2551+k;
+					int n=2551+k;
 
 					int index=model.U_unknownIndex[n]-1;
 					if(index<0) continue;
 
 
 					int com_index=u_index[n][0];
-					urs[cont_iter].el[k]=-Math.abs(u.el[com_index])*1e6;*/
+					urs[cont_iter].el[k]=-Math.abs(u.el[com_index])*1e6;
 
 				}
 				num_augs_run++;
@@ -477,9 +534,11 @@ for(int k=0;k<slaveNodes.length;k++){
 
 		int kx=0;
 		for(int k=0;k<nr_err.length;k++)
-			if(nr_err.el[k]>0) nr_distilled.el[kx++]=nr_err.el[k];
+			if(nr_err.el[k]>0) nr_distilled.el[kx++]=(nr_err.el[k]);
 
 		nr_distilled.show();
+		for(int k=0;k<nr_distilled.length;k++)
+			 nr_distilled.el[k]=Math.log10(nr_distilled.el[k]);
 		util.plot(nr_distilled);
 		//u=aug_N.add(aug_T);
 
@@ -494,7 +553,7 @@ for(int k=0;k<slaveNodes.length;k++){
 
 
 		//ur.show();
-		boolean punch=false;
+	
 		if(punch){
 		double[][] data=new double[xr.length][itmax+1];
 		for(int k=0;k<xr.length;k++){
@@ -505,13 +564,30 @@ for(int k=0;k<slaveNodes.length;k++){
 				data[k][i+1]= urs[i].el[k];
 
 		}
-		//util.show(data);
+	//	util.show(data);
 		util.plotBunch(data);
 		//util.plot(x,ur);
 		}
 
-		model.setU(Fc.add(Fc));
-		model.writeNodalField( model.resultFolder+"\\contac_force.txt",-1);
+		model.setU(new Vect(u.length));
+		 for(int contId=0;contId<numContacts;contId++)		
+			for(int k=0;k<masterEdges[contId].length;k++){
+				
+				Node node1=masterEdges[contId][k].node[0];
+				Node node2=masterEdges[contId][k].node[1];
+				int mn1=node1.id;
+				int mn2=node2.id;
+
+				Vect normal=normals[contId][k];//new Vect(-v12.el[1],v12.el[0]).normalized();
+				if(normal==null) continue;
+				//normal.hshow();
+				model.node[mn1].u=normal.deepCopy();
+				model.node[mn2].u=normal.deepCopy();
+				//node2.u=normal.deepCopy();
+			}
+		model.writeNodalField( model.resultFolder+"\\master_normal.txt",-1);
+		model.setU(Fc.add(Fcf).times(-1));
+		model.writeNodalField( model.resultFolder+"\\contact_force.txt",-1);
 
 		model.setU(u);
 
@@ -527,21 +603,27 @@ for(int k=0;k<slaveNodes.length;k++){
 		int numContacting=0;
 		
 		int nnSize=model.numberOfNodes+1;
-		
-		for(int i=0;i<slaveNodes.length;i++){
-			int sn=slaveNodes[i];
+		 for(int contId=0;contId<numContacts;contId++)
+		for(int i=0;i<slaveNodes[contId].length;i++){
 			
-			if(rmv[sn]){
+			Node node=slaveNodes[contId][i];
+			int sn=node.id;
+			
+			if(rmv[sn] && check_double){
 				rmv[sn]=false;
 				continue;
 			}
 			
 			Vect v=model.node[sn].getCoord().add(model.node[sn].u);
-			for(int k=0;k<masterEdges.length;k++){
-				int mn1=masterEdges[k][0];
-				int mn2=masterEdges[k][1];
-				Vect v1=model.node[mn1].getCoord().add(model.node[mn1].u);
-				Vect v2=model.node[mn2].getCoord().add(model.node[mn2].u);
+			
+			for(int k=0;k<masterEdges[contId].length;k++){
+				
+				Node node1=masterEdges[contId][k].node[0];
+				Node node2=masterEdges[contId][k].node[1];
+				int mn1=node1.id;
+				int mn2=node2.id;
+				Vect v1=node1.getCoord().add(node1.u);
+				Vect v2=node2.getCoord().add(node2.u);
 				Vect v12=v2.sub(v1);
 				//v12.hshow();
 				Vect v1v=v.sub(v1);
@@ -553,23 +635,42 @@ for(int k=0;k<slaveNodes.length;k++){
 				double dot2=v2v.dot(v12);
 				if(dot1*dot2>0) continue;
 
+				Element elem=edgeElems[contId][k];
+				 int[] vn=elem.getVertNumb();
+				 for(int j=0;j<vn.length;j++){
+					if(vn[j]!=mn1 && vn[j]!=mn2){
+						Node node3=model.node[vn[j]];
+	
+						Vect v3=node3.getCoord().add(node3.u);	
+						Vect v13=v3.sub(v1);
+						
+						Vect cross1=edgeDir.v3().cross(v13.v3());
+						Vect cross2=edgeDir.v3().cross(cross1.v3());
+						normals[contId][k]=cross2.normalized().v2();
+						break;
+					}
+				 }
+						 
+					 
 
-				Vect normal=new Vect(-v12.el[1],v12.el[0]).normalized();
-				normals[k]=normal;
+				Vect normal=normals[contId][k];//new Vect(-v12.el[1],v12.el[0]).normalized();
 				//if(v1.el[1]<.0201) 
-				normals[k].timesVoid(-1);
-				//	normals[k].hshow();
+				//normals[contId][k].timesVoid(-1);
+				//normal.hshow();
 
 				double pen=v1v.dot(normal);
 
-				if(pen>0e-8/* && !contacting[sn]*/) continue;
+				if(pen>0e-8 && (!contacting[sn] && !check_double)) {
+
+					continue;
+				}
 				
 
 				double edgeLength=v12.norm();
 
 				if(pen<-2*edgeLength) continue;
 
-				normalIndex[i]=k;
+				normalIndex[contId][i]=k;
 
 				double beta=0;
 				double alpha=0;
@@ -587,8 +688,8 @@ for(int k=0;k<slaveNodes.length;k++){
 	
 
 				node_node.row[sn]=new SpVect(nnSize,2);
-				node_node.row[sn].index[0]=mn1;
-				node_node.row[sn].index[1]=mn2;
+				node_node.row[sn].index[0]=node1.id;
+				node_node.row[sn].index[1]=node2.id;
 				node_node.row[sn].el[0]=alpha;
 				node_node.row[sn].el[1]=beta;
 				
@@ -609,8 +710,11 @@ for(int k=0;k<slaveNodes.length;k++){
 		int dim=model.dim;
 		int nnSize=model.numberOfNodes+1;
 		
-		for(int i=0;i<slaveNodes.length;i++){
-			int sn=slaveNodes[i];
+		 for(int contId=0;contId<numContacts;contId++)
+		for(int i=0;i<slaveNodes[contId].length;i++){
+			
+			Node node=slaveNodes[contId][i];
+			int sn=node.id;
 
 			if(node_node.row[sn].nzLength>0){
 
@@ -622,10 +726,12 @@ for(int k=0;k<slaveNodes.length;k++){
 				
 
 
-				Vect normal=normals[normalIndex[i]];
+				Vect normal=normals[contId][normalIndex[contId][i]];
+				
+				Edge edge=masterEdges[contId][normalIndex[contId][i]];
 
-				int mn1=masterEdges[normalIndex[i]][0];
-				int mn2=masterEdges[normalIndex[i]][1];
+				int mn1=edge.node[0].id;
+				int mn2=edge.node[1].id;
 
 
 
@@ -658,11 +764,13 @@ for(int k=0;k<slaveNodes.length;k++){
 				Gc.row[com_index].sortAndTrim(kx);;
 
 
-				//	util.pr((sn)+"    "+(com_index)+"  ===== "+ (com_index1+1)+"  "+(com_index2+1));
-				//	util.pr((sn)+"    "+(com_index)+"  ===== "+ alpha+"  "+beta);
 
 
 				Vect tang=new Vect(-normal.el[1],normal.el[0]);
+				
+				if(fric_coef[contId]==0){
+					tang.zero();
+				}
 				Gcf.row[com_index]=new SpVect(nnSize,6);
 				kx=0;
 				Gcf.row[com_index].index[kx]=u_index[sn][0];
@@ -684,6 +792,8 @@ for(int k=0;k<slaveNodes.length;k++){
 				}
 
 				Gcf.row[com_index].sortAndTrim(kx);;
+				
+	
 
 
 				//if(mn1==408) util.pr((com_index1+1)+" ---  "+ alpha+"  "+beta);
@@ -696,7 +806,7 @@ for(int k=0;k<slaveNodes.length;k++){
 	}
 	
 	
-	private void readContact(){
+/*	private void readContact(){
 		int numSn=13;
 		int numMed=8;
 		slaveNodes=new int[numSn];
@@ -735,10 +845,10 @@ for(int k=0;k<slaveNodes.length;k++){
 			// numSn=3;
 			// numMed=3;
 			slaveNodes=new int[numSn];
-			/*			 int kx1=0;
+						 int kx1=0;
 			 slaveNodes[kx1++]=1298;;;
 			 slaveNodes[kx1++]=2408;
-			 slaveNodes[kx1++]=1272;*/
+			 slaveNodes[kx1++]=1272;
 
 			String file="D:\\JavaWorks\\FEM problems\\structural\\2D-contact\\ipm\\cont.txt";
 			int[][] data=model.loader.loadIntArray(file, numSn, 1,1);
@@ -764,10 +874,10 @@ for(int k=0;k<slaveNodes.length;k++){
 			// numSn=3;
 			// numMed=3;
 			slaveNodes=new int[numSn];
-			/*			 int kx1=0;
+						 int kx1=0;
 			 slaveNodes[kx1++]=1298;
 			 slaveNodes[kx1++]=2408;
-			 slaveNodes[kx1++]=1272;*/
+			 slaveNodes[kx1++]=1272;
 
 			String file="D:\\JavaWorks\\FEM problems\\structural\\2D-contact\\punch\\cont.txt";
 			int[][] data=model.loader.loadIntArray(file, numSn, 1,1);
@@ -785,7 +895,7 @@ for(int k=0;k<slaveNodes.length;k++){
 			}	
 
 		}
-	}
+	}*/
 }
 
 

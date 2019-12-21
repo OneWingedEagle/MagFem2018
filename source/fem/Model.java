@@ -106,6 +106,9 @@ public class Model{
 	public boolean hasBunif,open_vps;
 	public int nCLNstages;
 	public Network network;
+	
+	public ContactAnalysis contact;
+
 
 
 	public Model(){}
@@ -3748,8 +3751,6 @@ public Vect runContact(){
 		this.setStiffMat(dyn);
 	
 	
-	ContactAnalysis contact=new ContactAnalysis();
-
 	Vect u=contact.solve(this, solver,defMode);
 
 	

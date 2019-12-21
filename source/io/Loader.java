@@ -1011,15 +1011,67 @@ public class Loader {
 				model.setDt(model.nInc*getScalarData(line));
 			}
 			else
-			
 				model.timeIntegMode=0;
 			
+			line=br.readLine();
+			line=br.readLine();
+			 if(line.startsWith("contact")) {
+				model.contact=new ContactAnalysis();
+			line=br.readLine();
+				int numCont=this.getIntData(line);
+				model.contact.numContacts=numCont;
+				model.contact.slaveNodes=new Node[numCont][];
+				model.contact.masterEdges=new Edge[numCont][];
+				model.contact.penFactor=new double[numCont];
+				model.contact.fric_coef=new double[numCont];
+
+			for(int i=0;i<numCont;i++){
+				line=br.readLine();
+		
+				model.contact.penFactor[i]=this.getScalarData(line);
+				line=br.readLine();
+				model.contact.fric_coef[i]=this.getScalarData(line);
+				line=br.readLine();
+				line=br.readLine();
+				int ns=this.getIntData(line);
 			
+
+				model.contact.slaveNodes[i]=new  Node[ns];
+
+				
+				for(int k=0;k<ns;k++){
+					line=br.readLine();
+				
+					int sn=this.getIntData(line);
+					model.contact.slaveNodes[i][k]=model.node[sn];
+
+				}
+				line=br.readLine();
+				line=br.readLine();
+				int nm=this.getIntData(line);
+				
+				model.contact.masterEdges[i]=new  Edge[nm];
+				
+				for(int k=0;k<nm;k++){
+					line=br.readLine();
+				
+					int[] nn=this.getCSInt(line);
+					Node node1=model.node[nn[0]];
+					Node node2=model.node[nn[1]];
+					model.contact.masterEdges[i][k]=new Edge(node1,node2);
+				}
+
+	
+
+			}
+			}
+
 	for(int j=0;j<30;j++){
 		
 		line=br.readLine();
+	
 		if(line==null) continue;
-		
+	
 		if(line.startsWith("loadFlux")) model.loadFlux=this.getBooleanData(line);
 		else if(line.startsWith("loadForce")) model.loadForce=this.getBooleanData(line);
 		else if(line.startsWith("loadDisp")) model.loadDisp=this.getBooleanData(line);
@@ -1035,7 +1087,7 @@ public class Loader {
 		else if(line.startsWith("modal")) model.modal=this.getBooleanData(line);
 		else if(line.startsWith("rayA")) model.rayAlpha=this.getScalarData(line);
 		else if(line.startsWith("rayB")) model.rayBeta=this.getScalarData(line);
-		
+
 
 	}
 	
@@ -2700,9 +2752,10 @@ public void setDataMag2D(Model model,BufferedReader br){
 		model.eddyTimeIntegMode=getIntData(line);	
 		
 
+	
 
 
-for(int j=0;j<30+model.numberOfRegions;j++){
+for(int j=0;j<50+model.numberOfRegions;j++){
 	
 		line=br.readLine();
 	
@@ -2747,6 +2800,7 @@ for(int j=0;j<30+model.numberOfRegions;j++){
 		else if(line.startsWith("height")) model.height=this.getScalarData(line);
 		else if(line.startsWith("POD")) model.POD=this.getIntData(line);
 		else if(line.startsWith("snapShot")) model.snapShot=this.getIntData(line);
+		
 
 	}
 
