@@ -14,7 +14,7 @@ public class Calculator {
 	double[][] PWtetra;
 	boolean centerNu;
 	public int dim,elCode,nElVert,nElEdge,numberOfElements,numberOfNodes,numberOfRegions;
-	public int struc2D=1;
+	public int struc2D=0;// 0: plane stress  1: plain strain.
 
 	public Calculator(){	}
 
@@ -3427,6 +3427,89 @@ public class Calculator {
 			}
 		return Ke;
 	}
+	
+	public Mat[][] KeQuadAxi(Model model,int ie){
+
+
+		Node[] vertexNode=model.elementNodes(ie);
+		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++)
+				Ke[i][j]=new Mat(2,2);
+
+		double detJac,ws=1;
+		int n=this.PW[0].length;	
+		Mat jac;
+
+/*		double[] rrj=new double[model.nElVert];
+		for(int i=0;i<model.nElVert;i++){
+			double r1=vertexNode[i].getCoord(0)+1e-6;
+			rrj[i]=1.0/r1;
+		}
+
+
+		double v=model.element[ie].getPois().el[0];
+		double E=model.element[ie].getYng().el[0];
+		double G=0;
+		if(struc2D==0)
+			G=E/(1-v*v);
+		else
+			G=E/((1+v)*(1-2*v));
+
+		Mat BtDB;
+		Vect[] gradN;
+		Vect localCo=new Vect(3);
+		for(int p=0;p<n;p++)
+			for(int q=0;q<n;q++)
+			{
+				localCo.el[0]=this.PW[0][p];
+				localCo.el[1]=this.PW[0][q];
+
+				jac=jacobian(vertexNode,localCo);
+
+				detJac=abs(jac.determinant());
+
+
+
+
+				if(n!=2)
+					ws=this.PW[1][p]*this.PW[1][q]*detJac;
+				else
+					ws=detJac;
+
+				gradN=gradN(jac,localCo);
+				
+				double rr=0;
+				//if(!rcent){
+
+					for(int i=0;i<model.nElEdge;i++)
+						rr+=gradN[i]*rrj[i];
+				}
+			//	else{
+
+					//for(int i=0;i<model.nElEdge;i++)
+						rr+=.25*rrj[i];
+			//	}//
+
+				for(int i=0;i<this.nElVert;i++)
+					for(int j=0;j<this.nElVert;j++){
+
+						BtDB=BtDB2D(v,gradN[i],gradN[j]).times(ws);
+						Ke[i][j]=Ke[i][j].add(BtDB);
+
+					}
+			}	
+
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++){
+				Ke[i][j]=Ke[i][j].times(G*rr);
+
+			}
+		*/
+
+		return Ke;
+	}
+
 
 
 

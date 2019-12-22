@@ -1044,7 +1044,6 @@ public class Loader {
 				
 					int sn=this.getIntData(line);
 					model.contact.slaveNodes[i][k]=model.node[sn];
-
 				}
 				line=br.readLine();
 				line=br.readLine();
