@@ -1,0 +1,225 @@
+
+Loading mesh file completed.
+// data type (0: Magnetic)
+1
+// dimension (2: 2D, 3:3D 
+// coordCode (0: Cartesian, 1: Cylindrical 
+1272
+1273
+1274
+1275
+1276
+1277
+1278
+1279
+1280
+1281
+1282
+1283
+1284
+1285
+1286
+1287
+1288
+1289
+1290
+1291
+1292
+1293
+1294
+1295
+1296
+1297
+1298
+2408
+2330
+2252
+2174
+2096
+2018
+3758
+3845
+3932
+4019
+4106
+4193
+4280
+4367
+4454
+4541
+4628
+4715
+4802
+4889
+4976
+5063
+5150
+5237
+5324
+5411
+5498
+5585
+5672
+5759
+5846
+5933
+6020
+6029
+6030
+6031
+6032
+6033
+6034
+6035
+ Number of known u components : 610
+Numb of unknown displacements: 6925
+ Number of known u components : 13850
+
+Loading data file completed.
+mech integ mode: 0
+
+ Bun data was written to:
+    D:\JavaWorks\FEM problems\structural\2D-Contact\ipm\bun.txt
+
+Force was loaded from D:\JavaWorks\FEM problems\structural\2D-contact\ipm\force0.txt to the model.
+ Structural analysis... 
+
+ Number of unknown non-fixed points : 6925
+
+ Calculating stiffness matrix ...
+ Contact analysis....
+pf :5.026977705748009E11
+pft :5.0269777057480095E10
+cont_iter: 0
+nr_iter: 0           nr_err_sub: 1.0
+Computing Preconditioner..
+ICCG iteration:     0	 error : 1.00E00	 res max: 1.22E00
+ICCG iteration:    50	 error : 5.68E-02	 res max: 6.91E-02
+ICCG iteration:   100	 error : 8.69E-03	 res max: 1.06E-02
+ICCG iteration:   150	 error : 3.70E-03	 res max: 4.50E-03
+ICCG iteration:   200	 error : 1.10E-03	 res max: 1.34E-03
+ICCG iteration:   250	 error : 3.05E-04	 res max: 3.71E-04
+ICCG iteration:   300	 error : 1.77E-05	 res max: 2.15E-05
+ICCG iteration:   335	 error : 9.20E-07	 res max: 1.12E-06
+nr_iter: 1           nr_err_sub: 0.2841883380063016
+Computing Preconditioner..
+ICCG iteration:     0	 error : 2.74E-01	 res max: 2.74E-01
+ICCG iteration:    50	 error : 6.57E-02	 res max: 6.57E-02
+ICCG iteration:   100	 error : 1.17E-02	 res max: 1.17E-02
+ICCG iteration:   150	 error : 4.93E-03	 res max: 4.93E-03
+ICCG iteration:   200	 error : 1.45E-03	 res max: 1.45E-03
+ICCG iteration:   250	 error : 4.66E-04	 res max: 4.66E-04
+ICCG iteration:   300	 error : 2.56E-05	 res max: 2.56E-05
+ICCG iteration:   350	 error : 2.04E-07	 res max: 2.04E-07
+ICCG iteration:   380	 error : 9.39E-10	 res max: 9.39E-10
+nr_iter: 2           nr_err_sub: 0.3529766425540344
+Computing Preconditioner..
+ICCG iteration:     0	 error : 3.16E-01	 res max: 3.16E-01
+ICCG iteration:    50	 error : 4.12E-02	 res max: 4.12E-02
+ICCG iteration:   100	 error : 1.04E-01	 res max: 1.04E-01
+ICCG iteration:   150	 error : 6.23E-02	 res max: 6.23E-02
+ICCG iteration:   200	 error : 4.74E-02	 res max: 4.74E-02
+ICCG iteration:   250	 error : 1.16E-02	 res max: 1.16E-02
+ICCG iteration:   300	 error : 1.27E-02	 res max: 1.27E-02
+ICCG iteration:   350	 error : 1.82E-03	 res max: 1.82E-03
+ICCG iteration:   400	 error : 1.24E-04	 res max: 1.24E-04
+ICCG iteration:   450	 error : 1.32E-06	 res max: 1.32E-06
+ICCG iteration:   483	 error : 8.89E-10	 res max: 8.89E-10
+nr_iter: 3           nr_err_sub: 2.459586735898556
+Computing Preconditioner..
+ICCG iteration:     0	 error : 1.29E00	 res max: 1.29E00
+ICCG iteration:    50	 error : 4.23E-02	 res max: 4.23E-02
+ICCG iteration:   100	 error : 9.89E-02	 res max: 9.89E-02
+ICCG iteration:   150	 error : 6.10E-02	 res max: 6.10E-02
+ICCG iteration:   200	 error : 5.05E-02	 res max: 5.05E-02
+ICCG iteration:   250	 error : 1.16E-02	 res max: 1.16E-02
+ICCG iteration:   300	 error : 1.38E-02	 res max: 1.38E-02
+ICCG iteration:   350	 error : 2.04E-03	 res max: 2.04E-03
+ICCG iteration:   400	 error : 8.93E-05	 res max: 8.93E-05
+ICCG iteration:   450	 error : 4.06E-07	 res max: 4.06E-07
+ICCG iteration:   479	 error : 9.93E-10	 res max: 9.93E-10
+nr_iter: 4           nr_err_sub: 0.6169435697588882
+Computing Preconditioner..
+ICCG iteration:     0	 error : 5.12E-01	 res max: 5.12E-01
+ICCG iteration:    50	 error : 4.78E-02	 res max: 4.78E-02
+ICCG iteration:   100	 error : 1.07E-01	 res max: 1.07E-01
+ICCG iteration:   150	 error : 3.40E-02	 res max: 3.40E-02
+ICCG iteration:   200	 error : 1.98E-02	 res max: 1.98E-02
+ICCG iteration:   250	 error : 1.19E-02	 res max: 1.19E-02
+ICCG iteration:   300	 error : 1.52E-02	 res max: 1.52E-02
+ICCG iteration:   350	 error : 8.75E-03	 res max: 8.75E-03
+ICCG iteration:   400	 error : 2.52E-03	 res max: 2.52E-03
+ICCG iteration:   450	 error : 1.73E-04	 res max: 1.73E-04
+ICCG iteration:   500	 error : 4.86E-09	 res max: 4.86E-09
+ICCG iteration:   509	 error : 8.33E-10	 res max: 8.33E-10
+nr_iter: 5           nr_err_sub: 1.3344593009595227
+Computing Preconditioner..
+ICCG iteration:     0	 error : 6.74E-01	 res max: 6.74E-01
+ICCG iteration:    50	 error : 4.79E-02	 res max: 4.79E-02
+ICCG iteration:   100	 error : 1.10E-01	 res max: 1.10E-01
+ICCG iteration:   150	 error : 3.34E-02	 res max: 3.34E-02
+ICCG iteration:   200	 error : 2.08E-02	 res max: 2.08E-02
+ICCG iteration:   250	 error : 1.16E-02	 res max: 1.16E-02
+ICCG iteration:   300	 error : 1.89E-02	 res max: 1.89E-02
+ICCG iteration:   350	 error : 7.63E-03	 res max: 7.63E-03
+ICCG iteration:   400	 error : 2.31E-03	 res max: 2.31E-03
+ICCG iteration:   450	 error : 2.24E-04	 res max: 2.24E-04
+ICCG iteration:   500	 error : 8.98E-09	 res max: 8.98E-09
+ICCG iteration:   509	 error : 9.60E-10	 res max: 9.60E-10
+nr_iter: 6           nr_err_sub: 1.0017289032334753
+Computing Preconditioner..
+ICCG iteration:     0	 error : 6.15E-01	 res max: 6.15E-01
+ICCG iteration:    50	 error : 1.59E-02	 res max: 1.59E-02
+ICCG iteration:   100	 error : 8.02E-03	 res max: 8.02E-03
+ICCG iteration:   150	 error : 1.51E-02	 res max: 1.51E-02
+ICCG iteration:   200	 error : 9.30E-03	 res max: 9.30E-03
+ICCG iteration:   250	 error : 7.20E-03	 res max: 7.20E-03
+ICCG iteration:   300	 error : 2.46E-03	 res max: 2.46E-03
+ICCG iteration:   350	 error : 2.01E-03	 res max: 2.01E-03
+ICCG iteration:   400	 error : 2.20E-03	 res max: 2.20E-03
+ICCG iteration:   450	 error : 5.65E-04	 res max: 5.65E-04
+ICCG iteration:   500	 error : 1.01E-08	 res max: 1.01E-08
+ICCG iteration:   513	 error : 8.95E-10	 res max: 8.95E-10
+nr_iter: 7           nr_err_sub: 0.003652863158347094
+Computing Preconditioner..
+ICCG iteration:     0	 error : 1.83E-03	 res max: 1.83E-03
+ICCG iteration:    50	 error : 1.61E-02	 res max: 1.61E-02
+ICCG iteration:   100	 error : 7.92E-03	 res max: 7.92E-03
+ICCG iteration:   150	 error : 1.47E-02	 res max: 1.47E-02
+ICCG iteration:   200	 error : 9.14E-03	 res max: 9.14E-03
+ICCG iteration:   250	 error : 7.09E-03	 res max: 7.09E-03
+ICCG iteration:   300	 error : 2.44E-03	 res max: 2.44E-03
+ICCG iteration:   350	 error : 1.99E-03	 res max: 1.99E-03
+ICCG iteration:   400	 error : 2.29E-03	 res max: 2.29E-03
+ICCG iteration:   450	 error : 5.64E-04	 res max: 5.64E-04
+ICCG iteration:   500	 error : 1.07E-08	 res max: 1.07E-08
+ICCG iteration:   513	 error : 8.93E-10	 res max: 8.93E-10
+nr_iter: 8           nr_err_sub: 3.864150224042097E-6
+NR error
+   1.00000
+   0.28419
+   0.35298
+   2.45959
+   0.61694
+   1.33446
+   1.00173
+   0.00365
+   0.00000
+
+Gap[micon] vs aug_iter
+   0.35133
+
+slide[micon] vs aug_iter
+   2.24904
+
+ Magnetic nodal displacement was written to D:\JavaWorks\FEM problems\structural\2D-Contact\ipm\master_normal.txt
+ Magnetic nodal displacement was written to D:\JavaWorks\FEM problems\structural\2D-Contact\ipm\contact_force.txt
+Deformation Max: 1.7521960804548872E-4 at node 7143
+ Magnetic nodal force was written to D:\JavaWorks\FEM problems\structural\2D-Contact\ipm\force0.txt
+ Magnetic nodal displacement was written to D:\JavaWorks\FEM problems\structural\2D-Contact\ipm\disp0.txt
+ Structural stress was written to D:\JavaWorks\FEM problems\structural\2D-Contact\ipm\stress0.txt
+ Data file was written to D:\JavaWorks\FEM problems\structural\2D-Contact\ipm\data_out.txt
+   0.00000
+
+Computation time: 18.668 seconds
+Total cpu time (s):       18.9

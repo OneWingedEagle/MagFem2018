@@ -1,0 +1,290 @@
+
+Loading mesh file completed.
+// data type (0: Magnetic)
+1
+// dimension (2: 2D, 3:3D 
+// coordCode (0: Cartesian, 1: Cylindrical 
+ Number of known u components : 25
+Numb of unknown displacements: 476
+ Number of known u components : 947
+
+Loading data file completed.
+mech integ mode: -4
+
+ Bun data was written to:
+    D:\JavaWorks\FEM problems\structural\2D-Contact\thinnerBase\bun.txt
+
+Force was loaded from D:\JavaWorks\FEM problems\structural\2D-contact\thinnerBase\force0.txt to the model.
+ Structural analysis... 
+
+ Number of unknown non-fixed points : 476
+
+ Calculating stiffness matrix ...
+ Contact analysis....
+pf :2.3076923076923083E11
+pft :2307.6923076923085
+cont_iter: 0
+3.46945E-18	-3.46945E-18	
+numContacting:   13
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+720 gapDetect: 0.0 gapu: -3.469446951953614E-18
+node 359 index: 698 gap: 0.0
+node 360 index: 700 gap: 0.0
+node 361 index: 702 gap: 0.0
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 0.0
+node 370 index: 720 gap: -3.469446951953614E-18
+node 371 index: 722 gap: 0.0
+nr_iter: 0           nr_err: 1.0
+Computing Preconditioner..
+ICCG iteration:     0	 error : 1.00E00	 res max: 5.13E-01
+ICCG iteration:    50	 error : 1.64E00	 res max: 8.44E-01
+ICCG iteration:    93	 error : 9.07E-07	 res max: 4.66E-07
+1.39822E-07	1.09056E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.09056E-07	1.39822E-07	
+numContacting:   6
+698 gapDetect: -3.797617006048917E-6 gapu: -3.7976170060500024E-6
+700 gapDetect: -1.457726874878182E-6 gapu: -1.457726874878793E-6
+702 gapDetect: -2.543170179961201E-7 gapu: -2.5431701799776457E-7
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: -2.543170293728478E-7
+720 gapDetect: -1.457726894084821E-6 gapu: -1.4577268940884702E-6
+722 gapDetect: -3.7976170243773563E-6 gapu: -3.7976170243776685E-6
+node 359 index: 698 gap: -3.7976170060500024E-6
+node 360 index: 700 gap: -1.457726874878793E-6
+node 361 index: 702 gap: -2.5431701799776457E-7
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: -2.543170293728478E-7
+node 370 index: 720 gap: -1.4577268940884702E-6
+node 371 index: 722 gap: -3.7976170243776685E-6
+nr_iter: 1           nr_err: 3.6504903149463486
+Computing Preconditioner..
+ICCG iteration:     0	 error : 1.91E00	 res max: 1.91E00
+ICCG iteration:    50	 error : 1.81E00	 res max: 1.81E00
+ICCG iteration:   100	 error : 1.17E-07	 res max: 1.17E-07
+ICCG iteration:   105	 error : 3.32E-10	 res max: 3.32E-10
+1.69062E-07	1.34121E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.34121E-07	1.69062E-07	
+numContacting:   4
+698 gapDetect: -3.7955049003823794E-6 gapu: -3.7955049003841916E-6
+700 gapDetect: -6.32970223048185E-7 gapu: -6.32970223047302E-7
+702 gapDetect: -2.543170179961201E-7 gapu: 3.778923903745959E-8
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: 3.778924019217561E-8
+720 gapDetect: -6.329702246489654E-7 gapu: -6.329702246493097E-7
+722 gapDetect: -3.7955049026676793E-6 gapu: -3.795504902669362E-6
+node 359 index: 698 gap: -3.7955049003841916E-6
+node 360 index: 700 gap: -6.32970223047302E-7
+node 361 index: 702 gap: 3.778923903745959E-8
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 3.778924019217561E-8
+node 370 index: 720 gap: -6.329702246493097E-7
+node 371 index: 722 gap: -3.795504902669362E-6
+nr_iter: 2           nr_err: 4.381446391817869
+Computing Preconditioner..
+ICCG iteration:     0	 error : 2.31E00	 res max: 2.31E00
+ICCG iteration:    50	 error : 3.70E-02	 res max: 3.70E-02
+ICCG iteration:   100	 error : 9.54E-09	 res max: 9.54E-09
+ICCG iteration:   103	 error : 5.62E-10	 res max: 5.62E-10
+1.30186E-07	1.34121E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.34121E-07	1.30186E-07	
+numContacting:   2
+698 gapDetect: -3.6749894199705077E-6 gapu: -3.674989419963675E-6
+700 gapDetect: -6.32970223048185E-7 gapu: 1.3412109236326814E-7
+702 gapDetect: -2.543170179961201E-7 gapu: 3.778923903745959E-8
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: 3.778924019217561E-8
+720 gapDetect: -6.329702246489654E-7 gapu: 1.3412109238311843E-7
+722 gapDetect: -3.674989420069813E-6 gapu: -3.6749894200682443E-6
+node 359 index: 698 gap: -3.674989419963675E-6
+node 360 index: 700 gap: 1.3412109236326814E-7
+node 361 index: 702 gap: 3.778923903745959E-8
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 3.778924019217561E-8
+node 370 index: 720 gap: 1.3412109238311843E-7
+node 371 index: 722 gap: -3.6749894200682443E-6
+nr_iter: 3           nr_err: 3.1309171086778926
+Computing Preconditioner..
+ICCG iteration:     0	 error : 1.70E00	 res max: 1.70E00
+ICCG iteration:    50	 error : 5.07E-03	 res max: 5.07E-03
+ICCG iteration:   100	 error : 2.56E-08	 res max: 2.56E-08
+ICCG iteration:   104	 error : 3.29E-10	 res max: 3.29E-10
+6.36742E-08	1.34121E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.34121E-07	6.36742E-08	
+numContacting:   2
+698 gapDetect: -1.6032170473404186E-6 gapu: -1.6032170473418054E-6
+700 gapDetect: -6.32970223048185E-7 gapu: 1.3412109236326814E-7
+702 gapDetect: -2.543170179961201E-7 gapu: 3.778923903745959E-8
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: 3.778924019217561E-8
+720 gapDetect: -6.329702246489654E-7 gapu: 1.3412109238311843E-7
+722 gapDetect: -1.6032170473228388E-6 gapu: -1.6032170473208549E-6
+node 359 index: 698 gap: -1.6032170473418054E-6
+node 360 index: 700 gap: 1.3412109236326814E-7
+node 361 index: 702 gap: 3.778923903745959E-8
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 3.778924019217561E-8
+node 370 index: 720 gap: 1.3412109238311843E-7
+node 371 index: 722 gap: -1.6032170473208549E-6
+nr_iter: 4           nr_err: 0.11154693069425861
+Computing Preconditioner..
+ICCG iteration:     0	 error : 4.74E-02	 res max: 4.74E-02
+ICCG iteration:    50	 error : 2.99E-02	 res max: 2.99E-02
+ICCG iteration:   100	 error : 8.53E-09	 res max: 8.53E-09
+ICCG iteration:   103	 error : 5.55E-10	 res max: 5.55E-10
+6.37393E-08	1.34121E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.34121E-07	6.37393E-08	
+numContacting:   2
+698 gapDetect: -1.66966002303618E-6 gapu: -1.6696600230378387E-6
+700 gapDetect: -6.32970223048185E-7 gapu: 1.3412109236326814E-7
+702 gapDetect: -2.543170179961201E-7 gapu: 3.778923903745959E-8
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: 3.778924019217561E-8
+720 gapDetect: -6.329702246489654E-7 gapu: 1.3412109238311843E-7
+722 gapDetect: -1.6696600230770061E-6 gapu: -1.6696600230754374E-6
+node 359 index: 698 gap: -1.6696600230378387E-6
+node 360 index: 700 gap: 1.3412109236326814E-7
+node 361 index: 702 gap: 3.778923903745959E-8
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 3.778924019217561E-8
+node 370 index: 720 gap: 1.3412109238311843E-7
+node 371 index: 722 gap: -1.6696600230754374E-6
+nr_iter: 5           nr_err: 1.0521026557294175E-4
+Computing Preconditioner..
+ICCG iteration:     0	 error : 4.45E-05	 res max: 4.45E-05
+ICCG iteration:    50	 error : 5.12E-05	 res max: 5.12E-05
+ICCG iteration:   100	 error : 5.50E-10	 res max: 5.50E-10
+6.37390E-08	1.34121E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.34121E-07	6.37390E-08	
+numContacting:   2
+698 gapDetect: -1.6695949650733259E-6 gapu: -1.6695949650723162E-6
+700 gapDetect: -6.32970223048185E-7 gapu: 1.3412109236326814E-7
+702 gapDetect: -2.543170179961201E-7 gapu: 3.778923903745959E-8
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: 3.778924019217561E-8
+720 gapDetect: -6.329702246489654E-7 gapu: 1.3412109238311843E-7
+722 gapDetect: -1.6695949649597697E-6 gapu: -1.6695949649579356E-6
+node 359 index: 698 gap: -1.6695949650723162E-6
+node 360 index: 700 gap: 1.3412109236326814E-7
+node 361 index: 702 gap: 3.778923903745959E-8
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 3.778924019217561E-8
+node 370 index: 720 gap: 1.3412109238311843E-7
+node 371 index: 722 gap: -1.6695949649579356E-6
+nr_iter: 6           nr_err: 4.95222870033957E-7
+cont_iter: 1
+6.37390E-08	1.34121E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.34121E-07	6.37390E-08	
+numContacting:   2
+698 gapDetect: -1.6695949650733259E-6 gapu: -1.6695949650723162E-6
+700 gapDetect: -6.32970223048185E-7 gapu: 1.3412109236326814E-7
+702 gapDetect: -2.543170179961201E-7 gapu: 3.778923903745959E-8
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: 3.778924019217561E-8
+720 gapDetect: -6.329702246489654E-7 gapu: 1.3412109238311843E-7
+722 gapDetect: -1.6695949649597697E-6 gapu: -1.6695949649579356E-6
+node 359 index: 698 gap: -1.6695949650723162E-6
+node 360 index: 700 gap: 1.3412109236326814E-7
+node 361 index: 702 gap: 3.778923903745959E-8
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 3.778924019217561E-8
+node 370 index: 720 gap: 1.3412109238311843E-7
+node 371 index: 722 gap: -1.6695949649579356E-6
+nr_iter: 0           nr_err: 2.8021153905259015
+Computing Preconditioner..
+ICCG iteration:     0	 error : 1.19E00	 res max: 1.19E00
+ICCG iteration:    50	 error : 3.93E-04	 res max: 3.93E-04
+ICCG iteration:   100	 error : 3.34E-09	 res max: 3.34E-09
+ICCG iteration:   102	 error : 8.39E-10	 res max: 8.39E-10
+6.37407E-08	1.34121E-07	3.77892E-08	3.46945E-18	3.77892E-08	1.34121E-07	6.37407E-08	
+numContacting:   2
+698 gapDetect: -2.980414672612886E-13 gapu: -2.980409113297425E-13
+700 gapDetect: -6.32970223048185E-7 gapu: 1.3412109236326814E-7
+702 gapDetect: -2.543170179961201E-7 gapu: 3.778923903745959E-8
+708 gapDetect: 0.0 gapu: 3.469446951953614E-18
+718 gapDetect: -2.543170293754144E-7 gapu: 3.778924019217561E-8
+720 gapDetect: -6.329702246489654E-7 gapu: 1.3412109238311843E-7
+722 gapDetect: -2.9819932042721804E-13 gapu: -2.9819928301218457E-13
+node 359 index: 698 gap: -2.980409113297425E-13
+node 360 index: 700 gap: 1.3412109236326814E-7
+node 361 index: 702 gap: 3.778923903745959E-8
+node 362 index: 704 gap: 0.0
+node 363 index: 706 gap: 0.0
+node 364 index: 708 gap: 3.469446951953614E-18
+node 365 index: 710 gap: 0.0
+node 366 index: 712 gap: 0.0
+node 367 index: 714 gap: 0.0
+node 368 index: 716 gap: 0.0
+node 369 index: 718 gap: 3.778924019217561E-8
+node 370 index: 720 gap: 1.3412109238311843E-7
+node 371 index: 722 gap: -2.9819928301218457E-13
+nr_iter: 1           nr_err: 2.649572077234751E-6
+NR error
+   1.00000
+   3.65049
+   4.38145
+   3.13092
+   0.11155
+   0.00011
+   2.80212
+   0.00000
+
+Gap[micon] vs aug_iter
+   1.66959
+   0.13412
+
+slide[micon] vs aug_iter
+   0.00000
+   0.00000
+
+ Magnetic nodal displacement was written to D:\JavaWorks\FEM problems\structural\2D-Contact\thinnerBase\master_normal.txt
+ Magnetic nodal displacement was written to D:\JavaWorks\FEM problems\structural\2D-Contact\thinnerBase\contact_force.txt
+Deformation Max: 0.001687553678550232 at node 203
+ Magnetic nodal force was written to D:\JavaWorks\FEM problems\structural\2D-Contact\thinnerBase\force0.txt
+ Magnetic nodal displacement was written to D:\JavaWorks\FEM problems\structural\2D-Contact\thinnerBase\disp0.txt
+ Structural stress was written to D:\JavaWorks\FEM problems\structural\2D-Contact\thinnerBase\stress0.txt
+ Data file was written to D:\JavaWorks\FEM problems\structural\2D-Contact\thinnerBase\data_out.txt
+   0.00000
+
+Computation time: 1.0 seconds

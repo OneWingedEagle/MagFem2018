@@ -1,0 +1,120 @@
+//data file format code  (0. Magnetic, 1. Mechanical, 2. coupled) 
+1
+//dimension 
+2
+//coordinate system  (0. Cartesian 1. Cylindrical, 2. Spherical) 
+0
+//motor
+false
+//Number_of_Regions
+2
+//(name, density, E, v, [alpha,dT])
+base,t,7800, .7e11, .3
+pile,t,7800, 2e11, .3
+//boundary condition:
+b1:
+b2:
+b3:
+b4:
+2
+y,-.001,.001,0,0,1,0
+x,-.0001,.0001,y,.11,1,0,0
+force folder:
+D:\JavaWorks\FEM problems\structural\2D-contact\punch
+
+force files:0,0,1
+
+intm:0
+
+dt:5.55555e-6
+
+contact
+1
+1.0
+1.0
+slave
+52
+2551
+2552
+2553
+2554
+2555
+2556
+2557
+2558
+2559
+2560
+2561
+2562
+2563
+2564
+2565
+2566
+2567
+2568
+2569
+2570
+2571
+2572
+2573
+2574
+2575
+2576
+2577
+2578
+2579
+2580
+2581
+2582
+2583
+2584
+2585
+2586
+2587
+2588
+2589
+2590
+2591
+2592
+2593
+2594
+2595
+2596
+2597
+2598
+2599
+2600
+2601
+2601
+master
+20
+2602  2603
+2603  2604
+2604  2605
+2605  2606
+2606  2607
+2607  2608
+2608  2609
+2609  2610
+2610  2611
+2611  2612
+2612  2613
+2613  2614
+2614  2615
+2615  2616
+2616  2617
+2617  2618
+2618  2619
+2619  2620
+2620  2621
+2621  2622
+
+transfer2DTo3D:f
+mechAnalysis:true
+modalAnalysis:f
+loadDisp:f	
+saveForce:t
+saveDisp:t
+saveStress:t	
+rayAlpha=1e-5
+rayBeta=1e-5
