@@ -13,7 +13,10 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -60,236 +63,40 @@ public class GUI extends JFrame implements ActionListener{
 				String dataFile= "";
 
 
-			int	tag=4;	
-				
-				if(tag==0){
-					//meshFile= System.getProperty("user.dir") + "\\quiz.txt";
-				//	meshFile= System.getProperty("user.dir") + "\\quizFine.txt";
-					//meshFile= System.getProperty("user.dir") + "\\condDular.txt";
-				//	meshFile= System.getProperty("user.dir") + "\\NadaTest.txt";
-					meshFile= System.getProperty("user.dir") + "\\inputs\\mesh\\model2D.txt";
-				//	dataFile= System.getProperty("user.dir") + "\\dataQuiz.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataCondDular.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataCondSurf.txt";
-					dataFile= System.getProperty("user.dir") + "\\inputs\\mesh\\dataModel2D.txt";
+				int	tag=0;	
+				try{
 					
+					FileReader fr=new FileReader(new File("").getAbsolutePath()+"\\_last_MagFEM_elected_path");
+					BufferedReader br = new BufferedReader(fr);
+
+					meshFile=br.readLine();
+
+					dataFile=br.readLine();
+					
+					br.close();
+					fr.close();
+				}
+				catch(IOException e){
+					tag=1;
+					//util.pr("notFound");
+					}
+				
+				
+				if(tag==1){
+					//	meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\bun.txt";
+					//	dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\data_2D.txt";
+				//meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\punch\\bun.txt";
+				//dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\punch\\data_2D.txt";
+						//meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\bun.txt";
+						//dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\data_2D.txt";
+						//meshFile= System.getProperty("user.dir") + "\\statFrameSegPrismFinIns.txt";
+						//dataFile= System.getProperty("user.dir") + "\\dataMechStatFrameSeg3DLamin.txt";
+						meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\ipm\\bun.txt";
+					dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\ipm\\data_2D.txt";
 
 				}
 				
-				else if(tag==1){
-					
-					meshFile= System.getProperty("user.dir") + "\\SIBC.txt";
-					//meshFile= System.getProperty("user.dir") + "\\plungers\\plunger2Dv.txt";
-/*					meshFile= System.getProperty("user.dir") + "\\plungers\\EMroger.txt";
-						dataFile= System.getProperty("user.dir") + "\\dataEMroger.txt";*/
-					dataFile= System.getProperty("user.dir") + "\\dataSIBC.txt";
-						/*meshFile= System.getProperty("user.dir") + "\\bunMagFluid.txt";
-						dataFile= System.getProperty("user.dir") + "\\dataMagFluid.txt";*/
-						//dataFile= System.getProperty("user.dir") + "\\dataPlungerANS.txt";
-				}
-				
-				else if(tag==-1){
-					meshFile= System.getProperty("user.dir") + "\\stack.txt";
-						dataFile= System.getProperty("user.dir") + "\\dataStack.txt";
-						//dataFile= System.getProperty("user.dir") + "\\dataPlungerANS.txt";
-						meshFile= System.getProperty("user.dir") + "\\cell.txt";
-						dataFile= System.getProperty("user.dir") + "\\datamuMag.txt";
-				}
-				
-				else if(tag==-2){
-					meshFile= System.getProperty("user.dir") + "\\solidp.txt";
-						dataFile= System.getProperty("user.dir") + "\\dataSolid.txt";
-						//dataFile= System.getProperty("user.dir") + "\\dataPlungerANS.txt";
-				}
-				else if(tag==-3){
-					meshFile= System.getProperty("user.dir") + "\\statStack.txt";
-						dataFile= System.getProperty("user.dir") + "\\dataStatStack.txt";
-						//dataFile= System.getProperty("user.dir") + "\\dataPlungerANS.txt";
-				}
-				else if(tag==-4){
-					meshFile= System.getProperty("user.dir") + "\\statSolid.txt";
-						dataFile= System.getProperty("user.dir") + "\\dataStatSolid.txt";
-						//dataFile= System.getProperty("user.dir") + "\\dataPlungerANS.txt";
-				}
-				
-				else if(tag==2){
-					meshFile= System.getProperty("user.dir") + "\\inputs\\mesh\\mot4th2D.txt";
-					dataFile= System.getProperty("user.dir") + "\\inputs\\data\\dataMot4th2D.txt";
-				}
-				
-				else if(tag==3){
-					
-				//	meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\mot4th2D1piece.txt";
-					//meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\oldWay//motor2parts2.txt";
-					meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\motor2parts.txt";
-				//	meshFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\mot4th2DFine.txt";
-					dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\dataMot4th2Dpbc.txt";
-					//dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\oldWay\\dataMot4th2D.txt";
-				//dataFile="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\oldway_fine\\dataMot4th2Dpbc.txt";
-					
-				//	meshFile="D:\\JavaWorks\\FEM problems\\AL sheet\\static\\bb\\bun.txt";
-				//	dataFile="D:\\JavaWorks\\FEM problems\\AL sheet\\static\\bb\\data.txt";
-					
-					meshFile="D:\\JavaWorks\\FEM problems\\Hamed solver\\circular\\bun.txt";
-					dataFile="D:\\JavaWorks\\FEM problems\\Hamed solver\\circular\\data.txt";
-					
-					meshFile="D:\\JavaWorks\\FEM problems\\CLN\\bun.txt";
-						dataFile="D:\\JavaWorks\\FEM problems\\CLN\\data.txt";
-
-				}
-				else if(tag==4){
-				//	meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\bun.txt";
-				//	dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\thinnerBase\\data_2D.txt";
-			//meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\punch\\bun.txt";
-			//dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\punch\\data_2D.txt";
-					//meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\bun.txt";
-					//dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\data_2D.txt";
-					//meshFile= System.getProperty("user.dir") + "\\statFrameSegPrismFinIns.txt";
-					//dataFile= System.getProperty("user.dir") + "\\dataMechStatFrameSeg3DLamin.txt";
-					meshFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\ipm\\bun.txt";
-				dataFile="D:\\JavaWorks\\FEM problems\\structural\\2D-Contact\\ipm\\data_2D.txt";
-				}
-				
-			else if(tag==5){
-				
-				meshFile= System.getProperty("user.dir") + "\\ipm_motor\\mot4th3D.txt";
-				
-				dataFile= System.getProperty("user.dir") + "\\ipm_motor\\dataMot4th3D.txt";
-			
-					
-			/*	meshFile= System.getProperty("user.dir") + "\\bb.txt";
-				
-				dataFile= System.getProperty("user.dir") + "\\databb.txt";*/
-				}
-			else if(tag==6){
-
-			//	meshFile= System.getProperty("user.dir") + "\\hexBeam.txt";
-				meshFile= System.getProperty("user.dir") + "\\beam3D.txt";
-				dataFile= System.getProperty("user.dir") + "\\dataBeam3D.txt";
-			}
-				
-	else if(tag==7){
-				
-			meshFile= System.getProperty("user.dir") + "\\geoModel.txt";
-				dataFile= System.getProperty("user.dir") + "\\dataGeo.txt";
-			}
-	else if(tag==8){
-		
-		meshFile= System.getProperty("user.dir") + "\\bento.txt";
-	//	meshFile= System.getProperty("user.dir") + "\\bento3ang.txt";
-			dataFile= System.getProperty("user.dir") + "\\dataBento.txt";
-		}
-				
-	else if(tag==9){
-		
-		meshFile= System.getProperty("user.dir") + "\\plungerFull.txt";
-			dataFile= System.getProperty("user.dir") + "\\dataPlungerFull.txt";
-		}
-				
-	else if(tag==10){
-		meshFile= System.getProperty("user.dir") + "\\plungers\\EMSlice.txt";
-			dataFile= System.getProperty("user.dir") + "\\dataEM3D.txt";
-	}
-				
-	else if(tag==11){
-		
-		meshFile= System.getProperty("user.dir") + "\\reactorLessAir.txt";
-			dataFile= System.getProperty("user.dir") + "\\dataReactor.txt";
 	
-	
-	}	
-				
-	else if(tag==12){
-		
-		meshFile= System.getProperty("user.dir") + "\\trans1f2D.txt";
-			dataFile= System.getProperty("user.dir") + "\\dataTrans1f2DJ.txt";
-			meshFile= System.getProperty("user.dir") + "\\bb.txt";
-			dataFile= System.getProperty("user.dir") + "\\databb.txt";
-		}
-	else if(tag==13){
-		
-		meshFile= System.getProperty("user.dir") + "\\plungers\\plunger3D.txt";
-		//meshFile= System.getProperty("user.dir") + "\\plungers\\react.txt";
-	//	meshFile= System.getProperty("user.dir") + "\\hexaEl.txt";
-		
-			dataFile= System.getProperty("user.dir") + "\\dataPlungerHex.txt";
-			//dataFile= System.getProperty("user.dir") + "\\dataReact.txt";
-		}
-				
-	else if(tag==14){
-		
-		//meshFile= System.getProperty("user.dir") + "\\plungers\\plunger3Dsimp.txt";
-		meshFile= System.getProperty("user.dir") + "\\plungers\\plunger3D0.txt";
-	
-			dataFile= System.getProperty("user.dir") + "\\dataPlunger3Dsimp3.txt";
-		}
-				
-	else if(tag==15){
-		
-	//meshFile= System.getProperty("user.dir") + "\\quadEl.txt";
-		meshFile= System.getProperty("user.dir") + "\\axi.txt";
-	
-			dataFile= System.getProperty("user.dir") + "\\dataAxi.txt";
-		}
-	else if(tag==16){
-		
-		//meshFile= System.getProperty("user.dir") + "\\plungers\\plunger3Dsimp.txt";
-		meshFile= System.getProperty("user.dir") + "\\axi.txt";
-	
-			dataFile= System.getProperty("user.dir") + "\\dataAxihx.txt";
-		}
-	else if(tag==17){
-		
-	
-		meshFile= System.getProperty("user.dir") + "\\caps\\motorFull.txt";
-	
-			dataFile= System.getProperty("user.dir") + "\\dataMechMotor.txt";
-		}
-	else if(tag==18){
-		
-		
-		meshFile= System.getProperty("user.dir") + "\\forceMotorHalf\\bun.txt";
-	
-			dataFile= System.getProperty("user.dir") + "\\forceMotorHalf\\dataMechMotorHalf.txt";
-		}
-	else if(tag==19){
-		
-		
-		meshFile= System.getProperty("user.dir") + "\\caps\\motor8th.txt";
-		//meshFile= System.getProperty("user.dir") + "\\caps\\motor8thFiner.txt";
-			dataFile= System.getProperty("user.dir") + "\\dataMechMotor8th.txt";
-			//dataFile= System.getProperty("user.dir") + "\\dataMot8th3D.txt";
-		}
-				
-	else if(tag==20){
-		
-		
-		meshFile= System.getProperty("user.dir") + "\\gears\\magGearRotOut.txt";
-	
-			dataFile= System.getProperty("user.dir") + "\\gears\\dataMagGear.txt";
-			
-	/*		meshFile= System.getProperty("user.dir") + "\\bunRing.txt";
-			
-			dataFile= System.getProperty("user.dir") + "\\dataRing.txt";*/
-		}
-	else if (tag==21){
-
-		meshFile= "C:\\Users\\Me\\Desktop\\Gosh\\byMagFem\\bun2D.txt";
-	
-			dataFile= "C:\\Users\\Me\\Desktop\\Gosh\\byMagFem\\data2D.txt";
-	}
-	else if (tag==22){
-
-		//String folder="D:\\Works\\2018\\MagFemElectrost\\3D\\3coils\\roughmesh";
-		String folder="D:\\Works\\2018\\MagFemElectrost\\2D\\circular";
-		folder="D:\\Works\\2018\\MagFemElectrost\\2D\\circular\\3d1layer";
-		folder="D:\\Works\\2018\\MagFemElectrost\\3D\\2coils/newway";
-
-		meshFile= folder + "\\bun.txt";
-	
-			dataFile=folder +  "\\data.txt";
-	}
-		
 			
 			//====================================
 				

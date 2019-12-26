@@ -16,9 +16,12 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -83,6 +86,7 @@ import fem.RunMech;
 				Main.this.model.loadMesh(model.meshFilePath);
 
 				prepare();
+
 				
 				model.loadData(model.dataFilePath);
 
@@ -154,6 +158,18 @@ import fem.RunMech;
 		public void prepare(){
 		Main.this.model.iterMax=Main.this.iterMax;
 		Main.this.model.errCGmax=Main.this.errMax;
+
+		
+		
+		try{
+
+			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(new File("").getAbsolutePath()+"\\_last_MagFEM_elected_path")));		
+			pw.println(this.model.meshFilePath);
+			pw.println(this.model.dataFilePath);
+
+			pw.close();
+		}
+		catch(IOException e){}
 		
 		DateFormat dateFormat = new SimpleDateFormat("MM.dd.HH.mm.ss");
 		Date date = new Date();
