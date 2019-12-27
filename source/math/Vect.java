@@ -562,6 +562,14 @@ public Vect add(double a){
 		System.out.println();
 
 	}
+	public void show(String frmt){
+		int I;
+		I=this.length;
+		for(int i=0;i<I;i++)
+				System.out.format(frmt+"\n",this.el[i]);
+		System.out.println();
+
+	}
 	public void length(){
 
 		System.out.println(length);
