@@ -119,12 +119,12 @@ public class SpMatAsym  {
 	public SpMatAsym transpose(int cLmax){
 
 		SpMatAsym T=new SpMatAsym(getnCol(),nRow,cLmax);
+
 		int[] nz=new int[nRow];
 		for(int i=0;i<nRow;i++){
 
 			for(int j=0;j<row[i].nzLength;j++){
 				int cl=row[i].index[j];
-		
 				T.row[cl].el[nz[cl]]=row[i].el[j];
 				T.row[cl].index[nz[cl]++]=i;
 			}

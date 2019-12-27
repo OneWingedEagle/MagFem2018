@@ -233,7 +233,7 @@ public class RunMech {
 
 
 					if(model.saveForce)
-						model.writeNodalField( model.resultFolder+"\\force"+i+".txt",1);
+						model.writeNodalField( model.resultFolder+"\\force_out"+i+".txt",1);
 
 					if(model.saveDisp)
 						model.writeNodalField( model.resultFolder+"\\disp"+i+".txt",-1);
