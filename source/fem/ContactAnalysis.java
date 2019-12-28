@@ -35,6 +35,8 @@ public class ContactAnalysis {
 	private SpMatAsym Gct=null;
 	private SpMatAsym Gcf=null;
 	private SpMatAsym Gcft=null;
+	private SpMatAsym G_stk=null;
+	private SpMatAsym G_stkt=null;
 
 	private SpMat Kc=null;
 	private SpMat Kcf=null;
@@ -59,6 +61,7 @@ public class ContactAnalysis {
 	public double[] fric_coef;
 	public Node[][] slaveNodes;
 	public Edge[][] masterEdges;
+	boolean stick[];
 	
 	public Element[][] edgeElems;
 	//int[] slaveNodes;
@@ -86,19 +89,19 @@ public class ContactAnalysis {
 
 		twice_check=false;
 		
-		int itmax=5;
+		int itmax=2;
 		int nr_itmax=10;
-		int nLoads=1;
-		int n_modifNR=20;
+		int nLoads=2;
+		int n_modifNR=5;
 		
-		double fp=1;
-		double fr=.01;
-		lamNupFactor=0;
+		double fp=10;
+		double fr=.1;
+		lamNupFactor=1;
 
 		double thickness=0.001;
 		double load_scale=1./thickness;;
 		
-		boolean centrif=true;
+		boolean centrif=false;
 		if(centrif){
 			model.setNodalMass();
 			double rpm=2000;
@@ -157,7 +160,7 @@ public class ContactAnalysis {
 				//util.hshow(edgeElems[contId][k].getVertNumb());
 		 }
 		 
-		
+		 stick=new boolean[model.numberOfNodes+1];
 		contacting=new boolean[model.numberOfNodes+1];
 		 rmv=new boolean[model.numberOfNodes+1];
 
@@ -345,7 +348,7 @@ public class ContactAnalysis {
 						
 						model.setU(u);
 						
-						//if(twice_check)
+						if(twice_check)
 						checkPositiveGap(u);
 						
 						if(er1<1e-6) break;
@@ -385,7 +388,7 @@ public class ContactAnalysis {
 
 					model.setU(u);
 					
-					//if(twice_check)
+					if(twice_check)
 					checkPositiveGap(u);
 
 					if(er<1e-3){
@@ -402,7 +405,7 @@ public class ContactAnalysis {
 				err.el[cont_iter]=gap.abs().max();
 
 
-				slide=Gcf.mul(u);
+				slide=G_stk.mul(u);
 				errf.el[cont_iter]=slide.abs().max();
 
 	if(Kc!=null){
@@ -418,6 +421,9 @@ public class ContactAnalysis {
 			aug_T=Gcft.mul(lamT);;
 
 		}
+	
+	
+		checkStickSlip();
 	//xr.show();
 				if(plot)
 				for(int k=0;k<xr.length;k++){
@@ -568,14 +574,15 @@ public class ContactAnalysis {
 
 
 			Gcft=Gcf.transpose(50);
+			G_stkt=G_stk.transpose(50);
 
 		
 			Kcf=new SpMat(dof,dof); // Gct*Gc
 
-			for(int i=0;i<Gcft.nRow;i++){
-				if(Gcft.row[i].nzLength>0){
+			for(int i=0;i<G_stkt.nRow;i++){
+				if(G_stkt.row[i].nzLength>0){
 					SpVect spv=new SpVect(dof,100);
-					SpVect spv1=Gcft.row[i].deepCopy();
+					SpVect spv1=G_stkt.row[i].deepCopy();
 					for(int k=0;k<spv1.nzLength;k++){
 						int ind=spv1.index[k];
 						spv1.el[k]*=weights.el[ind];
@@ -583,9 +590,9 @@ public class ContactAnalysis {
 
 					int kx=0;
 					for(int j=0;j<=i;j++){
-						if(Gcft.row[j].nzLength>0){
+						if(G_stkt.row[j].nzLength>0){
 
-							double dot=spv1.dot(Gcft.row[j]);
+							double dot=spv1.dot(G_stkt.row[j]);
 							if(dot==0) continue;
 			
 							spv.index[kx]=j;
@@ -600,6 +607,7 @@ public class ContactAnalysis {
 
 			Kcf.times(pft);
 
+			Kcf.shownzA();
 
 
 		}
@@ -616,7 +624,8 @@ public class ContactAnalysis {
 		//int numContacting=0;
 		
 		int nnSize=model.numberOfNodes+1;
-		 for(int contId=0;contId<numContacts;contId++)
+		 for(int contId=0;contId<numContacts;contId++){
+			 double mu=fric_coef[contId];
 		for(int i=0;i<slaveNodes[contId].length;i++){
 			Node node=slaveNodes[contId][i];
 			int sn=node.id;
@@ -753,6 +762,7 @@ public class ContactAnalysis {
 				slide0.el[p]=-node.getCoord().sub(node1.getCoord().times(alpha).add(node2.getCoord().times(beta))).dot(tang);
 			
 
+				//if(mu!=0) stick[sn]=true;
 				
 				totalnumContactingNodes++;
 				
@@ -761,6 +771,7 @@ public class ContactAnalysis {
 			}
 
 		}
+	}
 	
 		 for(int contId=0;contId<numContacts;contId++)
 			 util.pr((contId+1)+", num slave nodes: "+slaveNodes[contId].length+",  numContactingNodes: "+numContactingNodes[contId]);
@@ -774,10 +785,8 @@ public class ContactAnalysis {
 		
 		Gc=new SpMatAsym(dof,dof);
 		Gcf=new SpMatAsym(dof,dof);
-		
-		int dim=model.dim;
-		int nnSize=model.numberOfNodes+1;
-		
+		G_stk=new SpMatAsym(dof,dof);
+
 		 for(int contId=0;contId<numContacts;contId++)
 		for(int i=0;i<slaveNodes[contId].length;i++){
 			
@@ -796,7 +805,8 @@ public class ContactAnalysis {
 				int p=px;
 				if(p==-1) p=py;
 				
-				Gc.row[p]=new SpVect(nnSize);
+				Gc.row[p]=new SpVect(dof);
+
 
 
 				Vect normal=normals[contId][normalIndex[contId][i]];
@@ -817,7 +827,8 @@ public class ContactAnalysis {
 				double beta=node_node.row[sn].el[1];
 
 
-				Gc.row[p]=new SpVect(nnSize,6);
+				Gc.row[p]=new SpVect(dof,6);
+								
 				int kx=0;
 				if(px!=-1){
 				Gc.row[p].index[kx]=px;
@@ -858,7 +869,7 @@ public class ContactAnalysis {
 				if(fric_coef[contId]==0){
 					tang.zero();
 				}
-				Gcf.row[p]=new SpVect(nnSize,6);
+				Gcf.row[p]=new SpVect(dof,6);
 				kx=0;
 				if(px!=-1){
 					Gcf.row[p].index[kx]=px;
@@ -889,12 +900,12 @@ public class ContactAnalysis {
 				}
 				
 
-				Gcf.row[p].sortAndTrim(kx);;
-
+				if(stick[sn])
+				G_stk.row[p]=Gcf.row[p].deepCopy();
+				
+		
 			}
 		}
-		
-
 
 
 	}
@@ -905,7 +916,7 @@ public class ContactAnalysis {
 		boolean opened=false;
 		gap=Gc.mul(u).add(gap0);
 		
-		slide=Gcf.mul(u).add(slide0);
+		slide=G_stk.mul(u).add(slide0);
 		
 
 		
@@ -918,8 +929,8 @@ public class ContactAnalysis {
 				if(twice_check){
 				if(gap.el[p]>0 && !rmv[i]){
 				//	util.pr(p+"  "+gap.el[p]);
-					gap.el[p]=0;
-					slide.el[p]=0;
+				//	gap.el[p]=0;
+				//	slide.el[p]=0;
 					contacting[i]=false;
 					lamN.el[p]=0;
 					lamT.el[p]=0;
@@ -929,9 +940,7 @@ public class ContactAnalysis {
 				}else{
 					
 					if(gap.el[p]>0){
-						gap.el[p]=0;
-						slide.el[p]=0;
-						contacting[i]=false;
+			
 						lamN.el[p]=0;
 						lamT.el[p]=0;
 						opened=true;
@@ -946,6 +955,49 @@ public class ContactAnalysis {
 
 	////	dF.sub(Fc).sub(Fcf); //included in Fint
 
+
+
+	}
+	
+
+	private void checkStickSlip(){
+
+		 for(int contId=0;contId<numContacts;contId++){
+			 double mu=.01*this.fric_coef[contId];
+			 if(mu==0) continue;
+				for(int i=0;i<slaveNodes[contId].length;i++){
+					
+					Node node=slaveNodes[contId][i];
+					int sn=node.id;
+
+					if(node_node.row[sn].nzLength>0){
+
+						int index=model.U_unknownIndex[sn]-1;
+						if(index<0) continue;
+
+
+						int px=u_index[sn][0];
+						int py=u_index[sn][1];
+						
+						int p=px;
+						if(p==-1) p=py;
+						if(lamN.el[p]<0){
+							double abs_lamT=Math.abs(lamT.el[p]);
+							double muFn=mu*Math.abs(lamN.el[p]);
+							if(abs_lamT>muFn){
+								if(lamT.el[p]>0)
+									lamT.el[p]=muFn;
+								else
+									lamT.el[p]=-muFn;
+								stick[sn]=false;
+							}else{
+							//	stick[sn]=true;
+							}
+						}
+					}
+				}
+
+		 }
 
 
 	}
