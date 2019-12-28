@@ -77,6 +77,8 @@ public class ContactAnalysis {
 	Model model;
 	double pf=1e8;
 	double pft=1e8;
+	
+	double lamNupFactor=1;
 
 
 	public Vect solve( Model model,SpMatSolver solver,int mode){
@@ -84,12 +86,14 @@ public class ContactAnalysis {
 
 		twice_check=false;
 		
-		int itmax=1;
+		int itmax=5;
 		int nr_itmax=10;
 		int nLoads=1;
-		int n_modifNR=5;
+		int n_modifNR=20;
 		
+		double fp=1;
 		double fr=.01;
+		lamNupFactor=0;
 
 		double thickness=0.001;
 		double load_scale=1./thickness;;
@@ -97,7 +101,7 @@ public class ContactAnalysis {
 		boolean centrif=true;
 		if(centrif){
 			model.setNodalMass();
-			double rpm=1000;
+			double rpm=2000;
 			double rps=rpm/30*PI;
 			double omeag2=rps*rps;
 			for(int i=1;i<=model.numberOfNodes;i++){
@@ -238,10 +242,10 @@ public class ContactAnalysis {
 			double val2=0;
 
 			if(xind!=-1)
-			 val1=1*model.Ks.row[xind].el[model.Ks.row[xind].nzLength-1];
+			 val1=fp*model.Ks.row[xind].el[model.Ks.row[xind].nzLength-1];
 			
 			if(yind!=-1)
-			 val2=1*model.Ks.row[yind].el[model.Ks.row[yind].nzLength-1];
+			 val2=fp*model.Ks.row[yind].el[model.Ks.row[yind].nzLength-1];
 
 			if(val1>pf) pf=val1;
 			if(val2>pf) pf=val2;
@@ -406,7 +410,7 @@ public class ContactAnalysis {
 			gap.el[k]*=weights.el[k];;
 			slide.el[k]*=weights.el[k];;
 		}
-			lamN=lamN.add(gap.times(-pf));
+			lamN=lamN.add(gap.times(lamNupFactor*pf));
 			lamT=lamT.add(slide.times(pft));
 
 			
@@ -505,7 +509,7 @@ public class ContactAnalysis {
 			}
 		model.writeNodalField( model.resultFolder+"\\master_normal.txt",2);
 		//model.setU(Fc.add(Fcf.times(1)).times(-1));
-		model.setU(aug_N.add(aug_T.times(1)).times(-1));
+		model.setU(aug_N.add(aug_T.times(1)).times(1));
 		model.writeNodalField( model.resultFolder+"\\contact_force.txt",-1);
 
 		model.setU(u);
@@ -914,8 +918,8 @@ public class ContactAnalysis {
 				if(twice_check){
 				if(gap.el[p]>0 && !rmv[i]){
 				//	util.pr(p+"  "+gap.el[p]);
-				//	gap.el[p]=0;
-				//	slide.el[p]=0;
+					gap.el[p]=0;
+					slide.el[p]=0;
 					contacting[i]=false;
 					lamN.el[p]=0;
 					lamT.el[p]=0;
