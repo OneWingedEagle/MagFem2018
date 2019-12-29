@@ -1311,6 +1311,12 @@ public class util {
 		System.out.println(a);
 
 	}
+	public static void pr(double a,String frmt){
+
+		System.out.format(frmt,a);
+		System.out.println();
+
+	}
 
 	public static void pr(String a){
 
