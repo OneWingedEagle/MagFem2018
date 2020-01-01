@@ -1019,7 +1019,12 @@ public class Loader {
 				model.contact=new ContactAnalysis();
 			line=br.readLine();
 				int numCont=this.getIntData(line);
+				if(numCont<0){
+					numCont=-numCont;
+					model.contact.method=1;
+				}
 				model.contact.numContacts=numCont;
+		
 				model.contact.slaveNodes=new Node[numCont][];
 				model.contact.masterEdges=new Edge[numCont][];
 				model.contact.penFactor=new double[numCont];

@@ -11,6 +11,7 @@ import math.Vect;
 public class BandMat  {
 
 	public double[][] el;
+	public int[][] index;
 	public int nRow,width,kL;
 	public boolean lower=true;
 	
@@ -24,6 +25,7 @@ public class BandMat  {
 			int n=abs(A.row[i].index[m]-i);
 			if(n>dx)
 				dx=n;	
+
 			if(lower)
 			{
 				if(A.row[i].index[m]>i)
@@ -46,17 +48,23 @@ public class BandMat  {
 
 		}*/
 		 width=2*dx+1;
+
 		 this.kL=dx;
 
 		 this.nRow=A.nRow;
 		el=new double[nRow][width];
-
+		index=new int[nRow][width];
+		for(int i=0;i<nRow;i++)
+			for(int k=0;k<width;k++)
+				index[i][k]=-1;
+		
 		if(this.lower){
 			for(int i=0;i<A.nRow;i++){
 				int p=A.row[i].nzLength-1;
 				for(int k=0;k<=p;k++){
 					int m=(i-A.row[i].index[k]);
 					el[i][kL-m]=A.row[i].el[k];
+					
 				}
 					
 			}
@@ -70,12 +78,13 @@ public class BandMat  {
 			for(int k=0;k<=p;k++){
 				int m=(A.row[i].index[k]-i)+kL;
 				el[i][m]=A.row[i].el[k];
+				index[i][m]=A.row[i].index[k];
 			}
 		}
 				
 		}
 		
-
+//util.show(index);
 	}
 	
 	
@@ -83,6 +92,7 @@ public class BandMat  {
 	public BandMat(int nRow,int kL){
 		this.nRow=nRow;
 		el=new double[nRow][kL];
+		index=new int[nRow][kL];
 	}
 
 
@@ -117,12 +127,23 @@ public class BandMat  {
 	}
 	
 
+	public void add(BandMat M,double a){
+
+		if(M.nRow!=this.nRow || M.width!=this.width ) throw new IllegalArgumentException("Dimensions do not agree.");
+		for(int i=0;i<nRow;i++)
+			for(int k=0;k<width;k++){
+				this.el[i][k]+=a*M.el[i][k];
+		}
+
+
+	}
 
 	public BandMat deepCopy(){
 		BandMat M=new BandMat(nRow,this.width);
 		for(int i=0;i<nRow;i++)
 			for(int k=0;k<width;k++){
 			M.el[i][k]=this.el[i][k];
+			M.index[i][k]=this.index[i][k];
 		}
 		M.lower=this.lower;
 		M.width=this.width;
@@ -214,7 +235,6 @@ public class BandMat  {
 			 el[i][j-i+kL]=a;
 		}
 		else{
-			
 		el[i][j-i+kL]=a;
 		}
 
@@ -261,6 +281,15 @@ public void lu(){
 	public void show(){
 
 		this.matForm().show();
+	}
+	
+	public void shownzA(){
+		
+		System.out.format(" Square Band Matrix ( %d x %d ), band = %d\n",nRow, nRow,width);
+		for(int i=0;i<nRow;i++)
+				for(int j=0;j<width;j++)
+				if(index[i][j]!=-1)
+				System.out.format(" ( %d  %d )  %25.12e\n",i,index[i][j],el[i][j]);
 	}
 	
 	

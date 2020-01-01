@@ -691,11 +691,21 @@ public class SpMat  {
 		return row[0].getNzLength();
 	}
 
-	public void size(){
+	public void showSize(){
 
 		System.out.format("%10d%10d%10d\n",getnRow(),getnCol(),getNzWidth());
 	}
 
+	public int size(){
+
+		int size=0;
+		for(int i=0;i<nRow;i++){
+			if(row[i]==null) continue;
+			size+=row[i].nzLength;
+		}
+		
+		return size;
+	}
 
 	public Vect mulLower(SpVect u){
 		Vect v=new Vect(getnRow());
@@ -1012,7 +1022,9 @@ public class SpMat  {
 	}
 
 	public void shownzA(){
-		System.out.format(" Sparse Matrix ( %d x %d ) \n",nRow, getnCol());
+
+		
+		System.out.format(" Sparse Matrix ( %d x %d ), size = %d\n",nRow, getnCol(),this.size());
 		for(int i=0;i<nRow;i++)
 				for(int j=0;j<row[i].nzLength;j++)
 				//	if(row[i].el[j]!=0)

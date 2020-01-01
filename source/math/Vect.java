@@ -558,7 +558,7 @@ public Vect add(double a){
 		int I;
 		I=this.length;
 		for(int i=0;i<I;i++)
-				System.out.format("%10.5f\n",this.el[i]);
+				System.out.format("%10.5e\n",this.el[i]);
 		System.out.println();
 
 	}
