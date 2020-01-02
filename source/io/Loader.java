@@ -1093,6 +1093,7 @@ public class Loader {
 		else if(line.startsWith("rayB")) model.rayBeta=this.getScalarData(line);
 
 
+
 	}
 	
 	//model.deform=!model.loadDisp;
@@ -2579,7 +2580,17 @@ public void loadData2D(Model model,String dataFilePath){
 		
 		line=br.readLine();
 		line=br.readLine();
-		int dim =getIntData(line);
+		
+		String[] sp=line.split(this.regex);	
+
+		int ib=0;
+		if(sp[0].equals("")) ib=1;
+		int dim=Integer.parseInt(sp[ib++]);
+		
+		model.struc2D=0;
+		if(dim==2 && ib<sp.length-1){
+			model.struc2D=Integer.parseInt(sp[ib]);;	
+		}
 		
 		if(dim!=dim0){
 			System.err.println("Mesh and Data do not match in dimension: "+dim0+" and "+dim);

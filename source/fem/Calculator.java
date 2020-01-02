@@ -14,7 +14,7 @@ public class Calculator {
 	double[][] PWtetra;
 	boolean centerNu;
 	public int dim,elCode,nElVert,nElEdge,numberOfElements,numberOfNodes,numberOfRegions;
-	public int struc2D=0;// 0: plane stress  1: plain strain.
+	public int struc2D;
 
 	public Calculator(){	}
 
@@ -33,6 +33,8 @@ public class Calculator {
 		this.PWtetra=gaussIntegTetra(4);
 
 		this.centerNu=false;
+		
+		this.struc2D=model.struc2D;
 	}
 
 
@@ -3369,6 +3371,8 @@ public class Calculator {
 	}	
 
 	public Mat[][] KeQuad(Model model,int ie){
+		
+		if(struc2D==2)  return KeQuadAxi(model,ie);
 
 
 		Node[] vertexNode=model.elementNodes(ie);
@@ -3441,13 +3445,8 @@ public class Calculator {
 		int n=this.PW[0].length;	
 		Mat jac;
 
-/*		double[] rrj=new double[model.nElVert];
-		for(int i=0;i<model.nElVert;i++){
-			double r1=vertexNode[i].getCoord(0)+1e-6;
-			rrj[i]=1.0/r1;
-		}
-
-
+		boolean rcent=true;
+		
 		double v=model.element[ie].getPois().el[0];
 		double E=model.element[ie].getYng().el[0];
 		double G=0;
@@ -3456,8 +3455,18 @@ public class Calculator {
 		else
 			G=E/((1+v)*(1-2*v));
 
+		double a=1-v;
+		
 		Mat BtDB;
 		Vect[] gradN;
+		double [] Ne=new double[model.nElVert];
+		
+		double[] rrj=new double[model.nElEdge];
+		for(int i=0;i<model.nElEdge;i++){
+			double r1=vertexNode[i].getCoord(0)+1e-5;
+			rrj[i]=1.0/r1;
+		}
+		
 		Vect localCo=new Vect(3);
 		for(int p=0;p<n;p++)
 			for(int q=0;q<n;q++)
@@ -3479,22 +3488,28 @@ public class Calculator {
 
 				gradN=gradN(jac,localCo);
 				
+				Ne=NQuad(localCo);
+
+				
 				double rr=0;
-				//if(!rcent){
+		
+				if(!rcent){
 
 					for(int i=0;i<model.nElEdge;i++)
-						rr+=gradN[i]*rrj[i];
+						rr+=Ne[i]*rrj[i];
 				}
-			//	else{
+				else{
 
-					//for(int i=0;i<model.nElEdge;i++)
+					for(int i=0;i<model.nElEdge;i++)
 						rr+=.25*rrj[i];
-			//	}//
+				}
+
 
 				for(int i=0;i<this.nElVert;i++)
 					for(int j=0;j<this.nElVert;j++){
 
 						BtDB=BtDB2D(v,gradN[i],gradN[j]).times(ws);
+						BtDB.el[0][0]+=a*Ne[i]*Ne[j]/(rr);
 						Ke[i][j]=Ke[i][j].add(BtDB);
 
 					}
@@ -3502,10 +3517,10 @@ public class Calculator {
 
 		for(int i=0;i<this.nElVert;i++)
 			for(int j=0;j<this.nElVert;j++){
-				Ke[i][j]=Ke[i][j].times(G*rr);
+				Ke[i][j]=Ke[i][j].times(G*2*Math.PI);
 
 			}
-		*/
+		
 
 		return Ke;
 	}
@@ -4168,7 +4183,7 @@ public class Calculator {
 			a=1;
 			c=(1.0-v)/2;
 		}
-		else{
+		else {
 			b=v;
 			a=(1-v);
 			c=(0.5-v);

@@ -108,7 +108,8 @@ public class Model{
 	public Network network;
 	
 	public ContactAnalysis contact;
-
+	
+	public int struc2D=0;// 0: plane stress  1: plain strain, 2:axisymmetric
 
 
 	public Model(){}
