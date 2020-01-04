@@ -247,7 +247,7 @@ public class Loader {
 
 	public void loadData(Model model,String dataFilePath){
 		int dim0=model.dim;
-		
+	
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
 			String line;
@@ -261,7 +261,16 @@ public class Loader {
 			util.pr("// dimension (2: 2D, 3:3D ");
 			line=getNextDataLine(br);
 
-			int dim =getIntData(line);
+			String[] sp=line.split(this.regex);	
+		
+			int ib=0;
+			if(sp[0].equals("")) ib=1;
+			int dim=Integer.parseInt(sp[ib++]);
+		
+			model.struc2D=0;
+			if(dim==2 && ib<sp.length){
+				model.struc2D=Integer.parseInt(sp[ib]);;	
+			}
 
 			line=getNextDataLine(br);
 			util.pr("// coordCode (0: Cartesian, 1: Cylindrical ");
@@ -2566,21 +2575,21 @@ return line;
 }
 
 
-public void loadData2D(Model model,String dataFilePath){
+/*public void loadData2D(Model model,String dataFilePath){
 	int dim0=model.dim;
 
-
+util.pr(888);
 	try{
 		BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
 		String line;
 		line=br.readLine();
-
+util.pr(line);
 		int dataType =getIntData(line);
 		model.dataType=dataType;
 		
 		line=br.readLine();
 		line=br.readLine();
-		
+		util.pr(line);
 		String[] sp=line.split(this.regex);	
 
 		int ib=0;
@@ -2590,8 +2599,9 @@ public void loadData2D(Model model,String dataFilePath){
 		model.struc2D=0;
 		if(dim==2 && ib<sp.length-1){
 			model.struc2D=Integer.parseInt(sp[ib]);;	
+			util.pr(		model.struc2D);
 		}
-		
+		util.pr("model.struc2D "+model.struc2D);
 		if(dim!=dim0){
 			System.err.println("Mesh and Data do not match in dimension: "+dim0+" and "+dim);
 		}
@@ -2613,7 +2623,7 @@ public void loadData2D(Model model,String dataFilePath){
 	System.out.println("Loading data file completed.");
 
 }
-
+*/
 public void setDataMag2D(Model model,BufferedReader br){
 
 	String line;

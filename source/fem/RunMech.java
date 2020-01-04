@@ -32,6 +32,19 @@ public class RunMech {
 
 
 		}
+		
+/*		
+		for(int n=1;n<=model.numberOfNodes;n++){
+			if(model.node[n].getCoord(2)>.000999){
+				double r=model.node[n].getCoord().v2().norm();
+				if(Math.abs(r-.005)<1e6){
+					if(model.node[n].getCoord(1)<.0001) r/=2;
+				//if(r<.0011 || r>.00999 || model.node[n].getCoord(0)<.0001 || model.node[n].getCoord(1)<.0001) r/=2;
+				util.pr(n+"\t"+"0	.0001  "+(-r*100000));
+				}
+			}
+		}
+*/
 		//*************************
 		//*************************
 		//*************************

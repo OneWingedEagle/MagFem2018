@@ -105,29 +105,33 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	twice_check_mnr=false;
 
 	int itmax=3;
-	int nr_itmax=10;
+	int nr_itmax=8;
 	int nLoads=1;
-	int n_modifNR=10;
+	int n_modifNR=0;
 
 	double fp=1;
 	double fr=.01;
 	lamNupFactor=0;
 	lamTupFactor=1;
 
-	double loadFactor0=1000;//*23;//4.95;//*2.439;//100*.8;
+	double loadFactor0=1000*2*PI;//1000/2/PI;//*1.57000;//*23;//4.95;//*2.439;//100*.8;
 	Vect u=new Vect(model.Ks.nRow);
 	int nmu=1;
 	Vect mus=new Vect(nmu);
 	Vect mm=new Vect(nmu);
 
-
+	for(int i=1;i<=model.numberOfNodes;i++){
+		Vect F=model.node[i].F;
+		if(F!=null)
+			model.node[i].F=model.node[i].F.times(model.node[i].getCoord(0));
+	}
 	Mat KK=null;
 	boolean direct=false;
 
 	for(int im=0;im<nmu;im++){
 		u.zero();
 		model.setU(u);
-		mus.el[im]=1*111.5+.1*(im);
+		mus.el[im]=.1+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 
 		double thickness=1;//0.001;
@@ -508,6 +512,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 					//if(lamN.norm()==0)
 				//		lamN=lamN.add(pgap.times(pf));
 				//	else
+						
 						lamN=lamN.times(lamNupFactor).add(pgap.times(pf));
 
 				
@@ -1405,15 +1410,15 @@ private void obtain_node_node(boolean twchk){
 
 				double pen=v1v.dot(normal);
 
-				if(pen>1e-12 &&  (!contacting[sn] || !twchk)) {
-/*					contacting[sn]=false;
+				if(pen>1e-14 &&  (!contacting[sn] || !twchk)) {
+					contacting[sn]=false;
 					landed_stick[sn]=true;
 					int p=u_index[sn][0];
 					if(p<0) 
 						p=u_index[sn][1];
 					if(p<0) continue;
 					lamN.el[p]=0;
-					lamT.el[p]=0;*/
+					lamT.el[p]=0;
 					
 					continue;
 				}
@@ -1733,7 +1738,7 @@ private void checkStickSlip(){
 			int p=px;
 			if(p==-1) p=py;
 			if(node_node.row[sn].nzLength>0){
-				if(lamN.el[p]<=0){
+				if(lamN.el[p]<0){
 					double abs_lamT=Math.abs(lamT.el[p]);
 					double muFn=mu*Math.abs(lamN.el[p]);
 					util.ph("node "+sn+ "  p "+p+ " lamT:  ");

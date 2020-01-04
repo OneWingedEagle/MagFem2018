@@ -403,7 +403,8 @@ public class MechMatrix {
 		solver.terminate(false);
 		System.out.println(" Calculating deformation....");
 
-
+	//	model.Ks.matForm(false).times(1).show();
+	//	model.Ks.matForm(false).times(9.46938e-4).show();
 	/*	model.Ks.matForm(true).show();
 		
 		Eigen eg=new Eigen(model.Ks.matForm(true));

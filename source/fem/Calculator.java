@@ -3,6 +3,9 @@ package fem;
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
+
+import java.util.BitSet;
+
 import math.Mat;
 import math.Vect;
 import math.util;
@@ -3432,6 +3435,7 @@ public class Calculator {
 		return Ke;
 	}
 	
+	
 	public Mat[][] KeQuadAxi(Model model,int ie){
 
 
@@ -3445,7 +3449,7 @@ public class Calculator {
 		int n=this.PW[0].length;	
 		Mat jac;
 
-		boolean rcent=true;
+		boolean rcent=false;
 		
 		double v=model.element[ie].getPois().el[0];
 		double E=model.element[ie].getYng().el[0];
@@ -3455,22 +3459,38 @@ public class Calculator {
 		else
 			G=E/((1+v)*(1-2*v));
 
-		double a=1-v;
+		double b=v;
+		double a=(1-v);
+		double c=(0.5-v);
+		Mat D=new Mat(4,4);
+		D.el[0][0]=a;
+		D.el[0][1]=b;
+		D.el[1][0]=b;
+		D.el[1][1]=a;
+		D.el[2][2]=a;
+		D.el[2][0]=b;
+		D.el[2][1]=b;
+		D.el[0][2]=b;
+		D.el[1][2]=b;
+		D.el[3][3]=c;
+		
 		
 		Mat BtDB;
 		Vect[] gradN;
 		double [] Ne=new double[model.nElVert];
 		
-		double[] rrj=new double[model.nElEdge];
-		for(int i=0;i<model.nElEdge;i++){
-			double r1=vertexNode[i].getCoord(0)+1e-5;
-			rrj[i]=1.0/r1;
+		double[] ri=new double[model.nElVert];
+		for(int i=0;i<model.nElVert;i++){
+			double r1=vertexNode[i].getCoord(0)+1e-6;
+			ri[i]=r1;
 		}
+
 		
 		Vect localCo=new Vect(3);
 		for(int p=0;p<n;p++)
 			for(int q=0;q<n;q++)
 			{
+	
 				localCo.el[0]=this.PW[0][p];
 				localCo.el[1]=this.PW[0][q];
 
@@ -3490,35 +3510,57 @@ public class Calculator {
 				
 				Ne=NQuad(localCo);
 
-				
-				double rr=0;
-		
-				if(!rcent){
 
-					for(int i=0;i<model.nElEdge;i++)
-						rr+=Ne[i]*rrj[i];
+				double r=0;
+				
+			if(!rcent){
+
+					for(int i=0;i<model.nElEdge;i++){
+						r+=Ne[i]*ri[i];
+					}
 				}
 				else{
 
-					for(int i=0;i<model.nElEdge;i++)
-						rr+=.25*rrj[i];
+					for(int i=0;i<model.nElEdge;i++){
+						r+=.25*ri[i];
+					}
 				}
-
-
+	
+				
+				ws*=r;
+				
 				for(int i=0;i<this.nElVert;i++)
 					for(int j=0;j<this.nElVert;j++){
 
-						BtDB=BtDB2D(v,gradN[i],gradN[j]).times(ws);
-						BtDB.el[0][0]+=a*Ne[i]*Ne[j]/(rr);
+							
+							Mat Bj=new Mat(4,2);
+							
+							Bj.el[0][0]=gradN[j].el[0];
+							Bj.el[1][1]=gradN[j].el[1];
+							
+							Bj.el[2][0]=Ne[j]/r;
+							Bj.el[3][0]=gradN[j].el[1];
+							Bj.el[3][1]=gradN[j].el[0];
+	
+								Mat Bi=new Mat(4,2);
+								
+								Bi.el[0][0]=gradN[i].el[0];
+								Bi.el[1][1]=gradN[i].el[1];
+								
+								Bi.el[2][0]=Ne[i]/r;
+								Bi.el[3][0]=gradN[i].el[1];
+								Bi.el[3][1]=gradN[i].el[0];
+								
+						BtDB=Bi.transp().mul(D.mul(Bj)).times(ws);
+
 						Ke[i][j]=Ke[i][j].add(BtDB);
 
 					}
-			}	
+			}
 
 		for(int i=0;i<this.nElVert;i++)
 			for(int j=0;j<this.nElVert;j++){
-				Ke[i][j]=Ke[i][j].times(G*2*Math.PI);
-
+				Ke[i][j]=Ke[i][j].times(2*Math.PI*G);
 			}
 		
 
@@ -3528,7 +3570,10 @@ public class Calculator {
 
 
 
+
 	public Mat[][] Ke3ang(Model model,int ie){
+		
+	if(struc2D==2) return Ke3angAxi(model,ie);
 
 		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
 		for(int i=0;i<this.nElVert;i++)
@@ -3566,6 +3611,65 @@ public class Calculator {
 
 		return Ke;
 	}
+	
+	public Mat[][] Ke3angAxi(Model model,int ie){
+
+		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++)
+				Ke[i][j]=new Mat(2,2);
+
+		double S=el3angArea(model,ie);
+
+		double v=model.element[ie].getPois().el[0];
+		double E=model.element[ie].getYng().el[0];
+
+		double G=0;
+		if(struc2D==0)
+			G=E/(1-v*v);
+		else
+			G=E/((1+v)*(1-2*v));
+
+		double GS=G*S;
+
+		Vect[] gradN=gradN3ang(model,ie);
+		
+		double[] N=N3ang(model,ie);
+
+		Node[] vertexNode=model.elementNodes(ie);
+
+		double rr=0;
+		
+		double a=1-v;
+
+		for(int i=0;i<model.nElVert;i++){
+			double r1=vertexNode[i].getCoord(0);
+			rr+=0.33333333/r1;
+		}
+
+
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++){
+				
+			
+				Ke[i][j]=BtDB2D(v,gradN[i],gradN[j]);
+				
+				Ke[i][j].el[0][0]+=a*N[i]*N[j]*rr*rr;
+	
+
+			}
+
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++){
+				Ke[i][j]=Ke[i][j].times(GS);
+			//	if(ie==1)
+			//	Ke[i][j].times(1/(10*1e6*175.126835)).show();
+			}
+
+
+		return Ke;
+	}
+
 
 	private void fillMeQuad(Model model,int ie,Mat[][] Me){
 
