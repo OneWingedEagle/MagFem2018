@@ -104,7 +104,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	allow_sep_mnr=true;
 	twice_check_mnr=false;
 
-	int itmax=3;
+	int itmax=4;
 	int nr_itmax=8;
 	int nLoads=1;
 	int n_modifNR=0;
@@ -113,13 +113,18 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	double fr=.01;
 	lamNupFactor=0;
 	lamTupFactor=1;
+	
 
-	double loadFactor0=1000*2*PI;//1000/2/PI;//*1.57000;//*23;//4.95;//*2.439;//100*.8;
+	boolean axi=true;
+
+	double loadFactor0=1000;//*2*PI;//1000/2/PI;//*1.57000;//*23;//4.95;//*2.439;//100*.8;
+	if(axi) loadFactor0*=2*PI;
 	Vect u=new Vect(model.Ks.nRow);
 	int nmu=1;
 	Vect mus=new Vect(nmu);
 	Vect mm=new Vect(nmu);
-
+	
+	if(axi)
 	for(int i=1;i<=model.numberOfNodes;i++){
 		Vect F=model.node[i].F;
 		if(F!=null)
@@ -379,6 +384,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 
 					if(Kc!=null){
+		
 						Ks=model.Ks.addGeneral(Kc.addGeneral(Kcf));
 					}		
 					else{
@@ -443,14 +449,17 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 
 					util.pr("ns ="+ns);
-					assembleContactMatrices(twice_check);
 
-						if(Kc!=null){
+					if(n_modifNR>0){
+						assembleContactMatrices(twice_check);
+
+						if(Kc!=null && n_modifNR>0){
 							Ks=model.Ks.addGeneral(Kc.addGeneral(Kcf));
 						}		
 						else{
 							Ks=model.Ks.deepCopy();
 						}
+					}
 
 					dF=this.calcResidual(Ks, u, bU1);
 
@@ -1379,7 +1388,7 @@ private void obtain_node_node(boolean twchk){
 
 
 				if(dot1*dot2>.001) {
-					contacting[sn]=true;
+					contacting[sn]=false;
 					continue;
 				}
 				else if (dot1*dot2>-.001) node_to_node=true;
@@ -1412,7 +1421,7 @@ private void obtain_node_node(boolean twchk){
 
 				if(pen>1e-14 &&  (!contacting[sn] || !twchk)) {
 					contacting[sn]=false;
-					landed_stick[sn]=true;
+					landed_stick[sn]=false;
 					int p=u_index[sn][0];
 					if(p<0) 
 						p=u_index[sn][1];
