@@ -104,12 +104,12 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	allow_sep_mnr=true;
 	twice_check_mnr=false;
 
-	int itmax=4;
+	int itmax=3;
 	int nr_itmax=8;
 	int nLoads=1;
 	int n_modifNR=0;
 
-	double fp=1;
+	double fp=10;
 	double fr=.01;
 	lamNupFactor=0;
 	lamTupFactor=1;
@@ -127,8 +127,11 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	if(axi)
 	for(int i=1;i<=model.numberOfNodes;i++){
 		Vect F=model.node[i].F;
+		double r=model.node[i].getCoord(0);
+
 		if(F!=null)
-			model.node[i].F=model.node[i].F.times(model.node[i].getCoord(0));
+			model.node[i].F=model.node[i].F.times(r);
+	
 	}
 	Mat KK=null;
 	boolean direct=false;
@@ -302,7 +305,10 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 				int p=u_index[sn][0];
 				if(p<0) 
 					p=u_index[sn][1];
-				weights.el[p]=penFactor[contId];//*util.max(val1,val2);
+				
+				weights.el[p]=1;//penFactor[contId]*util.max(val1,val2);
+				
+	
 			}
 
 
@@ -518,10 +524,9 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 						pslide.el[k]=weights.el[k]*slide.el[k];;
 					}
 
-					//if(lamN.norm()==0)
-				//		lamN=lamN.add(pgap.times(pf));
-				//	else
-						
+					if(lamN.norm()==0)
+						lamN=lamN.add(pgap.times(pf));
+					else
 						lamN=lamN.times(lamNupFactor).add(pgap.times(pf));
 
 				
@@ -544,10 +549,10 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 						if(index<0) continue;
 
 
-						int com_index=u_index[n][0];
+						int com_index=u_index[n][1];
 						//	urs[cont_iter].el[k]=-Math.abs(u.el[com_index])*1e6;
 						if(com_index==-1) continue;
-						urs[cont_iter].el[k]=u.el[com_index]*1e6;
+						urs[cont_iter].el[k]=u.el[com_index]*1e3;
 						if(xr.el[k]<0)
 							urs[cont_iter].el[k]*=-1;
 
@@ -648,6 +653,30 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 			//node2.u=normal.deepCopy();
 		}
 	model.writeNodalField( model.resultFolder+"\\master_normal.txt",2);
+	
+	
+	for(int i=1;i<=model.numberOfNodes;i++){
+		Vect F=model.node[i].Fms;
+		if(F!=null)
+			model.node[i].Fms=null;
+	}
+	
+	for(int contId=0;contId<numContacts;contId++)		
+		for(int k=0;k<slaveNodes[contId].length;k++){
+
+			Node node=slaveNodes[contId][k];
+			
+			int ind=	normalIndex[contId][k];
+			
+			if(ind<0) continue;
+
+			Vect normal=normals[contId][ind];//new Vect(-v12.el[1],v12.el[0]).normalized();
+			if(normal==null) continue;
+
+			model.node[node.id].Fms=normal.times(-1);
+			//node2.u=normal.deepCopy();
+		}
+	model.writeNodalField( model.resultFolder+"\\slave_normal.txt",2);
 	model.setU(Fc.add(Fcf.times(1)).times(-1));
 	//model.setU(aug_N.times(1).add(aug_T.times(1)).times(-1));
 	model.writeNodalField( model.resultFolder+"\\contact_force.txt",-1);
@@ -1419,7 +1448,7 @@ private void obtain_node_node(boolean twchk){
 
 				double pen=v1v.dot(normal);
 
-				if(pen>1e-14 &&  (!contacting[sn] || !twchk)) {
+				if(pen>0e-14 &&  (!contacting[sn] || !twchk)) {
 					contacting[sn]=false;
 					landed_stick[sn]=false;
 					int p=u_index[sn][0];

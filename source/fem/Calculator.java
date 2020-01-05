@@ -3453,11 +3453,7 @@ public class Calculator {
 		
 		double v=model.element[ie].getPois().el[0];
 		double E=model.element[ie].getYng().el[0];
-		double G=0;
-		if(struc2D==0)
-			G=E/(1-v*v);
-		else
-			G=E/((1+v)*(1-2*v));
+		double G=E/((1+v)*(1-2*v));
 
 		double b=v;
 		double a=(1-v);
