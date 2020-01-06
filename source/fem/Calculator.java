@@ -852,7 +852,7 @@ public class Calculator {
 
 		double[] rrj=new double[model.nElEdge];
 		for(int i=0;i<model.nElEdge;i++){
-			double r1=vertexNode[i].getCoord(0)+1e-5;
+			double r1=vertexNode[i].getCoord(0)+1e-6;
 			rrj[i]=1.0/r1;
 		}
 
@@ -3477,7 +3477,7 @@ public class Calculator {
 		
 		double[] ri=new double[model.nElVert];
 		for(int i=0;i<model.nElVert;i++){
-			double r1=vertexNode[i].getCoord(0)+1e-6;
+			double r1=vertexNode[i].getCoord(0);
 			ri[i]=r1;
 		}
 
@@ -3620,13 +3620,26 @@ public class Calculator {
 		double v=model.element[ie].getPois().el[0];
 		double E=model.element[ie].getYng().el[0];
 
-		double G=0;
-		if(struc2D==0)
-			G=E/(1-v*v);
-		else
-			G=E/((1+v)*(1-2*v));
+		double G=E/((1+v)*(1-2*v));
+
+		double b=v;
+		double a=(1-v);
+		double c=(0.5-v);
+		Mat D=new Mat(4,4);
+		D.el[0][0]=a;
+		D.el[0][1]=b;
+		D.el[1][0]=b;
+		D.el[1][1]=a;
+		D.el[2][2]=a;
+		D.el[2][0]=b;
+		D.el[2][1]=b;
+		D.el[0][2]=b;
+		D.el[1][2]=b;
+		D.el[3][3]=c;
 
 		double GS=G*S;
+		
+		Mat BtDB;
 
 		Vect[] gradN=gradN3ang(model,ie);
 		
@@ -3634,32 +3647,40 @@ public class Calculator {
 
 		Node[] vertexNode=model.elementNodes(ie);
 
-		double rr=0;
+		double r=0;
 		
-		double a=1-v;
 
 		for(int i=0;i<model.nElVert;i++){
 			double r1=vertexNode[i].getCoord(0);
-			rr+=0.33333333/r1;
+			r+=0.33333333*r1;
 		}
 
 
 		for(int i=0;i<this.nElVert;i++)
 			for(int j=0;j<this.nElVert;j++){
 				
-			
-				Ke[i][j]=BtDB2D(v,gradN[i],gradN[j]);
+				Mat Bj=new Mat(4,2);
 				
-				Ke[i][j].el[0][0]+=a*N[i]*N[j]*rr*rr;
-	
+				Bj.el[0][0]=gradN[j].el[0];
+				Bj.el[1][1]=gradN[j].el[1];
+				
+				Bj.el[2][0]=N[j]/r;
+				Bj.el[3][0]=gradN[j].el[1];
+				Bj.el[3][1]=gradN[j].el[0];
 
-			}
+					Mat Bi=new Mat(4,2);
+					
+					Bi.el[0][0]=gradN[i].el[0];
+					Bi.el[1][1]=gradN[i].el[1];
+					
+					Bi.el[2][0]=N[i]/r;
+					Bi.el[3][0]=gradN[i].el[1];
+					Bi.el[3][1]=gradN[i].el[0];
+					
+					BtDB=Bi.transp().mul(D.mul(Bj)).times(r);
+					
+					Ke[i][j]=BtDB.times(GS*2*Math.PI);
 
-		for(int i=0;i<this.nElVert;i++)
-			for(int j=0;j<this.nElVert;j++){
-				Ke[i][j]=Ke[i][j].times(GS);
-			//	if(ie==1)
-			//	Ke[i][j].times(1/(10*1e6*175.126835)).show();
 			}
 
 

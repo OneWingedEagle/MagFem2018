@@ -104,7 +104,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	allow_sep_mnr=true;
 	twice_check_mnr=false;
 
-	int itmax=3;
+	int itmax=1;
 	int nr_itmax=8;
 	int nLoads=1;
 	int n_modifNR=0;
@@ -139,7 +139,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	for(int im=0;im<nmu;im++){
 		u.zero();
 		model.setU(u);
-		mus.el[im]=.1+.1*(im);
+		mus.el[im]=.0+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 
 		double thickness=1;//0.001;
@@ -1448,7 +1448,7 @@ private void obtain_node_node(boolean twchk){
 
 				double pen=v1v.dot(normal);
 
-				if(pen>0e-14 &&  (!contacting[sn] || !twchk)) {
+				if(pen>1e-14 &&  (!contacting[sn] || !twchk)) {
 					contacting[sn]=false;
 					landed_stick[sn]=false;
 					int p=u_index[sn][0];
