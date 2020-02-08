@@ -1026,57 +1026,8 @@ public class Loader {
 			line=br.readLine();
 			 if(line.startsWith("contact")) {
 				model.contact=new ContactAnalysis();
-			line=br.readLine();
-				int numCont=this.getIntData(line);
-				if(numCont<0){
-					numCont=-numCont;
-					model.contact.method=1;
-				}
-				model.contact.numContacts=numCont;
-		
-				model.contact.slaveNodes=new Node[numCont][];
-				model.contact.masterEdges=new Edge[numCont][];
-				model.contact.penFactor=new double[numCont];
-				model.contact.fric_coef=new double[numCont];
+			model.contact.readContact(this, br,model);
 
-			for(int i=0;i<numCont;i++){
-				line=br.readLine();
-		
-				model.contact.penFactor[i]=this.getScalarData(line);
-				line=br.readLine();
-				model.contact.fric_coef[i]=this.getScalarData(line);
-				line=br.readLine();
-				line=br.readLine();
-				int ns=this.getIntData(line);
-			
-
-				model.contact.slaveNodes[i]=new  Node[ns];
-
-				
-				for(int k=0;k<ns;k++){
-					line=br.readLine();
-				
-					int sn=this.getIntData(line);
-					model.contact.slaveNodes[i][k]=model.node[sn];
-				}
-				line=br.readLine();
-				line=br.readLine();
-				int nm=this.getIntData(line);
-				
-				model.contact.masterEdges[i]=new  Edge[nm];
-				
-				for(int k=0;k<nm;k++){
-					line=br.readLine();
-				
-					int[] nn=this.getCSInt(line);
-					Node node1=model.node[nn[0]];
-					Node node2=model.node[nn[1]];
-					model.contact.masterEdges[i][k]=new Edge(node1,node2);
-				}
-
-	
-
-			}
 			}
 
 	for(int j=0;j<30;j++){
@@ -2078,12 +2029,12 @@ public void average(String bun1, String bun2,String bun3){
 		return v;
 	}
 	
-	private double getScalarData(String line){
+	public double getScalarData(String line){
 		String[] sp=line.split(regex);	
 		return Double.parseDouble(sp[sp.length-1]);
 	}
 
-	private int getIntData(String line){
+	public int getIntData(String line){
 		String[] sp=line.split(regex);	
 		return Integer.parseInt(sp[sp.length-1]);
 	}
@@ -2575,55 +2526,6 @@ return line;
 }
 
 
-/*public void loadData2D(Model model,String dataFilePath){
-	int dim0=model.dim;
-
-util.pr(888);
-	try{
-		BufferedReader br = new BufferedReader(new FileReader(dataFilePath));
-		String line;
-		line=br.readLine();
-util.pr(line);
-		int dataType =getIntData(line);
-		model.dataType=dataType;
-		
-		line=br.readLine();
-		line=br.readLine();
-		util.pr(line);
-		String[] sp=line.split(this.regex);	
-
-		int ib=0;
-		if(sp[0].equals("")) ib=1;
-		int dim=Integer.parseInt(sp[ib++]);
-		
-		model.struc2D=0;
-		if(dim==2 && ib<sp.length-1){
-			model.struc2D=Integer.parseInt(sp[ib]);;	
-			util.pr(		model.struc2D);
-		}
-		util.pr("model.struc2D "+model.struc2D);
-		if(dim!=dim0){
-			System.err.println("Mesh and Data do not match in dimension: "+dim0+" and "+dim);
-		}
-	
-
-		if(dataType==0)
-			setDataMag2D( model,br);
-		else if(dataType==1)
-			setDataMech( model,br);
-
-	
-			br.close();
-	}
-
-	catch(IOException e){
-		e.printStackTrace();
-	}
-	System.out.println();
-	System.out.println("Loading data file completed.");
-
-}
-*/
 public void setDataMag2D(Model model,BufferedReader br){
 
 	String line;

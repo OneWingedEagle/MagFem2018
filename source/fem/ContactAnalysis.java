@@ -3,6 +3,10 @@ package fem;
 
 import static java.lang.Math.PI;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+
+import io.Loader;
 import main.Main;
 import math.Mat;
 import math.MatSolver;
@@ -20,6 +24,7 @@ import math.util;
  *         Created Aug 20, 2012.
  */
 public class ContactAnalysis {
+
 
 
 	boolean twice_check=false;
@@ -98,24 +103,25 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	MatSolver slv=new MatSolver();
 
 
-	allow_sep=true;
+	allow_sep=false;
 	twice_check=false;
 
-	allow_sep_mnr=true;
+	allow_sep_mnr=false;
 	twice_check_mnr=false;
 
 	int itmax=1;
-	int nr_itmax=8;
+	int nr_itmax=6;
 	int nLoads=1;
 	int n_modifNR=0;
 
-	double fp=10;
+	double fp=1;
 	double fr=.01;
 	lamNupFactor=0;
 	lamTupFactor=1;
 	
 
-	boolean axi=true;
+	boolean axi=(model.struc2D==2);
+
 
 	double loadFactor0=1000;//*2*PI;//1000/2/PI;//*1.57000;//*23;//4.95;//*2.439;//100*.8;
 	if(axi) loadFactor0*=2*PI;
@@ -134,18 +140,19 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	
 	}
 	Mat KK=null;
+	
 	boolean direct=false;
 
 	for(int im=0;im<nmu;im++){
 		u.zero();
 		model.setU(u);
-		mus.el[im]=.0+.1*(im);
+		mus.el[im]=.5+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 
 		double thickness=1;//0.001;
 		double load_scale=1./thickness*loadFactor0;;
 
-		boolean centrif=false;
+		boolean centrif=true;
 		if(centrif){
 			model.setNodalMass();
 			double rpm=2000;
@@ -257,11 +264,6 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 		Fcf=new Vect(model.Ks.nRow);
 		solver.terminate(false);
 		System.out.println(" Contact analysis....");
-
-
-
-
-		//readContact();
 
 
 		//	int nout=2601-2551+1;
@@ -844,11 +846,6 @@ public Vect solveSingle( Model model,SpMatSolver solver,int mode){
 		Fcf=new Vect(model.Ks.nRow);
 		solver.terminate(false);
 		System.out.println(" Contact analysis....");
-
-
-
-
-		//readContact();
 
 
 		//	int nout=2601-2551+1;
@@ -1901,58 +1898,201 @@ private Vect calcResidual(SpMat Ks,Vect u, Vect b){
 }
 
 
-/*	private Vect calcResidual(SpMat Ks,Vect u, Vect b){
+public void readContact(Loader loader,BufferedReader br, Model model) throws IOException{
 
-		Vect Fint=model.Ks.smul(u);
-
-		Vect dF=b.sub(Fint);
-
-		//Fc=Kc.smul(u);
-		//Fcf=Kcf.smul(u);
+	model.setEdge();
 	
-	//	util.pr("_______________________");
-		//Gct.shownzA();
+	String line=br.readLine();
 
-	//	new SpVect(Fc).shownzA();
-		Vect ps=slide.times(pft);
+	int numCont=loader.getIntData(line);
+	if(numCont<0){
+		numCont=-numCont;
+		method=1;
+	}
+	
+	
+	numContacts=numCont;
 
-		for(int i=0;i<G_stk.nRow;i++)
-			if(G_stk.row[i].norm()==0)
-				ps.el[i]=0;
-	//	new SpVect(slide).shownzA();
+	slaveNodes=new Node[numCont][];
+	masterEdges=new Edge[numCont][];
+	penFactor=new double[numCont];
+	fric_coef=new double[numCont];
+
+for(int i=0;i<numCont;i++){
+	line=br.readLine();
+	penFactor[i]=loader.getScalarData(line);
+	line=br.readLine();
+	fric_coef[i]=loader.getScalarData(line);
+	line=br.readLine();
+
+	int type=loader.getIntData(line);
 
 
-		if(G_stk_pr!=null){
-		Vect psp=G_stk_pr.mul(ref_stick).times(pft);
-		//SpMatAsym M=G_stk_pr.deepCopy();
-	//	M.transpose(50);
-		//Vect f=M.mul(psp);
-	//	Fcf=Fcf.add(f);
-	//	ps=ps.sub(psp);
+	if(type==0){
+		line=br.readLine();
+
+		int ns=loader.getIntData(line);
+
+	slaveNodes[i]=new  Node[ns];
+
+	
+	for(int k=0;k<ns;k++){
+		line=br.readLine();
+	
+		int sn=loader.getIntData(line);
+		slaveNodes[i][k]=model.node[sn];
+	}
+	}else{
+		line=br.readLine();
+		int nreg=loader.getIntData(line);
+		line=br.readLine();
+
+		int n1=loader.getIntData(line);
+
+		line=br.readLine();
+		
+		int n2=loader.getIntData(line);
+
+		Node node1=model.node[n1];
+		Node node2=model.node[n2];
+
+		Vect v1=node1.getCoord();
+		Vect v2=node2.getCoord();
+		Vect edgeDir=v2.sub(v1).normalized();
+		int ns=0;
+
+		int[] nnr=model.getRegNodes(nreg);
+		int[] temp=new int[nnr.length];
+		for(int k=0;k<nnr.length;k++){
+			int n=nnr[k];
+			Vect v=model.node[n].getCoord();
+			Vect vv1=v.sub(v1);
+			Vect vv2=v.sub(v2);
+			double dot=vv1.dot(vv2);
+
+			if(dot<=0) {
+				
+				double proj=vv1.dot(edgeDir);
+				double vv1n=vv1.norm();
+				if(Math.abs(proj-vv1n)<1e-7){
+				//util.pr(dot);
+
+				temp[ns]=n;
+				ns++;
+				}
+			}
+			
+	}
+		slaveNodes[i]=new  Node[ns];
+		util.pr(ns+" <<<< ns");
+		
+		for(int k=0;k<ns;k++){
+		
+			int sn=temp[k];
+			slaveNodes[i][k]=model.node[sn];
 		}
-		Fcf=G_stkt.mul(ps);//.sub(Kcf.smul(ref_stick));
-	//	G_stkt.shownzA();
-	//	new SpVect(Fcf).shownzA();
-	//	util.plot(gap);
-	//node_node.shownzA();
-		//Kc.shownzA();
-	//	Fcf=Fcf.add(aug_T);
+		
+	}
+	
+	line=br.readLine();
+	type=loader.getIntData(line);
+	
+	if(type==0){
+		line=br.readLine();
 
-	//	new SpVect(u).shownzA();
+	int nm=loader.getIntData(line);
+	
+	masterEdges[i]=new  Edge[nm];
 
-		dF=dF.sub(Fc).sub(Fcf); //
+	for(int k=0;k<nm;k++){
+		line=br.readLine();
 
-		dF=dF.sub(aug_N).sub(aug_T);
+		int[] nn=loader.getCSInt(line);
+		Node node1=model.node[nn[0]];
+		Node node2=model.node[nn[1]];
+		masterEdges[i][k]=new Edge(node1,node2);
+	}
+	}else{
+		line=br.readLine();
+		int nreg=loader.getIntData(line);
+		line=br.readLine();
+		int n1=loader.getIntData(line);
+		line=br.readLine();
+		int n2=loader.getIntData(line);
+		Node node1=model.node[n1];
+		Node node2=model.node[n2];
+		Vect v1=node1.getCoord();
+		Vect v2=node2.getCoord();
+		Vect edgeDir=v2.sub(v1).normalized();
+		int nm=0;
 
-	//	new SpVect(lamT).shownzA();
-	//	new SpVect(aug_T).shownzA();
-		//new SpVect(dF).shownzA();
-	//	util.pr("ooooooooooooooooooooooooooooo");
-			return dF;
 
+		int[] nnr=model.getRegNodes(nreg);
+		boolean[] nc=new boolean[model.numberOfNodes+1];
+		for(int k=0;k<nnr.length;k++){
+			int n=nnr[k];
+			nc[n]=true;
+		}
+		
+		byte[][] arr0={{0,1},{1,2},{2,0}};
+		byte[][] arr1={{0,1},{1,2},{2,3},{3,0}};
+
+		byte[][] edgeLocalNodes=null;
+		if(model.elCode==0){
+			edgeLocalNodes=arr0;;
+		}
+		else if(model.elCode==1){
+			edgeLocalNodes=arr1;
+		}
+
+		int[][] tempEd=new int[model.numberOfEdges*edgeLocalNodes.length][2];
+		for(int ie=model.region[nreg].getFirstEl();ie<=model.region[nreg].getLastEl();ie++){	
+			int[] vertNumb=model.element[ie].getVertNumb();
+
+			for(int j=0;j<edgeLocalNodes.length;j++){
+				int n11=vertNumb[edgeLocalNodes[j][0]];
+				int n12=vertNumb[edgeLocalNodes[j][1]];
+				
+				Vect v=model.node[n11].getCoord().add(model.node[n12].getCoord()).times(0.5);
+				Vect vv1=v.sub(v1);
+				Vect vv2=v.sub(v2);
+				double dot=vv1.dot(vv2);
+
+				if(dot<=0) {
+					
+					double proj=vv1.dot(edgeDir);
+					double vv1n=vv1.norm();
+					if(Math.abs(proj-vv1n)<1e-7){
+					//util.pr(dot);
+
+						tempEd[nm][0]=n11;
+						tempEd[nm][1]=n12;
+					nm++;
+					}
+				}
+			}
+
+		}
+
+
+		masterEdges[i]=new  Edge[nm];
+	
+		for(int k=0;k<nm;k++){
+	
+			Node node11=model.node[tempEd[k][0]];
+			Node node12=model.node[tempEd[k][1]];
+	
+			masterEdges[i][k]=new Edge(node11,node12);
+		util.pr(node11.id+" ---  "+node12.id);
+			
+		}
+		
 	}
 
- */
+
+
+}
+}
 	public static void main(String[] args){
 
 		new Main();
