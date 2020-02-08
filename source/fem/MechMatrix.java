@@ -211,7 +211,6 @@ public class MechMatrix {
 		for(int i=1;i<=model.numberOfElements;i++){
 
 			if(!model.element[i].isDeformable()) {continue;}
-			
 
 			int[] vertNumb=model.element[i].getVertNumb();
 
@@ -226,6 +225,7 @@ public class MechMatrix {
 
 			}
 
+	
 			for(int j=0;j<model.nElVert;j++){
 
 				rowNodeNumber=vertNumb[j];
@@ -359,12 +359,12 @@ public class MechMatrix {
 	
 	public void setNodalMass(Model model){
 
-		System.out.println(" calculating nodal masss... ");
+		System.out.println(" Calculating nodal masss... ");
 
 		System.out.println(" Calculating stiffness matrix ...");
 		
 		double[] nm=new double[model.nElVert];
-		
+	
 	
 
 		Vect lumpedMass=new Vect(model.numberOfNodes+1);
@@ -378,6 +378,7 @@ public class MechMatrix {
 
 
 				nm=this.calc.nodalMass(model,i);
+				
 
 			for(int j=0;j<model.nElVert;j++){
 				

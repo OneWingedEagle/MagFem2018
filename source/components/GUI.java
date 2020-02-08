@@ -174,7 +174,7 @@ public class GUI extends JFrame implements ActionListener{
 				Browse2.addActionListener(this);
 				bMainGUI.addActionListener(this);
 				
-				tfIterMax=new TextField("1000");
+				tfIterMax=new TextField("2000");
 				tfIterMax.setPreferredSize(new Dimension(d2/5,h1));
 				tfErrorMax=new TextField("1e-6");
 				tfErrorMax.setPreferredSize(new Dimension(d2/5,h1));

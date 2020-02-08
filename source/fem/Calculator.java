@@ -3604,7 +3604,6 @@ public class Calculator {
 
 			}
 
-
 		return Ke;
 	}
 	
