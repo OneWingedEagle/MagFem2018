@@ -191,7 +191,7 @@ public class BoundarySet {
 					model.edge[i].edgeKnownT=true;
 					if(	edgeDir[i]==1){
 
-						model.edge[i].T=Au0*model.edge[i].length;
+						model.edge[i].T=Au0*model.edge[i].edgeLength;
 
 
 					}

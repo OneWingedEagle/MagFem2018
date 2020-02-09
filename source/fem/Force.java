@@ -864,7 +864,7 @@ public class Force {
 				
 				int n1=model.edge[ednumb[j]].node[0].id;
 				int n2=model.edge[ednumb[j]].node[1].id;
-				double length=model.edge[ednumb[j]].length;
+				double length=model.edge[ednumb[j]].edgeLength;
 
 				Vect v1=model.node[n1].getCoord();
 				Vect v2=model.node[n2].getCoord();

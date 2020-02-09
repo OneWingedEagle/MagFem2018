@@ -270,14 +270,14 @@ public class Model{
 	public void setMinEdge(){
 		double minEdge=1e40;
 		for(int i=1;i<=this.numberOfEdges;i++){
-			if(edge[i].length<minEdge) minEdge=edge[i].length;
+			if(edge[i].edgeLength<minEdge) minEdge=edge[i].edgeLength;
 		}
 		this.minEdgeLength=minEdge;
 	}
 	public void setMaxEdge(){
 		double maxEdge=0;
 		for(int i=1;i<=this.numberOfEdges;i++)
-			if(edge[i].length>maxEdge) maxEdge=edge[i].length;
+			if(edge[i].edgeLength>maxEdge) maxEdge=edge[i].edgeLength;
 
 		this.maxEdgeLength=maxEdge;
 	}

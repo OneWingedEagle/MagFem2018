@@ -4,7 +4,7 @@ import math.util;
 
 public class Edge {
 	
-	public double  length,A,Ap,T;
+	public double  edgeLength,A,Ap,T;
 	//public int[] endNodeNumber=new int[2];
 	public Node[] node=new Node[2];
 	public boolean edgeKnown,edgeKnownT,hasJ,sPBC,aPBC,common;
@@ -42,7 +42,7 @@ public class Edge {
 
 	public void setLength(double length){
 				
-		this.length=length;
+		this.edgeLength=length;
 	}
 	
 	
