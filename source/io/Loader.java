@@ -971,6 +971,7 @@ public class Loader {
 				if( line.startsWith("force")) {
 			
 					String sp[]=line.split(regex);
+			
 					int L=sp.length;
 					model.nBegin=Integer.parseInt(sp[L-3]);
 					model.nEnd=Integer.parseInt(sp[L-2]);
@@ -985,11 +986,17 @@ public class Loader {
 					for(int i=model.nBegin;i<=model.nEnd;i+=	model.nInc){
 						
 						int nf=i%1800;
+						if(model.forceFolder.startsWith("cent")){
+							model.centrigForce=true;
+						forceFile[ix]=null;
+						}
+						else
 						forceFile[ix]=model.forceFolder+"\\force"+nf+".txt";
 					
 						
 						ix++;
 					}
+					
 
 					break;
 				}
@@ -1609,6 +1616,8 @@ public void average(String bun1, String bun2,String bun3){
 	}
 
 	public boolean loadNodalField(Model model,String nodalFilePath,int mode){
+		
+		if(nodalFilePath==null) return false;
 		return loadNodalField(model,nodalFilePath,mode,1e10);
 	}
 

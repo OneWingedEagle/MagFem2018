@@ -56,7 +56,7 @@ public class Model{
 	,numberOfKnownPhis,numberOfUnknowns,analysisMode,stressViewCode=-1
 	,numberOfUnknownU,numberOfUnknownUcomp,numberOfCurrents,numberOfUnknownCurrents,nNeutral,defMode=1,numberOfUnknownT;
 	public boolean deform,thermal,hasJ,hasM,forceLoaded,fluxLoaded,potentialLoaded,
-	stressLoaded,forceCalcLoaded,coupled,cpvms,calCurve,nonLin,hasPBC,hasMechPBC=true,rotIndex;
+	stressLoaded,forceCalcLoaded,coupled,cpvms,calCurve,nonLin,hasPBC,hasMechPBC=true,rotIndex,centrigForce;
 	public int nEdEd=34,nNodNod=27,nEdNod=18,nNodEd=54,nEdgeHasJ;
 	static int[][] facetVert={{6,2,5},{7,4,3},{6,7,2},{0,4,1},{4,7,5},{0,1,3}};
 
