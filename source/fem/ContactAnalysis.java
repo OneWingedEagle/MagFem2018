@@ -34,7 +34,7 @@ public class ContactAnalysis {
 	private SpMatAsym Gcft=null;
 	private SpMatAsym G_stk=null;
 	private SpMatAsym G_stkt=null;
-	private SpMatAsym G_stk_pr=null;
+
 
 
 	private SpMat Kc=null;
@@ -59,7 +59,7 @@ private Vect Fcf;
 private double penalMax;
 private Vect weights;
 
-private Vect weights0;
+//private Vect weights0;
 //private Vect weakenning;
 
 public int numContacts;
@@ -88,7 +88,7 @@ Vect[][] tangentials;
 Model model;
 double pf=1e8;
 double pft=1e8;
-double margin=0.05;
+double margin=0.01;
 
 
 public int method=0;
@@ -97,29 +97,40 @@ int itmax=1;
 int nr_itmax=1;
 int nLoads=1;
 
-Vect disp;
+Vect disp,rhs;
 boolean applyNodal=true;
 boolean gradualSeperation=false;
 
 boolean twice_check=false;
 
+double fp=1;
+double fr=1;
+boolean aug_normal=true;
+boolean aug_tang=true;
+
+double lamN_up_crit=0.5;
+
 public Vect solve( Model model,SpMatSolver solver,int mode){
 
+	solver.terminate(false);
+	this.model=model;
+	
 	direct_slv=new MatSolver();
 
-	 itmax=10;
-	 nr_itmax=8;
+	 itmax=1;
+	 nr_itmax=10;
 	 nLoads=1;
 	 n_modifNR=0;
 
-	double fp=1;
-	double fr=.01;
 	
-	boolean aug_normal=false;
-	boolean aug_tang=true;
+	 fp=1;
+	 fr=1;
+	 
+	 aug_normal=true;
+	 aug_tang=true;
 	
-	double nr_tol=1e-3;
-	double modif_tol=1e-3;
+	double nr_tol=1e-2;
+	double modif_tol=1e-2;
 
 	boolean axi=(model.struc2D==2);
 	
@@ -127,7 +138,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 	double loadFactor0=1000;//*2*PI;//1000/2/PI;//*1.57000;//*23;//4.95;//*2.439;//100*.8;
 	if(axi) loadFactor0*=2*PI;
-	disp=new Vect(model.Ks.nRow);
+
 	int nmu=1;
 	Vect mus=new Vect(nmu);
 	Vect mm=new Vect(nmu);
@@ -141,6 +152,8 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 			model.node[i].F=model.node[i].F.times(r);
 	
 	}
+	
+	disp=new Vect(model.Ks.nRow);
 	KK=null;
 	
 	boolean direct=true;
@@ -149,7 +162,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	for(int im=0;im<nmu;im++){
 		disp.zero();
 		model.setU(disp);
-		mus.el[im]=10.+.1*(im);
+		mus.el[im]=10000000.+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 
 		double thickness=1;//0.001;
@@ -158,7 +171,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 		if(model.centrigForce){
 			load_scale*=1e-3;
 			model.setNodalMass();
-			double rpm=7000;
+			double rpm=17000;
 			double rps=rpm/30*PI;
 			double omeag2=rps*rps;
 			for(int i=1;i<=model.numberOfNodes;i++){
@@ -170,101 +183,12 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 		}
 
-		this.model=model;
 
-		int[][] ne=new int[model.numberOfNodes+1][20];
-		int[] nz=new int[model.numberOfNodes+1];
+		initialize(mode);
 
 
-		for(int i=1;i<=model.numberOfElements;i++){
-			int[] vn=model.element[i].getVertNumb();
-			for(int j=0;j<vn.length;j++){
-				ne[vn[j]][nz[vn[j]]++]=i;
-
-			}
-		}
-
-		edgeElems=new Element[numContacts][];
-		for(int contId=0;contId<numContacts;contId++){
-			edgeElems[contId]=new Element[masterEdges[contId].length];
-
-			for(int k=0;k<masterEdges[contId].length;k++){
-
-				Node node1=masterEdges[contId][k].node[0];
-				Node node2=masterEdges[contId][k].node[1];
-				int ie=0;
-				for(int j=0;j<nz[node1.id];j++){
-					for(int p=0;p<nz[node2.id];p++){
-
-						if(ne[node1.id][j]==ne[node2.id][p]){
-							ie=ne[node1.id][j];
-							break;
-						}
-						if(ie>0) break;
-					}
-				}
-
-				if(ie>0) 
-					edgeElems[contId][k]=model.element[ie];
-				else
-					util.pr("master edge ( "+node1.id+", "+node2.id+" ) belongs to no element.");
-
-			}
-			//for(int k=0;k<masterEdges[contId].length;k++)
-			//util.hshow(edgeElems[contId][k].getVertNumb());
-		}
-
-		landed_stick=new boolean[model.numberOfNodes+1];
-
-		stick=new boolean[model.numberOfNodes+1];
-		contacting=new boolean[model.numberOfNodes+1];
-		rmv=new boolean[model.numberOfNodes+1];
-	//	sep_counter=new int[model.numberOfNodes+1];
+		rhs.timesVoid(load_scale);
 		
-		u_index=new int[model.numberOfNodes+1][model.dim];
-		for(int i=1;i<=model.numberOfNodes;i++)
-			for(int k=0;k<model.dim;k++)
-				u_index[i][k]=-1;
-
-		int ix=0;
-		for(int i=1;i<=model.numberOfUnknownU;i++){
-			int nodeNumb=model.unknownUnumber[i];
-
-			if(model.node[nodeNumb].isDeformable()){
-				for(int k=0;k<model.dim;k++){
-					if(!model.node[ nodeNumb].is_U_known(k)){
-						u_index[nodeNumb][k]=ix;
-						ix++;
-					}
-				}
-
-			}
-		}
-
-		Vect bU1=model.bU.add(model.getbUt(mode));
-
-
-		bU1.timesVoid(load_scale);
-
-		ref_stick=new Vect(model.Ks.nRow);
-
-		lamN=new Vect(model.Ks.nRow);
-		lamT=new Vect(model.Ks.nRow);
-
-		aug_N=new Vect(model.Ks.nRow);
-		aug_T=new Vect(model.Ks.nRow);
-
-		weights=new Vect(model.Ks.nRow);//.ones(model.Ks.nRow);
-	//	weakenning=new Vect().ones(1+model.numberOfNodes);
-
-		gap=new Vect(model.Ks.nRow);
-		slide=new Vect(model.Ks.nRow);
-
-		//	slide_prev=new Vect(model.Ks.nRow);
-
-		Fc=new Vect(model.Ks.nRow);
-		Fcf=new Vect(model.Ks.nRow);
-		solver.terminate(false);
 		System.out.println(" Contact analysis....");
 
 
@@ -279,72 +203,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 				xr.el[k]=model.node[n].getCoord(0);
 			}
 
-
-		penalMax=0;
-
-		for(int contId=0;contId<numContacts;contId++)
-			for(int i=0;i<slaveNodes[contId].length;i++){
-				int sn=slaveNodes[contId][i].id;
-
-				int index=model.U_unknownIndex[sn]-1;
-
-
-				if(index<0) continue;
-				int xind=u_index[sn][0];
-				int yind=u_index[sn][1];
-				double val1=0;
-				double val2=0;
-
-				if(xind!=-1)
-					val1=fp*model.Ks.row[xind].el[model.Ks.row[xind].nzLength-1];
-
-				if(yind!=-1)
-					val2=fp*model.Ks.row[yind].el[model.Ks.row[yind].nzLength-1];
-
-				if(val1>penalMax) penalMax=val1;
-				if(val2>penalMax) penalMax=val2;
-				
-				int p=u_index[sn][0];
-				if(p<0) 
-					p=u_index[sn][1];
-				
-				if(applyNodal)
-					weights.el[p]=penFactor[contId]*Math.max(val1,val2);
-				else
-					weights.el[p]=penFactor[contId];
-	
-			}
-		
-		
-		weights0=weights.deepCopy();
-
-		pf=penalMax;
-		pft=fr*pf;
-
-		util.pr("pf :"+pf);
-		util.pr("pft :"+pft);
-if(applyNodal){
-		pf=1e0;
-		pft=fr*pf;
-}
-
-		normalIndex=new int[numContacts][];
-
-		normals=new Vect[numContacts][];
-		tangentials=new Vect[numContacts][];
-
-		for(int contId=0;contId<numContacts;contId++){
-			int numSn=slaveNodes[contId].length;
-			int numMed=masterEdges[contId].length;
-			normalIndex[contId]=new int[numSn];
-			normals[contId]=new Vect[numMed];
-			tangentials[contId]=new Vect[numMed];
-
-		}
-
-
-		int nnSize=model.numberOfNodes+1;
-		node_node=new SpMatAsym(nnSize,nnSize);
+		clacPenaltyFactor();
 
 
 		Vect dF=null;
@@ -354,7 +213,7 @@ if(applyNodal){
 		for(int i=0;i<itmax;i++)
 			urs[i]=new Vect(xr.length);
 
-		int num_augs_run=0;
+
 		Vect err=new Vect(itmax);
 		Vect aug_disp_err=new Vect(itmax);
 		Vect errf=new Vect(itmax);
@@ -363,7 +222,7 @@ if(applyNodal){
 		int nr_it[]=new int[nLoads*itmax*(nr_itmax+n_modifNR)];
 
 		int totalNRIter=0;
-		Vect load=bU1.deepCopy();
+		Vect load=rhs.deepCopy();
 		for(int load_iter=0; load_iter<nLoads; load_iter++){
 
 			util.pr("load_iter: "+load_iter);
@@ -372,7 +231,7 @@ if(applyNodal){
 			//	lamT.zero();
 
 			double factor=(load_iter+1.)/nLoads;
-			bU1=load.times(factor);
+			rhs=load.times(factor);
 
 			for(int cont_iter=0; cont_iter<itmax; cont_iter++){
 
@@ -400,13 +259,13 @@ if(applyNodal){
 					
 					boolean modif_done=false;
 
-	if(er<1 && totalNRIter>0 && n_modifNR>0){
+	if(er<10 && totalNRIter>0 && n_modifNR>0){
 					if(direct&& n_modifNR>0){
 						KK=Ks.matForm();
 						KK.lu();
 					}
 
-						modifiedNR(solver,bU1,direct,modif_tol);
+						modifiedNR(solver,rhs,direct,modif_tol);
 
 		modif_done=true;		
 	}
@@ -417,9 +276,9 @@ if(applyNodal){
 
 					}
 
-					dF=this.calcResidual(Ks, disp, bU1);
+					dF=this.calcResidual(Ks, disp, rhs);
 
-					 er=dF.norm()/bU1.norm();
+					 er=dF.norm()/rhs.norm();
 					nr_err.el[totalNRIter]=er;
 					nr_it[totalNRIter]=totalNRIter;
 					
@@ -465,29 +324,43 @@ if(applyNodal){
 
 				Vect pgap=gap.deepCopy();
 				Vect pslide=slide.deepCopy();//.sub(slide_prev);
-			
-
 
 					for(int k=0;k<gap.length;k++){
-						pgap.el[k]*=weights.el[k];
-						pslide.el[k]*=weights.el[k];
+						pgap.el[k]*=weights.el[k]*pf;
+						pslide.el[k]*=weights.el[k]*pft;
 					}
 
-			
-				for(int k=0;k<gap.length;k++){
+
+				for(int k=0;k<pgap.length;k++){
+					
+		
+					if(pgap.el[k]==0) continue;
 						
-						double  aug=0*lamN.el[k]+pgap.el[k]*pf;
+						double  aug=lamN.el[k]+pgap.el[k];
 						
-						if(aug<0) lamN.el[k]=aug;
-						else 
+						double ratio=Math.abs(aug/pgap.el[k]);
+					//	if(pgap.el[k]<0 && Math.abs(aug/pgap.el[k])<5)
+						
+						double ff2=1;
+						if(ratio>lamN_up_crit) {
+							ff2=lamN_up_crit/ratio;
+						}
+						
+						if(aug<0) 
+							lamN.el[k]=aug*ff2;
+						else
 							lamN.el[k]=0;
+						//else 
+							//lamN.el[k]=0;
 					}
-	
 				
-				lamT=lamT.add(pslide.times(pft));
+
+				
+				lamT=lamT.add(pslide);
 
 
 			checkStickSlip();
+		
 			if(!aug_normal)
 			lamN.zero();
 			
@@ -519,11 +392,6 @@ if(applyNodal){
 					}
 
 				//	if(err.el[cont_iter]<1e-6 && (errf.el[cont_iter]<1e-6)) break;
-				
-	
-
-
-				num_augs_run++;
 
 			}
 		}
@@ -912,7 +780,7 @@ private void obtain_node_node(){
 				
 				
 				//if(!gradualSeperation){
-					if(pen>1e-7*master_edge_size[contId] && (!twice_check ||!contacting[sn])){
+					if(pen>1e-10*master_edge_size[contId] && (!twice_check ||!contacting[sn])){
 					
 						continue;								
 					}
@@ -1253,9 +1121,6 @@ private void assembleConstraintMats(){
 	Gc=new SpMatAsym(dof,dof);
 	Gcf=new SpMatAsym(dof,dof);
 
-	if(G_stk!=null)
-		G_stk_pr=G_stk.deepCopy();
-
 	G_stk=new SpMatAsym(dof,dof);
 
 	for(int contId=0;contId<numContacts;contId++)
@@ -1462,12 +1327,14 @@ private void checkStickSlip(){
 					landed_stick[sn]=false;
 					lamT.el[p]=0;
 					slide.el[p]=0;
+					contacting[sn]=false;
 				}
 			}else{
 				stick[sn]=false;
 				landed_stick[sn]=false;
 				lamT.el[p]=0;
 				slide.el[p]=0;
+				contacting[sn]=false;
 			}
 		}
 
@@ -1805,6 +1672,179 @@ private void resetFreedNodes(){
 		}
 		}
 	}
+}
+
+
+private void clacPenaltyFactor(){
+
+
+	penalMax=0;
+
+	for(int contId=0;contId<numContacts;contId++)
+		for(int i=0;i<slaveNodes[contId].length;i++){
+			int sn=slaveNodes[contId][i].id;
+
+			int index=model.U_unknownIndex[sn]-1;
+
+
+			if(index<0) continue;
+			int xind=u_index[sn][0];
+			int yind=u_index[sn][1];
+			double val1=0;
+			double val2=0;
+
+			if(xind!=-1)
+				val1=fp*model.Ks.row[xind].el[model.Ks.row[xind].nzLength-1];
+
+			if(yind!=-1)
+				val2=fp*model.Ks.row[yind].el[model.Ks.row[yind].nzLength-1];
+
+			if(val1>penalMax) penalMax=val1;
+			if(val2>penalMax) penalMax=val2;
+			
+			double max=Math.max(val1,val2);
+			util.pr(max);
+			max=1e10;
+			
+			int p=u_index[sn][0];
+			if(p<0) 
+				p=u_index[sn][1];
+			
+			if(applyNodal)
+				weights.el[p]=penFactor[contId]*max;
+			else
+				weights.el[p]=penFactor[contId];
+			
+			//////weights.el[p]*=1./slaveNodes[contId].length;
+
+		}
+	
+	
+	///weights0=weights.deepCopy();
+
+	pf=penalMax;
+	pft=fr*pf;
+
+	util.pr("pf :"+pf);
+	util.pr("pft :"+pft);
+if(applyNodal){
+	pf=1e0;
+	pft=fr*pf;
+}
+}
+
+private void initialize(int mode){
+
+
+	int[][] ne=new int[model.numberOfNodes+1][20];
+	int[] nz=new int[model.numberOfNodes+1];
+
+
+	for(int i=1;i<=model.numberOfElements;i++){
+		int[] vn=model.element[i].getVertNumb();
+		for(int j=0;j<vn.length;j++){
+			ne[vn[j]][nz[vn[j]]++]=i;
+
+		}
+	}
+
+	edgeElems=new Element[numContacts][];
+	for(int contId=0;contId<numContacts;contId++){
+		edgeElems[contId]=new Element[masterEdges[contId].length];
+
+		for(int k=0;k<masterEdges[contId].length;k++){
+
+			Node node1=masterEdges[contId][k].node[0];
+			Node node2=masterEdges[contId][k].node[1];
+			int ie=0;
+			for(int j=0;j<nz[node1.id];j++){
+				for(int p=0;p<nz[node2.id];p++){
+
+					if(ne[node1.id][j]==ne[node2.id][p]){
+						ie=ne[node1.id][j];
+						break;
+					}
+					if(ie>0) break;
+				}
+			}
+
+			if(ie>0) 
+				edgeElems[contId][k]=model.element[ie];
+			else
+				util.pr("master edge ( "+node1.id+", "+node2.id+" ) belongs to no element.");
+
+		}
+		//for(int k=0;k<masterEdges[contId].length;k++)
+		//util.hshow(edgeElems[contId][k].getVertNumb());
+	}
+
+	landed_stick=new boolean[model.numberOfNodes+1];
+
+	stick=new boolean[model.numberOfNodes+1];
+	contacting=new boolean[model.numberOfNodes+1];
+	rmv=new boolean[model.numberOfNodes+1];
+//	sep_counter=new int[model.numberOfNodes+1];
+	
+	u_index=new int[model.numberOfNodes+1][model.dim];
+	for(int i=1;i<=model.numberOfNodes;i++)
+		for(int k=0;k<model.dim;k++)
+			u_index[i][k]=-1;
+
+	int ix=0;
+	for(int i=1;i<=model.numberOfUnknownU;i++){
+		int nodeNumb=model.unknownUnumber[i];
+
+		if(model.node[nodeNumb].isDeformable()){
+			for(int k=0;k<model.dim;k++){
+				if(!model.node[ nodeNumb].is_U_known(k)){
+					u_index[nodeNumb][k]=ix;
+					ix++;
+				}
+			}
+
+		}
+	}
+
+	rhs=model.bU.add(model.getbUt(mode));
+
+
+	ref_stick=new Vect(model.Ks.nRow);
+
+	lamN=new Vect(model.Ks.nRow);
+	lamT=new Vect(model.Ks.nRow);
+
+	aug_N=new Vect(model.Ks.nRow);
+	aug_T=new Vect(model.Ks.nRow);
+
+	weights=new Vect(model.Ks.nRow);//.ones(model.Ks.nRow);
+//	weakenning=new Vect().ones(1+model.numberOfNodes);
+
+	gap=new Vect(model.Ks.nRow);
+	slide=new Vect(model.Ks.nRow);
+
+	//	slide_prev=new Vect(model.Ks.nRow);
+
+	Fc=new Vect(model.Ks.nRow);
+	Fcf=new Vect(model.Ks.nRow);
+
+	
+	normalIndex=new int[numContacts][];
+
+	normals=new Vect[numContacts][];
+	tangentials=new Vect[numContacts][];
+
+	for(int contId=0;contId<numContacts;contId++){
+		int numSn=slaveNodes[contId].length;
+		int numMed=masterEdges[contId].length;
+		normalIndex[contId]=new int[numSn];
+		normals[contId]=new Vect[numMed];
+		tangentials[contId]=new Vect[numMed];
+
+	}
+
+
+	int nnSize=model.numberOfNodes+1;
+	node_node=new SpMatAsym(nnSize,nnSize);
 }
 
 	public static void main(String[] args){
