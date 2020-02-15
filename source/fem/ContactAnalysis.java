@@ -58,12 +58,15 @@ private Vect Fcf;
 
 private double penalMax;
 private Vect weights;
-
 //private Vect weights0;
+//private Vect weightsf;
+
 //private Vect weakenning;
+//private Vect weakenningf;
 
 public int numContacts;
 public double[] penFactor;
+public double[] fn_ratio;
 public double[] master_edge_size;
 public double[] fric_coef;
 public Node[][] slaveNodes;
@@ -110,25 +113,33 @@ boolean aug_tang=true;
 
 double lamN_up_crit=0.5;
 
+double extention_fact=0.01;
+
 public Vect solve( Model model,SpMatSolver solver,int mode){
 
+	//Vect vd=model.Ks.diag().times(.00);
+//	model.Ks.times(1e-2);
+	//model.Ks.addToDiag(vd);
+	fn_ratio=new double[numContacts];
+	for(int i=0;i<numContacts;i++)
+		fn_ratio[i]=1.;
+	
 	solver.terminate(false);
 	this.model=model;
 	
 	direct_slv=new MatSolver();
 
-	 itmax=1;
+	 itmax=2;
 	 nr_itmax=10;
 	 nLoads=1;
-	 n_modifNR=0;
-
+	 n_modifNR=20;
 	
 	 fp=1;
-	 fr=1;
+	 fr=.01;
 	 
 	 aug_normal=true;
 	 aug_tang=true;
-	
+	 
 	double nr_tol=1e-2;
 	double modif_tol=1e-2;
 
@@ -236,30 +247,21 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 			for(int cont_iter=0; cont_iter<itmax; cont_iter++){
 
 				util.pr("cont_iter: "+cont_iter);
-				
-				//	lamN.zero();
-				//	lamT.zero();
-				//	slide.zero();
-				//	gap.zero();
-					//aug_N.zero();
-					//aug_T.zero();
-				
-				//	u.zero();
-				//	model.setU(u);
+
 					
 				Vect uaug=disp.deepCopy();
 
 				double er=1;
-		
+				double disp_err=1;
 				for(int nr_iter=0; nr_iter<nr_itmax; nr_iter++){	
 
 					assembleContactMatrices();
-
+				
 					addMatrices();
 					
 					boolean modif_done=false;
 
-	if(er<10 && totalNRIter>0 && n_modifNR>0){
+	if(disp_err<1 && totalNRIter>0 && n_modifNR>0){
 					if(direct&& n_modifNR>0){
 						KK=Ks.matForm();
 						KK.lu();
@@ -289,7 +291,6 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 					//	}
 					//}
 
-					util.pr("nr_iter: "+nr_iter+"           nr_err: "+er+"       maxFact:"+maxWeakenning);
 
 
 
@@ -298,6 +299,14 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 					disp=disp.add(du);					
 
 					model.setU(disp);
+					
+				
+					if(disp.norm()>0)
+					disp_err=du.norm()/disp.norm();
+					
+				
+					util.pr("nr_iter: "+nr_iter+"           nr_err: "+er+"       disp_err: "+disp_err);
+
 
 					totalNRIter++;
 					
@@ -310,6 +319,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 					checkPositive();
 
 				}
+
 
 				
 			double dip_err=disp.sub(uaug).norm()/disp.norm();
@@ -625,9 +635,13 @@ private void modifiedNR(SpMatSolver solver, Vect bU1,boolean direct,double tol){
 
 	for(int sb=0;sb<n_modifNR;sb++){
 	
-		//if(sb>0)		
-		//	assembleConstraintMats();
-		updateGap(false);
+/*		if(sb%5==1){		
+		assembleContactMatrices();
+		addMatrices();
+		
+	}else*/
+		updateGap(true);
+
 			
 	//	gap=Gc.mul(disp).times(-1);
 		
@@ -639,7 +653,7 @@ private void modifiedNR(SpMatSolver solver, Vect bU1,boolean direct,double tol){
 		
 		util.pr("                                                      nr_iter_sub: "+sb+"           nr_err_sub: "+er1);
 
-		if(er1>1) break;
+		if(sb>1 && er1>1) break;
 
 		if(er1<tol){
 			break;
@@ -676,7 +690,9 @@ private void obtain_node_node(){
 	//slide_prev.zero();
 	gap.zero();
 
-
+	//weights.zero();
+	//weightsf.zero();
+	
 	numContactingNodes=new int[numContacts];
 
 	totalnumContactingNodes=0;
@@ -725,26 +741,29 @@ private void obtain_node_node(){
 				Vect v1=node1.getCoord().add(u1);
 				Vect v2=node2.getCoord().add(u2);
 				Vect v12=v2.sub(v1);
-				//v12.hshow();
-				Vect v1v=v.sub(v1);
-				Vect v2v=v.sub(v2);
-
 				double edgeLength=v12.norm();
 
 				Vect edgeDir=v12.times(1./edgeLength);
+				
+				v1=v1.add(v12.times(-extention_fact));
+				v2=v2.add(v12.times(extention_fact));
 
-				boolean node_to_node=false;
+				//v12.hshow();
+				Vect v1v=v.sub(v1);
+				Vect v2v=v.sub(v2);
+				
+
+
 				double dot1=v1v.dot(v12);
 				double dot2=v2v.dot(v12);
 				if(dot1!=0) dot1/=v1v.norm()*edgeLength;
 				if(dot2!=0) dot2/=v2v.norm()*edgeLength;
 
 
-				if(dot1*dot2>.001) {
+				if(dot1*dot2>.0) {
 					
 					continue;
 				}
-				else if (dot1*dot2>-.001) node_to_node=true;
 
 
 
@@ -771,94 +790,27 @@ private void obtain_node_node(){
 
 
 				double pen=v1v.dot(normal);
-				
+			
 
 				if(pen<-10*edgeLength) {
-		
+					//weakenning.el[p]=0;
 					continue;
 				}
 				
 				
 				//if(!gradualSeperation){
 					if(pen>1e-10*master_edge_size[contId] && (!twice_check ||!contacting[sn])){
-					
+	
+						///weakenning.el[p]=0;
 						continue;								
 					}
-						
-				/*}else{
-	
-				if(pen>0e-2*master_edge_size[contId]){
-					
-				//	sep_counter[sn]=0;
-
-					weakenning.el[sn]/=100;
-				//	continue;								
-				}else
-
-					weakenning.el[sn]=1;
-				else if(pen>1e8*master_edge_size[contId]){
-		
-						//sep_counter[sn]++;
-						//weakenning.el[sn]/=Math.pow(5, sep_counter[sn]);
-						
-						weakenning.el[sn]/=10;//Math.pow(2, 1+(Math.abs(pen/(1e-8*master_edge_size[contId]))));
-						if(weakenning.el[sn]<1e-2){
-						//	sep_counter[sn]=0;
-							weakenning.el[sn]=0;
-						//	continue;					
-						}
-
-				}	
-				}*/
-				/*else
-				{
-					double f=2;
-				if(pen>1e-8*master_edge_size[contId]) {
-
-					weakenning.el[sn]/=f;
-					if(weakenning.el[sn]<.01) {
-						weakenning.el[sn]=0;
-						continue;
-					}
-					
-
-				}else{
-					if(weakenning.el[sn]<.999)
-					if(weakenning.el[sn]>.01){
-						weakenning.el[sn]*=f;	
-						if(weakenning.el[sn]>1) weakenning.el[sn]=1;
-					}
-					else
-						weakenning.el[sn]=.01;	
-					}
-				
-
-				}*/
-
-
 
 				normalIndex[contId][i]=k;
 
-				double beta=0;
-				double alpha=0;
 
-
-				if(node_to_node){
-					if(Math.abs(dot1)<1e-3){
-						beta=0;			
-						alpha=1-beta;
-
-					}else if(Math.abs(dot2)<1e-3){
-						beta=1;			
-						alpha=1-beta;
-					}
-				}
-
-				///if(sn>=120) util.pr(sn+"   "+v1n);
-				else{
-					beta=v1v.dot(edgeDir)/edgeLength;			
-					alpha=1-beta;
-				}
+				double beta=v1v.dot(edgeDir)/edgeLength;			
+				double alpha=1-beta;
+				
 
 				node_node.row[sn]=new SpVect(nnSize,2);
 				node_node.row[sn].index[0]=node1.id;
@@ -876,6 +828,10 @@ private void obtain_node_node(){
 
 				contacting[sn]=true;
 
+				int p=u_index[sn][0];
+				if(p<0) 
+					p=u_index[sn][1];
+				if(p<0) continue;
 
 				//util.pr("node "+sn+" contacted.");
 
@@ -896,16 +852,10 @@ private void obtain_node_node(){
 
 				tangentials[contId][k]=tang.deepCopy();
 
-				int p=u_index[sn][0];
-				if(p<0) 
-					p=u_index[sn][1];
-				if(p<0) continue;
+	
 				
-			//	int edgInd=normalIndex[contId][i];
-			//	double edlen=masterEdges[contId][edgInd].edgeLength;
-			//	weights.el[p]=weights0.el[p];//*weakenning.el[sn];//*edlen;
-
-
+			//	weightsf.el[p]=	 1e-3*penFactor[contId]*(alpha*model.Ks.row[u_index[mn1][0]].el[model.Ks.row[u_index[mn1][0]].nzLength-1]
+				//		+beta*model.Ks.row[u_index[mn2][0]].el[model.Ks.row[u_index[mn2][0]].nzLength-1]);
 			//	gap0.el[p]=node.getCoord().sub(node1.getCoord().times(alpha).add(node2.getCoord().times(beta))).dot(normal);
 
 				gap.el[p]=pen;
@@ -930,6 +880,10 @@ private void obtain_node_node(){
 	
 	resetFreedNodes();
 
+/*	for(int i=0;i<weakenning.length;i++){
+		weights.el[i]=weights0.el[i]*weakenning.el[i];
+		weightsf.el[i]=weights0.el[i]*weakenning.el[i];
+	}*/
 
 ///	new SpVect(weights).shownzA();
 	for(int contId=0;contId<numContacts;contId++)
@@ -1102,10 +1056,10 @@ private void checkPositive(){
 
 					double pen=v1v.dot(normal);
 				
-					if(pen>1e-10 ) {
+					if(pen>1e-12) {
 						rmv[sn]=true;
 						
-					////	contacting[sn]=false;
+						contacting[sn]=false;
 						continue;
 					}
 
@@ -1423,6 +1377,7 @@ private Vect calcResidual(SpMat Ks,Vect u, Vect b){
 	Vect ps=slide.times(pft);
 	for(int k=0;k<gap.length;k++){
 		ps.el[k]*=weights.el[k];
+
 	}
 
 
@@ -1702,10 +1657,12 @@ private void clacPenaltyFactor(){
 			if(val1>penalMax) penalMax=val1;
 			if(val2>penalMax) penalMax=val2;
 			
-			double max=Math.max(val1,val2);
-			util.pr(max);
-			max=1e10;
-			
+		//	double max=(val1+val2)/2;
+		//	double max=Math.max(val1,val2);
+			double max=Math.sqrt(val1*val1+val2*val2);
+			//util.pr(max);
+			//max=1e10;
+			//
 			int p=u_index[sn][0];
 			if(p<0) 
 				p=u_index[sn][1];
@@ -1715,12 +1672,14 @@ private void clacPenaltyFactor(){
 			else
 				weights.el[p]=penFactor[contId];
 			
+			//weightsf.el[p]=weights.el[p]*fn_ratio[contId];
+			
 			//////weights.el[p]*=1./slaveNodes[contId].length;
 
 		}
 	
 	
-	///weights0=weights.deepCopy();
+//	weights0=weights.deepCopy();
 
 	pf=penalMax;
 	pft=fr*pf;
@@ -1783,6 +1742,7 @@ private void initialize(int mode){
 	stick=new boolean[model.numberOfNodes+1];
 	contacting=new boolean[model.numberOfNodes+1];
 	rmv=new boolean[model.numberOfNodes+1];
+	
 //	sep_counter=new int[model.numberOfNodes+1];
 	
 	u_index=new int[model.numberOfNodes+1][model.dim];
@@ -1817,8 +1777,10 @@ private void initialize(int mode){
 	aug_T=new Vect(model.Ks.nRow);
 
 	weights=new Vect(model.Ks.nRow);//.ones(model.Ks.nRow);
-//	weakenning=new Vect().ones(1+model.numberOfNodes);
-
+//	weightsf=new Vect(model.Ks.nRow);
+//	weakenning= new Vect(model.Ks.nRow).ones(model.Ks.nRow);
+//	weakenningf= new Vect(model.Ks.nRow).ones(model.Ks.nRow);
+	
 	gap=new Vect(model.Ks.nRow);
 	slide=new Vect(model.Ks.nRow);
 

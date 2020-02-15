@@ -267,6 +267,7 @@ public class BoundarySet {
 
 		Vect[] val=new Vect[model.mechBC.length];
 		boolean[] regBound=new boolean[model.mechBC.length];
+		boolean[] nodeConst=new boolean[model.mechBC.length];
 
 		boolean[][] hasVal=new boolean[model.mechBC.length][dim];
 
@@ -300,26 +301,29 @@ public class BoundarySet {
 					k++;
 					if(model.mechBC[j][k].equals("0") )
 					{
-						val[j].el[0]=Double.parseDouble(model.mechBC[j][k+1]);
+						k++;
+						val[j].el[0]=Double.parseDouble(model.mechBC[j][k]);
 
 						hasVal[j][0]=true;
-						k++;
+			
 
 					}
 
+					k++;
 					if(model.mechBC[j][k].equals("1") )
 					{
-						val[j].el[1]=Double.parseDouble(model.mechBC[j][k+1]);
 						k++;
-
+						val[j].el[1]=Double.parseDouble(model.mechBC[j][k+1]);
+		
 						hasVal[j][1]=true;
 					}
 
+					k++;
 					if(model.mechBC[j][k].equals("2") )
 					{
-						val[j].el[2]=Double.parseDouble(model.mechBC[j][k+1]);
 						k++;
-
+						val[j].el[2]=Double.parseDouble(model.mechBC[j][k+1]);
+		
 						hasVal[j][2]=true;
 					}
 
@@ -337,9 +341,49 @@ public class BoundarySet {
 
 
 				}
+				if(model.mechBC[j][k].startsWith("node"))
+
+				{
+					k++;
+
+					int nid=Integer.parseInt(model.mechBC[j][k]);
+
+					k++;
+					if(model.mechBC[j][k].equals("0") )
+					{
+						k++;
+						val[j].el[0]=Double.parseDouble(model.mechBC[j][k]);
+			
+						model.node[nid].setKnownU(0,val[j].el[0]);
+				
+						util.pr(nid+" 0 "+val[j].el[0]);
+					}
+					k++;
+					if(model.mechBC[j][k].equals("1") )
+					{
+			
+						k++;
+						val[j].el[1]=Double.parseDouble(model.mechBC[j][k]);
+						util.pr(nid+" 1 "+val[j].el[1]);
+						model.node[nid].setKnownU(1,val[j].el[1]);
+					
+					}
+
+					k++;
+					if(model.dim==3 && model.mechBC[j][k].equals("2") )
+					{
+						k++;
+						val[j].el[2]=Double.parseDouble(model.mechBC[j][k]);
+												
+						model.node[nid].setKnownU(2,val[j].el[2]);
+					}
+
+					ix++;
+					nodeConst[j]=true;
+				}
 
 
-				if(!regBound[j]){
+				if(!regBound[j] && !nodeConst[j]){
 		
 					if(model.mechBC[j][k].equals("x") || model.mechBC[j][k].equals("r"))
 					{
