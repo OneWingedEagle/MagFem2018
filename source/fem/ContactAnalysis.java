@@ -137,7 +137,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	 fp=1;
 	 fr=.1;
 	 
-	 aug_normal=false;
+	 aug_normal=true;
 	 aug_tang=true;
 	 
 	double nr_tol=1e-2;
