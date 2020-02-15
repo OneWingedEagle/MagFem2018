@@ -111,7 +111,7 @@ double fr=1;
 boolean aug_normal=true;
 boolean aug_tang=true;
 
-double lamN_up_crit=0.5;
+double lamN_up_crit=.5;
 
 double extention_fact=0.01;
 
@@ -129,19 +129,19 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	
 	direct_slv=new MatSolver();
 
-	 itmax=2;
-	 nr_itmax=10;
+	 itmax=5;
+	 nr_itmax=20;
 	 nLoads=1;
-	 n_modifNR=20;
+	 n_modifNR=0;
 	
 	 fp=1;
-	 fr=.01;
+	 fr=.1;
 	 
-	 aug_normal=true;
+	 aug_normal=false;
 	 aug_tang=true;
 	 
 	double nr_tol=1e-2;
-	double modif_tol=1e-2;
+	double modif_tol=nr_tol;
 
 	boolean axi=(model.struc2D==2);
 	
@@ -255,9 +255,13 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 				double disp_err=1;
 				for(int nr_iter=0; nr_iter<nr_itmax; nr_iter++){	
 
+					if(disp_err>nr_tol){
 					assembleContactMatrices();
 				
 					addMatrices();
+					}else{
+						updateGap(false);
+					}
 					
 					boolean modif_done=false;
 
@@ -985,24 +989,8 @@ private void updateGap(boolean allowSep){
 			}
 		}
 
-/*		for(int contId=0;contId<numContacts;contId++){
-			for(int i=0;i<slaveNodes[contId].length;i++){
-				int sn=slaveNodes[contId][i].id;
-			if(!contacting[sn]){
-				stick[sn]=false;
-				weakenning.el[sn]=0;
-				landed_stick[sn]=false;
-				int p=u_index[sn][0];
-				if(p<0) 
-					p=u_index[sn][1];
-				if(p<0) continue;
-				lamN.el[p]=0;
-				lamT.el[p]=0;
-			}
-			}
-		}*/
-		
-		//new SpVect(weights).shownzA();
+
+		resetFreedNodes();
 
 }
 
