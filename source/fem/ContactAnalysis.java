@@ -111,7 +111,7 @@ double fr=1;
 boolean aug_normal=true;
 boolean aug_tang=true;
 
-double lamN_up_crit=.5;
+double lamN_up_crit=1;
 
 double extention_fact=0.01;
 
@@ -137,7 +137,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	 fp=1;
 	 fr=.1;
 	 
-	 aug_normal=true;
+	 aug_normal=false;
 	 aug_tang=true;
 	 
 	double nr_tol=1e-2;
@@ -173,7 +173,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	for(int im=0;im<nmu;im++){
 		disp.zero();
 		model.setU(disp);
-		mus.el[im]=10000000.+.1*(im);
+		mus.el[im]=.2+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 
 		double thickness=1;//0.001;
@@ -360,10 +360,10 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 							ff2=lamN_up_crit/ratio;
 						}
 						
-						if(aug<0) 
+					//	if(aug<0) 
 							lamN.el[k]=aug*ff2;
-						else
-							lamN.el[k]=0;
+					//	else
+						//	lamN.el[k]=0;
 						//else 
 							//lamN.el[k]=0;
 					}
