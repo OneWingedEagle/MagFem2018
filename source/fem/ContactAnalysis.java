@@ -132,10 +132,10 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	 itmax=5;
 	 nr_itmax=20;
 	 nLoads=1;
-	 n_modifNR=0;
+	 n_modifNR=10;
 	
 	 fp=1;
-	 fr=.1;
+	 fr=.01;
 	 
 	 aug_normal=false;
 	 aug_tang=true;
@@ -173,7 +173,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	for(int im=0;im<nmu;im++){
 		disp.zero();
 		model.setU(disp);
-		mus.el[im]=.2+.1*(im);
+		mus.el[im]=.1+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 
 		double thickness=1;//0.001;
@@ -253,19 +253,18 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 				double er=1;
 				double disp_err=1;
+				
+				boolean zigzag=false;
+				
 				for(int nr_iter=0; nr_iter<nr_itmax; nr_iter++){	
 
-					if(disp_err>nr_tol){
 					assembleContactMatrices();
 				
 					addMatrices();
-					}else{
-						updateGap(false);
-					}
-					
+	
 					boolean modif_done=false;
 
-	if(disp_err<1 && totalNRIter>0 && n_modifNR>0){
+	if(disp_err<nr_tol && totalNRIter>0 && n_modifNR>0){
 					if(direct&& n_modifNR>0){
 						KK=Ks.matForm();
 						KK.lu();
@@ -288,15 +287,6 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 					nr_err.el[totalNRIter]=er;
 					nr_it[totalNRIter]=totalNRIter;
 					
-					double maxWeakenning=0;
-					//for(int i=0;i<weakenning.length;i++){
-					//	if(weakenning.el[i]<.99){
-					//		if(weakenning.el[i]>maxWeakenning) maxWeakenning=weakenning.el[i];
-					//	}
-					//}
-
-
-
 
 					Vect du=solveLinear(solver,Ks.deepCopy(),dF);
 
@@ -312,12 +302,28 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 					util.pr("nr_iter: "+nr_iter+"           nr_err: "+er+"       disp_err: "+disp_err);
 
 
-					totalNRIter++;
 					
 
-					if(er<nr_tol && maxWeakenning==0){
+					if(er<nr_tol ){
 						break;
 					}
+					
+					for(int k=2;k<nr_iter-1;k+=2){
+						double f=Math.abs(er-nr_err.el[totalNRIter-k]);
+					//	util.pr("ffff    "+f);
+						if(f<1e-2*nr_tol){
+							zigzag=true;
+							break;
+						}
+					}
+				
+					if(zigzag){
+						util.pr("\n ********** NR iteration ended with Zigzag condition! *********\n");
+						break;
+					}
+					
+					totalNRIter++;
+
 
 					if(twice_check)
 					checkPositive();
@@ -882,12 +888,7 @@ private void obtain_node_node(){
 	}
 	
 	
-	resetFreedNodes();
-
-/*	for(int i=0;i<weakenning.length;i++){
-		weights.el[i]=weights0.el[i]*weakenning.el[i];
-		weightsf.el[i]=weights0.el[i]*weakenning.el[i];
-	}*/
+//	resetFreedNodes();
 
 ///	new SpVect(weights).shownzA();
 	for(int contId=0;contId<numContacts;contId++)
@@ -1600,10 +1601,7 @@ private void resetFreedNodes(){
 		if(!contacting[sn]){
 			stick[sn]=false;
 			landed_stick[sn]=false;
-			
-			
-		//	sep_counter[sn]=0;
-		//	weakenning.el[sn]=1;
+
 			
 			int p=u_index[sn][0];
 			if(p<0) 
