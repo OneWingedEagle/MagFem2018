@@ -79,7 +79,6 @@ int totalnumContactingNodes;
 
 
 boolean[] contacting=null;
-boolean[] rmv=null;
 
 
 Vect[][] normals;
@@ -101,7 +100,6 @@ Vect disp,rhs;
 boolean applyNodal=true;
 boolean gradualSeperation=false;
 
-boolean twice_check=false;
 
 double fp=1;
 double fr=1;
@@ -111,14 +109,13 @@ boolean aug_tang=true;
 
 double extention_fact=0.01;
 double clrFact=1e-10;
-double aug_disp_tol=1e-2;
-double gap_tol=1e-4;
+double aug_disp_tol=1e-12;
+double gap_tol=1e-8;
 double reduct=.0;
 
 double adh=0e9;
 double adhf=0e3;
 
-double gapAtt=1;
 
 public Vect solve( Model model,SpMatSolver solver,int mode){
 
@@ -134,15 +131,15 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	
 	direct_slv=new MatSolver();
 
-	 itmax=3;
+	 itmax=5;
 	 nr_itmax=20;
 	 nLoads=1;
 	 n_modifNR=0;
 	
 	 fp=1;
-	 fr=0.002;
+	 fr=.01;
 	 
-	 aug_normal=false;
+	 aug_normal=true;
 	 aug_tang=true;
 	 
 	double nr_tol=1e-2;
@@ -152,7 +149,8 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	
 	applyNodal=true;
 
-	double loadFactor0=1000;//*2*PI;//1000/2/PI;//*1.57000;//*23;//4.95;//*2.439;//100*.8;
+	double loadFactor0=1000;
+	
 	if(axi) loadFactor0*=2*PI;
 
 	int nmu=1;
@@ -178,7 +176,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	for(int im=0;im<nmu;im++){
 		disp.zero();
 		model.setU(disp);
-		mus.el[im]=1e1+.1*(im);
+		mus.el[im]=1e-1+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 		double load_scale=loadFactor0;;
 
@@ -327,10 +325,6 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 						break;
 					}
 					
-
-					if(twice_check)
-					checkPositive();
-					
 	
 				}
 
@@ -367,17 +361,17 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 						continue;
 					}
 			
-						
+
 						double  aug=lamN.el[k]+ff*pgap.el[k];
 						
-				
+							
 					//	if(lamN.el[k]!=0) ratio=Math.abs(aug/pgap.el[k]);
 						
 					//	util.pr("=========================================>   "+ratio);
 					//	util.pr("=========================================>   "+aug);
 					//	if(pgap.el[k]<0 && Math.abs(aug/pgap.el[k])<5)
 						
-						double ff2=1;
+						double ff2=0.1;
 //						if(ratio>lamN_up_crit) {
 //							ff2=lamN_up_crit/ratio;
 //						}
@@ -393,6 +387,8 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 				
 				lamT=lamT.add(pslide);
+				
+		
 		
 		
 			checkStickSlip();
@@ -780,7 +776,7 @@ private void obtain_node_node(){
 	numContactingNodes=new int[numContacts];
 
 	totalnumContactingNodes=0;
-	//int numContacting=0;
+
 
 	int nnSize=model.numberOfNodes+1;
 	for(int contId=0;contId<numContacts;contId++){
@@ -788,13 +784,6 @@ private void obtain_node_node(){
 		for(int i=0;i<slaveNodes[contId].length;i++){
 			Node node=slaveNodes[contId][i];
 			int sn=node.id;
-			
-			if(	rmv[sn] && twice_check){
-				rmv[sn]=false;
-				continue;
-	
-			}
-			
 
 			node_node.row[sn]=new SpVect(nnSize);
 
@@ -850,6 +839,8 @@ private void obtain_node_node(){
 
 				if(dot1*dot2>.0) {
 					
+					contacting[sn]=false;
+
 					continue;
 				}
 
@@ -882,14 +873,19 @@ private void obtain_node_node(){
 
 				if(pen<-100*edgeLength) {
 					//weakenning.el[p]=0;
+					
+					contacting[sn]=false;
+
 					continue;
 				}
 				
 				
 				//if(!gradualSeperation){
-					if(pen>clrFact*master_edge_size[contId] && (!twice_check ||!contacting[sn])){
+					if(pen>clrFact*master_edge_size[contId] ){
 	
-						///weakenning.el[p]=0;
+						
+						contacting[sn]=false;
+
 						continue;								
 					}
 
@@ -911,19 +907,10 @@ private void obtain_node_node(){
 				if(p<0) 
 					p=u_index[sn][1];
 				if(p<0) continue;
-				
-				if(mu!=0) {
-					if(!stick[sn] && !contacting[sn]){
-						stick[sn]=true;
-						landed_stick[sn]=true;
-						lamT.el[p]=0;
-					}
-				}
 
 
-				contacting[sn]=true;
 
-
+		
 				//util.pr("node "+sn+" contacted.");
 
 
@@ -947,9 +934,36 @@ private void obtain_node_node(){
 
 	
 				slide.el[p]=deltaDisp.dot(tang);
-				//	else
-				//	slide.el[p]=0;
-				//	deltaDisp.hshow();
+				
+				
+				
+				if(mu!=0) {
+		
+/*						double  augN=pen*weights.el[p]*pf;
+						double  augT=slide.el[p]*weights.el[p]*pft;
+						double muFn=mu*Math.abs(augN);
+					if(augN<0){
+							
+						if(augT>muFn*(1+margin)){
+							stick[sn]=false;
+							landed_stick[sn]=false;
+						}else{
+							if(!stick[sn]){
+						stick[sn]=true;
+						landed_stick[sn]=true;
+						}
+					}
+				}else {
+					stick[sn]=false;
+					landed_stick[sn]=false;
+					
+				}*/
+				}
+				
+				contacting[sn]=true;
+
+
+
 				totalnumContactingNodes++;
 
 				numContactingNodes[contId]++;
@@ -960,8 +974,9 @@ private void obtain_node_node(){
 	}
 	
 
-	resetFreedNodes();
-
+	///resetFreedNodes();
+	
+	countStickSlip();
 ///	new SpVect(weights).shownzA();
 	for(int contId=0;contId<numContacts;contId++)
 		util.pr((contId+1)+", num slave nodes: "+slaveNodes[contId].length+",  numContactingNodes: "+numContactingNodes[contId]);
@@ -1088,67 +1103,6 @@ private void updateGap(boolean allowSep){
 
 }
 
-
-private void checkPositive(){
-
-
-	//gap=Gc.mul(disp);
-	
-
-		for(int contId=0;contId<numContacts;contId++){
-
-			for(int i=0;i<slaveNodes[contId].length;i++){
-				Node node=slaveNodes[contId][i];
-				int sn=node.id;
-				
-				if(!contacting[sn]) continue;
-				
-/*				int p=u_index[sn][0];
-				if(p<0) 
-					p=u_index[sn][1];
-				if(p<0) continue;
-				
-				double pen=gap.el[p];
-	*/
-
-				Vect u=node.u;
-				Vect v=node.getCoord().add(u);
-				
-				if(node_node.row[sn].index==null) continue;
-				
-				int mn1=	node_node.row[sn].index[0];
-				int mn2=	node_node.row[sn].index[1];
-					
-					Node node1=model.node[mn1];
-					Node node2=model.node[mn2];
-					Vect u1=node1.u;
-					Vect u2=node2.u;
-					Vect v1=node1.getCoord().add(u1);
-	
-	
-	
-					Vect v1v=v.sub(v1);
-
-					int nrmIndex=normalIndex[contId][i];
-
-
-					Vect normal=normals[contId][nrmIndex];
-
-
-
-					double pen=v1v.dot(normal);
-				
-					if(pen>1e-12) {
-						rmv[sn]=true;
-						
-						contacting[sn]=false;
-						continue;
-					}
-
-			}
-		}
-
-}
 
 private void assembleConstraintMats(){
 
@@ -1360,6 +1314,11 @@ private void checkStickSlip(){
 			Node node=slaveNodes[contId][i];
 			int sn=node.id;
 
+			if(!contacting[sn]) {
+				stick[sn]=false;
+				landed_stick[sn]=false;
+				continue;
+			}
 
 
 			int index=model.U_unknownIndex[sn]-1;
@@ -1396,7 +1355,7 @@ private void checkStickSlip(){
 						}
 					}
 				}else{
-					stick[sn]=false;
+				stick[sn]=false;
 					landed_stick[sn]=false;
 					lamT.el[p]=0;
 					slide.el[p]=0;
@@ -1407,41 +1366,31 @@ private void checkStickSlip(){
 				landed_stick[sn]=false;
 				lamT.el[p]=0;
 				slide.el[p]=0;
-			//	contacting[sn]=false;
+				contacting[sn]=false;
 			}
 		}
 
-		int nstk=0;
-		int nslip=0;
-		for(int i=0;i<slaveNodes[contId].length;i++){
-			Node node=slaveNodes[contId][i];
-			int sn=node.id;
+	}
+	
+	countStickSlip();
 
-			if(contacting[sn]){
-				int px=u_index[sn][0];
-				int py=u_index[sn][1];
-
-				int p=px;
-				if(p==-1) p=py;
-				//	double abs_lamT=Math.abs(lamT.el[p]);
-				//	double muFn=mu*Math.abs(lamN.el[p]);
-				//	util.pr("lamT.el[p] "+lamT.el[p] +" lamN.el[p] "+lamN.el[p]);
-
-				if(stick[sn]) nstk++;
-				else nslip++;
-					
-			//	util.pr("node "+sn+" stick "+stick[sn]);
-				///	util.pr("u "+model.node[sn].getU(p)+" uref "+ref_stick.el[p]);
-			}
-		//	else
-				//util.pr("node "+sn+" free ");
+/*	int px=0,qx=0;
+	
+	for(int i=0;i<Gc.nRow;i++){
+		if(Gc.row[i].nzLength>0){
+			px++;
 		}
-		util.pr((contId+1)+", stick: "+nstk+",  slip: "+nslip);
+	}
+	for(int i=0;i<G_stk.nRow;i++){
+		if(G_stk.row[i].nzLength>0){
+			qx++;
+		}
 	}
 
+	util.pr(", px: "+px+",  qx: "+qx);*/
 	/// G_stkt.shownzA();
 
-	//	Kcf.shownzA();
+//	G_stk.shownzA();
 
 }
 
@@ -1741,6 +1690,7 @@ private void resetFreedNodes(){
 		}
 		}
 	}
+
 }
 
 
@@ -1806,6 +1756,40 @@ if(applyNodal){
 }
 }
 
+
+
+private void countStickSlip(){
+
+	for(int contId=0;contId<slaveNodes.length;contId++){
+		int nstk=0;
+		int nslip=0;
+		for(int i=0;i<slaveNodes[contId].length;i++){
+			Node node=slaveNodes[contId][i];
+			int sn=node.id;
+
+			if(contacting[sn]){
+				int px=u_index[sn][0];
+				int py=u_index[sn][1];
+
+				int p=px;
+				if(p==-1) p=py;
+				//	double abs_lamT=Math.abs(lamT.el[p]);
+				//	double muFn=mu*Math.abs(lamN.el[p]);
+				//	util.pr("lamT.el[p] "+lamT.el[p] +" lamN.el[p] "+lamN.el[p]);
+
+				if(stick[sn]) nstk++;
+				else nslip++;
+					
+			//	util.pr("node "+sn+" stick "+stick[sn]);
+				///	util.pr("u "+model.node[sn].getU(p)+" uref "+ref_stick.el[p]);
+			}
+		//	else
+				//util.pr("node "+sn+" free ");
+		}
+		util.pr((contId+1)+", stick: "+nstk+",  slip: "+nslip);
+	}
+}
+
 private void initialize(int mode){
 
 
@@ -1855,10 +1839,13 @@ private void initialize(int mode){
 
 	stick=new boolean[model.numberOfNodes+1];
 	contacting=new boolean[model.numberOfNodes+1];
-	rmv=new boolean[model.numberOfNodes+1];
-	
-//	sep_counter=new int[model.numberOfNodes+1];
-	
+
+	for(int i=1;i<=model.numberOfNodes;i++)
+	{
+		stick[i]=true;
+		landed_stick[i]=true;
+	}
+
 	u_index=new int[model.numberOfNodes+1][model.dim];
 	for(int i=1;i<=model.numberOfNodes;i++)
 		for(int k=0;k<model.dim;k++)
