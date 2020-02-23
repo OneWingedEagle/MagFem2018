@@ -31,6 +31,8 @@ public class ContactAnalysis {
 	private SpMatAsym Gc=null;
 	private SpMatAsym Gct=null;
 	private SpMatAsym Gcf=null;
+	private SpMatAsym Gcfadh=null;
+	///private SpMatAsym Gcfadht=null;
 	private SpMatAsym Gcft=null;
 	private SpMatAsym G_stk=null;
 	private SpMatAsym G_stkt=null;
@@ -39,7 +41,8 @@ public class ContactAnalysis {
 
 	private SpMat Kc=null;
 	private SpMat Kcf=null;
-
+	private SpMat Kadh=null;
+	private SpMat Kadhf=null;
 	
 	private Vect lamN,gap;
 	private Vect lamT,slide;//,slide_prev;
@@ -107,10 +110,16 @@ boolean aug_tang=true;
 
 
 double extention_fact=0.01;
-double clrFact=1e-12;
-double aug_disp_tol=1e-3;
-double gap_tol=1e-3;
+double clrFact=1e-10;
+double aug_disp_tol=1e-2;
+double gap_tol=1e-4;
 double reduct=.0;
+
+double adh=0e9;
+double adhf=0e3;
+
+double gapAtt=1;
+
 public Vect solve( Model model,SpMatSolver solver,int mode){
 
 	//Vect vd=model.Ks.diag().times(.00);
@@ -125,18 +134,18 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	
 	direct_slv=new MatSolver();
 
-	 itmax=5;
-	 nr_itmax=10;
+	 itmax=3;
+	 nr_itmax=20;
 	 nLoads=1;
 	 n_modifNR=0;
 	
 	 fp=1;
-	 fr=.02;
+	 fr=0.002;
 	 
 	 aug_normal=false;
 	 aug_tang=true;
 	 
-	double nr_tol=1e-6;
+	double nr_tol=1e-2;
 	double modif_tol=nr_tol;
 
 	boolean axi=(model.struc2D==2);
@@ -169,14 +178,14 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	for(int im=0;im<nmu;im++){
 		disp.zero();
 		model.setU(disp);
-		mus.el[im]=0.01+.1*(im);
+		mus.el[im]=1e1+.1*(im);
 		for(int contId=0;contId<numContacts;contId++) fric_coef[contId]=mus.el[im];
 		double load_scale=loadFactor0;;
 
 		if(model.centrigForce){
 			load_scale*=1e-3;
 			model.setNodalMass();
-			double rpm=17000;
+			double rpm=7000;
 			double rps=rpm/30*PI;
 			double omeag2=rps*rps;
 			for(int i=1;i<=model.numberOfNodes;i++){
@@ -252,7 +261,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 				
 				for(int nr_iter=0; nr_iter<nr_itmax; nr_iter++){	
 	
-					assembleContactMatrices(nr_iter);
+					assembleContactMatrices();
 				
 					addMatrices();
 	
@@ -270,7 +279,7 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 	}
 
 					if(modif_done){
-						assembleContactMatrices(nr_iter);
+						assembleContactMatrices();
 						addMatrices();
 
 					}
@@ -321,8 +330,10 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 					if(twice_check)
 					checkPositive();
-
+					
+	
 				}
+
 
 
 				
@@ -547,11 +558,11 @@ public Vect solve( Model model,SpMatSolver solver,int mode){
 
 
 
-private void assembleContactMatrices(int nr_it){
+private void assembleContactMatrices(){
 
 	int dof=model.Ks.nRow;
 
-	obtain_node_node(nr_it);
+	obtain_node_node();
 
 	assembleConstraintMats();
 
@@ -561,37 +572,57 @@ private void assembleContactMatrices(int nr_it){
 
 		Gct=Gc.transpose(100);
 		
-
+		Kadh=new SpMat(dof,dof);
 
 		Kc=new SpMat(dof,dof); // Gct*Gc
 
 		for(int i=0;i<Gct.nRow;i++){
 			if(Gct.row[i].nzLength>0){
 				SpVect spv=new SpVect(dof,100);
+				SpVect spvx=new SpVect(dof,100);
 
 				SpVect spv1=Gct.row[i].deepCopy();
+				SpVect spv2=Gct.row[i].deepCopy();
 				for(int k=0;k<spv1.nzLength;k++){
 					int ind=spv1.index[k];
 					spv1.el[k]*=weights.el[ind];
 				}
 
 				int kx=0;
+	
 				for(int j=0;j<=i;j++){
 					if(Gct.row[j].nzLength>0){
 						double dot=spv1.dot(Gct.row[j]);
+						double dotx=spv2.dot(Gct.row[j]);
+		
+						
 						if(dot==0) continue;
+						
+						
+						
+						spvx.index[kx]=j;
+						spvx.el[kx]=dotx;
 
 						spv.index[kx]=j;
 						spv.el[kx++]=dot;
+
+						
 					}
+					
 				}
 				spv.trim(kx);
 				Kc.row[i]=spv.deepCopy();
+				
+				spvx.trim(kx);
+				Kadh.row[i]=spvx.times(adh);
+			
 
 			}
 		}
 
+		
 		Kc.times(pf);
+
 
 		Gcft=Gcf.transpose(100);
 		G_stkt=G_stk.transpose(100);
@@ -599,11 +630,46 @@ private void assembleContactMatrices(int nr_it){
 	
 		Kcf=new SpMat(dof,dof); // Gct*Gc
 
+		//=== adhisve tang
+		Kadhf=new SpMat(dof,dof); 
+		SpMatAsym Gcfadht=Gcfadh.transpose(100);
+
+		
+		for(int i=0;i<Gcfadht.nRow;i++){
+			if(Gcfadht.row[i].nzLength>0){
+			
+				SpVect spv=new SpVect(dof,100);
+
+				SpVect spv1=Gcfadht.row[i].deepCopy();
+			
+
+				int kx=0;
+				for(int j=0;j<=i;j++){
+					if(Gcfadht.row[j].nzLength>0){
+					
+						double dot=spv1.dot(Gcfadht.row[j]);
+						
+						if(dot==0) continue;
+						
+						spv.index[kx]=j;
+						spv.el[kx++]=dot;
+
+					}
+				}
+
+				spv.trim(kx);
+				Kadhf.row[i]=spv.times(adhf);
+			
+			}
+		}
+		
+		//==== 
 
 		for(int i=0;i<G_stkt.nRow;i++){
 			if(G_stkt.row[i].nzLength>0){
 				SpVect spv=new SpVect(dof,100);
 				SpVect spv1=G_stkt.row[i].deepCopy();
+
 				for(int k=0;k<spv1.nzLength;k++){
 					int ind=spv1.index[k];
 					spv1.el[k]*=weights.el[ind];
@@ -614,8 +680,8 @@ private void assembleContactMatrices(int nr_it){
 					if(G_stkt.row[j].nzLength>0){
 
 						double dot=spv1.dot(G_stkt.row[j]);
+			
 						if(dot==0) continue;
-
 						spv.index[kx]=j;
 						spv.el[kx++]=dot;
 					}
@@ -627,9 +693,7 @@ private void assembleContactMatrices(int nr_it){
 		}
 
 		Kcf.times(pft);
-
-
-
+	
 
 	}
 }
@@ -641,6 +705,7 @@ private void addMatrices(){
 	if(Kc!=null){
 
 		Ks=model.Ks.addGeneral(Kc.addGeneral(Kcf));
+		Ks=Ks.addGeneral(Kadh.addGeneral(Kadhf));
 	}		
 	else{
 		Ks=model.Ks.deepCopy();
@@ -703,7 +768,7 @@ private void modifiedNR(SpMatSolver solver, Vect bU1,boolean direct,double tol){
 	
 }
 
-private void obtain_node_node(int nr_it){
+private void obtain_node_node(){
 
 
 	//slide_prev.zero();
@@ -872,7 +937,7 @@ private void obtain_node_node(int nr_it){
 				//	util.pr("-----< "+disp_tang.norm());
 
 				Vect tang=disp_tang.normalized();
-			///	if(tang.norm()==0) 
+			//	if(tang.norm()==0) 
 				tang=edgeDir.deepCopy();
 
 
@@ -1091,6 +1156,7 @@ private void assembleConstraintMats(){
 
 	Gc=new SpMatAsym(dof,dof);
 	Gcf=new SpMatAsym(dof,dof);
+	Gcfadh=new SpMatAsym(dof,dof);
 
 	G_stk=new SpMatAsym(dof,dof);
 
@@ -1172,7 +1238,42 @@ private void assembleConstraintMats(){
 
 				//Vect tang=new Vect(-normal.el[1],normal.el[0]);
 
-				Vect tang=tangentials[contId][normalIndex[contId][i]];
+				Vect tang=tangentials[contId][normalIndex[contId][i]].deepCopy();
+				
+				// addhesive tangential{
+				//====
+				Gcfadh.row[p]=new SpVect(dof,6);
+				kx=0;
+				if(px!=-1){
+					Gcfadh.row[p].index[kx]=px;
+					Gcfadh.row[p].el[kx++]=tang.el[0];
+				}
+				if(p1y!=-1){
+					Gcfadh.row[p].index[kx]=py;
+					Gcfadh.row[p].el[kx++]=tang.el[1];
+				}
+
+
+				if(p1x>=0){
+					Gcfadh.row[p].index[kx]=p1x;
+					Gcfadh.row[p].el[kx++]=-alpha*tang.el[0];
+				}
+				if(p1y>=0){
+					Gcfadh.row[p].index[kx]=p1y;;
+					Gcfadh.row[p].el[kx++]=-alpha*tang.el[1];
+				}
+
+				if(p2x>=0){
+					Gcfadh.row[p].index[kx]=p2x;
+					Gcfadh.row[p].el[kx++]=-beta*tang.el[0];
+				}
+				if(p2y>=0){
+					Gcfadh.row[p].index[kx]=p2y;;
+					Gcfadh.row[p].el[kx++]=-beta*tang.el[1];
+				}
+		
+				
+				//===
 				
 				if(fric_coef[contId]==0){
 					tang.zero();
@@ -1243,7 +1344,7 @@ private void assembleConstraintMats(){
 		}
 
 	
-	///G_stk.shownzA();
+	//G_stk.shownzA();
 
 }
 
@@ -1291,7 +1392,7 @@ private void checkStickSlip(){
 							stick[sn]=true;
 
 							landed_stick[sn]=true;
-							//if(method==1)	lamT.el[p]=0;
+							slide.el[p]=0;
 						}
 					}
 				}else{
@@ -1306,7 +1407,7 @@ private void checkStickSlip(){
 				landed_stick[sn]=false;
 				lamT.el[p]=0;
 				slide.el[p]=0;
-				contacting[sn]=false;
+			//	contacting[sn]=false;
 			}
 		}
 
