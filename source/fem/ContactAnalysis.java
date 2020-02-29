@@ -92,7 +92,7 @@ public class ContactAnalysis {
 
 	Vect disp, rhs;
 	boolean applyNodal = true;
-	boolean gradualSeperation = false;
+	boolean initialized = false;
 
 	double fp = 1;
 	double fr = 1;
@@ -109,12 +109,24 @@ public class ContactAnalysis {
 	double adhf = 0e3;
 
 	double relax = .5;;
+	
+	Vect top;
+	SpMat K_hat;
+	Vect rhs_hat;
+	int totalNRIter = 0;
+	boolean plot_radial=false;
+	
+	Vect gap_err,slide_err, aug_disp_err,nr_err;
+	int nr_it[];
 
-	public Vect solve(Model model, SpMatSolver solver, int mode) {
 
-		// Vect vd=model.Ks.diag().times(.00);
-		// model.Ks.times(1e-2);
-		// model.Ks.addToDiag(vd);
+	public Vect solve(Model model, SpMatSolver solver,SpMat Khat1,Vect bhat1,int step) {
+		
+		this.K_hat=Khat1.deepCopy();
+		this.rhs_hat=bhat1.deepCopy();
+		//this.rhs_hat.timesVoid((step+1.)/model.nTsteps);
+		
+
 		fn_ratio = new double[numContacts];
 		for (int i = 0; i < numContacts; i++)
 			fn_ratio[i] = 1.;
@@ -124,45 +136,27 @@ public class ContactAnalysis {
 
 		direct_slv = new MatSolver();
 
-		itmax = 8;
-		nr_itmax = 8;
+		itmax = 1;
+		nr_itmax = 12;
 		nLoads = 1;
-		n_modifNR = 5;
+		n_modifNR = 0;
 
 		fp = 1;
 		fr = .02;
 
-		aug_normal = true;
-		aug_tang = true;
+		aug_normal = false;
+		aug_tang = false;
 
 		double nr_tol = 1e-2;
 		double modif_tol = nr_tol;
 
-		boolean axi = (model.struc2D == 2);
 
 		applyNodal = true;
-
-		double loadFactor0 = 1000;
-
-		if (model.dim == 3)
-			loadFactor0 = 1;
-
-		if (axi)
-			loadFactor0 *= 2 * PI;
 
 		int nmu = 1;
 		Vect mus = new Vect(nmu);
 		Vect mm = new Vect(nmu);
 
-		if (axi)
-			for (int i = 1; i <= model.numberOfNodes; i++) {
-				Vect F = model.node[i].F;
-				double r = model.node[i].getCoord(0);
-
-				if (F != null)
-					model.node[i].F = model.node[i].F.times(r);
-
-			}
 
 		disp = new Vect(model.Ks.nRow);
 		KK = null;
@@ -174,38 +168,26 @@ public class ContactAnalysis {
 		for (int im = 0; im < nmu; im++) {
 			disp.zero();
 			model.setU(disp);
-			mus.el[im] = 3e-1 + .1 * (im);
+			mus.el[im] = 0e3 + .1 * (im);
 			for (int contId = 0; contId < numContacts; contId++)
 				fric_coef[contId] = mus.el[im];
-			double load_scale = loadFactor0;
 			
 
-			if (model.centrigForce) {
-				load_scale *= 1e-3;
-				model.setNodalMass();
-				double rpm = 7000;
-				double rps = rpm / 30 * PI;
-				double omeag2 = rps * rps;
-				for (int i = 1; i <= model.numberOfNodes; i++) {
-					Vect v = model.node[i].getCoord();
-					double m = model.node[i].getNodalMass();
-					Vect F = v.times(omeag2 * m);
-					model.node[i].setF(F);
-				}
 
+			if(!initialized){
+			initialize();
+			initialized=true;
 			}
 
-			initialize(mode);
-
-			rhs.timesVoid(load_scale);
+			rhs =rhs_hat.deepCopy();
 
 			System.out.println(" Contact analysis....");
 
 			int nout = slaveNodes[0].length;
 			Vect xr = new Vect(nout);
 
-			boolean plot = true;
-			if (plot)
+	
+			if (plot_radial)
 				for (int k = 0; k < xr.length; k++) {
 
 					int n = slaveNodes[0][k].id;
@@ -220,14 +202,8 @@ public class ContactAnalysis {
 			for (int i = 0; i < itmax; i++)
 				urs[i] = new Vect(xr.length);
 
-			Vect err = new Vect(itmax);
-			Vect aug_disp_err = new Vect(itmax);
-			Vect errf = new Vect(itmax);
 
-			Vect nr_err = new Vect(nLoads * itmax * (nr_itmax + n_modifNR));
-			int nr_it[] = new int[nLoads * itmax * (nr_itmax + n_modifNR)];
-
-			int totalNRIter = 0;
+		
 			Vect load = rhs.deepCopy();
 			for (int load_iter = 0; load_iter < nLoads; load_iter++) {
 
@@ -321,7 +297,7 @@ public class ContactAnalysis {
 					if (dip_err < aug_disp_tol)
 						break;
 
-					err.el[cont_iter] = gap.abs().max();
+				gap_err.el[cont_iter] = gap.abs().max();
 
 					Vect pgap = gap.deepCopy();
 					Vect pslide = slide.deepCopy();// .sub(slide_prev);
@@ -373,15 +349,17 @@ public class ContactAnalysis {
 					if (!aug_tang)
 						lamT.zero();
 
+					if(Gct!=null)
 					aug_N = Gct.mul(lamN);
-					;
+				
+					if(Gcft!=null)
 					aug_T = Gcft.mul(lamT);
-					;
+					
 
-					errf.el[cont_iter] = slide.abs().max();
+				slide_err.el[cont_iter] = slide.abs().max();
 
 					// xr.show();
-					if (plot)
+					if (plot_radial)
 						for (int k = 0; k < xr.length; k++) {
 							// int n=2551+k;
 							int n = slaveNodes[0][k].id;
@@ -406,6 +384,21 @@ public class ContactAnalysis {
 				}
 			}
 
+			if(model.numberOfNodes>=2787){
+
+			int p=u_index[2787][1];
+			if(p!=-1){
+			top.el[step]=disp.el[p];
+			if(model.nTsteps>1 && step==model.nTsteps-1){
+				util.pr("=============================== "+step);
+
+				util.plot(top);
+				top.show();
+			}
+			}
+			}
+			
+			if(step==model.nTsteps-1){
 			util.pr("NR error");
 
 			int nn = 0;
@@ -430,23 +423,24 @@ public class ContactAnalysis {
 				System.out.format(" %d\t%6.4e\n", nr_it_distilled[k], nr_distilled.el[k]);
 				nr_distilled.el[k] = Math.log10(nr_distilled.el[k]);
 			}
+		
 			util.plot(nr_distilled);
-			// u=aug_N.add(aug_T);
+		
 
 			util.pr("aug_disp changes vs aug_iter");
 			aug_disp_err.show("%5.4e");
 
 			util.pr("Gap[m] vs aug_iter");
-			err.show("%5.4e");
+			gap_err.show("%5.4e");
 			// util.plot(err);
 
 			util.pr("slide[m] vs aug_iter");
-			errf.show("%5.4e");
+			slide_err.show("%5.4e");
 			// util.plot(errf);
 
 			// ur.show();
 
-			if (plot) {
+			if (plot_radial) {
 				double[][] data = new double[xr.length][itmax + 1];
 				for (int k = 0; k < xr.length; k++) {
 
@@ -460,6 +454,7 @@ public class ContactAnalysis {
 				util.plotBunch(data);
 				// util.plot(x,ur);
 			}
+			
 
 			mm.el[im] = disp.abs().max();
 
@@ -520,6 +515,7 @@ public class ContactAnalysis {
 		model.setU(Fc.add(Fcf.times(1)).times(-1));
 		// model.setU(aug_N.times(1).add(aug_T.times(1)).times(-1));
 		model.writeNodalField(model.resultFolder + "\\contact_force.txt", -1);
+		}
 
 		model.setU(disp);
 
@@ -667,11 +663,12 @@ public class ContactAnalysis {
 
 		if (Kc != null) {
 
-			Ks = model.Ks.addGeneral(Kc.addGeneral(Kcf));
+			Ks = K_hat.addGeneral(Kc.addGeneral(Kcf));
 			Ks = Ks.addGeneral(Kadh.addGeneral(Kadhf));
 		} else {
-			Ks = model.Ks.deepCopy();
+			Ks = K_hat.deepCopy();
 		}
+		
 	}
 
 	private void modifiedNR(SpMatSolver solver, Vect bU1, boolean direct, double tol) {
@@ -1673,16 +1670,15 @@ public class ContactAnalysis {
 		model.Ls = Ks.ichol();
 
 		if (dF.abs().max() != 0) {
-			// if(model.xp==null){
+			 if(model.xp==null){
 			du = solver.ICCG(Ks, model.Ls, dF, model.errCGmax, model.iterMax);
-			// }
-			// else{
+			 }
+			 else{
 			// du=solver.ICCG(Ks,model.Ls,
 			// dF,model.errCGmax,model.iterMax,model.xp);
-			// du=model.solver.err0ICCG(Ks,model.Ls,
-			// dF,model.errCGmax*1e-3,model.iterMax,model.xp);
+			 du=model.solver.err0ICCG(Ks,model.Ls, dF,model.errCGmax*1e-3,model.iterMax,model.xp);
 
-			// }
+			 }
 		} else {
 			util.pr("Solution is zero!");
 			du = new Vect(Ks.nRow);
@@ -1697,7 +1693,7 @@ public class ContactAnalysis {
 
 	private Vect calcResidual(SpMat Ks, Vect u, Vect b) {
 
-		Vect Fint = model.Ks.smul(u);
+		Vect Fint = K_hat.smul(u);
 
 		Vect dF = b.sub(Fint);
 
@@ -1706,6 +1702,7 @@ public class ContactAnalysis {
 			pg.el[k] *= weights.el[k];
 		}
 
+		if(Gct!=null)
 		Fc = Gct.mul(pg);
 
 		Vect ps = slide.times(pft);
@@ -1714,6 +1711,7 @@ public class ContactAnalysis {
 
 		}
 
+		if(G_stkt!=null)
 		Fcf = G_stkt.mul(ps);
 
 		dF = dF.sub(Fc).sub(Fcf); //
@@ -2082,7 +2080,7 @@ public class ContactAnalysis {
 		}
 	}
 
-	private void initialize(int mode) {
+	private void initialize() {
 
 		int[][] ne = new int[model.numberOfNodes + 1][20];
 		int[] nz = new int[model.numberOfNodes + 1];
@@ -2194,7 +2192,6 @@ public class ContactAnalysis {
 			}
 		}
 
-		rhs = model.bU.add(model.getbUt(mode));
 
 		ref_stick = new Vect(model.Ks.nRow);
 
@@ -2242,8 +2239,157 @@ public class ContactAnalysis {
 
 		int nnSize = model.numberOfNodes + 1;
 		node_node = new SpMatAsym(nnSize, nnSize);
+		
+		top=new Vect(model.nTsteps);
+		
+		 gap_err = new Vect(itmax*model.nTsteps);
+		 aug_disp_err = new Vect(itmax*model.nTsteps);
+		 slide_err = new Vect(itmax*model.nTsteps);
+
+		 nr_err = new Vect(nLoads * itmax * (nr_itmax + n_modifNR)*model.nTsteps);
+		 nr_it = new int[nLoads * itmax * (nr_itmax + n_modifNR)*model.nTsteps];
+	}
+	
+	public Vect getDeformation(Model model, SpMatSolver solver, int mode,int step) {
+
+		solver.terminate(false);
+		System.out.println(" Static analysis....");
+
+		if (model.centrigForce) {
+			model.setNodalMass();
+			double rpm = 7000;
+			double rps = rpm / 30 * PI;
+			double omeag2 = rps * rps;
+			for (int i = 1; i <= model.numberOfNodes; i++) {
+				Vect v = model.node[i].getCoord();
+				double m = model.node[i].getNodalMass();
+				Vect F = v.times(omeag2 * m);
+				model.node[i].setF(F);
+			}
+
+		}
+		Vect bU1=model.bU.add(model.getbUt(mode));
+		
+		double loadFactor0 = 1000;
+
+		if (model.dim == 3)
+			loadFactor0 = 1;
+
+		boolean axi = (model.struc2D == 2);
+
+		if (axi)
+			loadFactor0 *= 2 * PI;
+		
+		bU1.timesVoid(loadFactor0);
+
+
+////new SpVect(bU1).shownzA();
+		Vect u=solve(model, solver,model.Ks,bU1,step);
+		
+		return u;
+	}
+	
+	public Vect getVibration(Model model, SpMatSolver solver, int mode,int step) {
+		
+		
+		solver.terminate(false);
+		System.out.println(" Calculating vibration using the Newmark method....");
+
+		double dt=model.dt;
+		
+		double loadFactor0 = 1000;
+		
+		if (model.dim == 3)
+			loadFactor0 = 1;
+
+		boolean axi = (model.struc2D == 2);
+
+		if (axi)
+			loadFactor0 *= 2 * PI;
+		
+		
+		if (model.centrigForce) {
+			model.setNodalMass();
+			double rpm = 7000;
+			double rps = rpm / 30 * PI;
+			double omeag2 = rps * rps;
+			for (int i = 1; i <= model.numberOfNodes; i++) {
+				Vect v = model.node[i].getCoord();
+				double m = model.node[i].getNodalMass();
+				Vect F = v.times(omeag2 * m);
+				model.node[i].setF(F);
+			}
+
+		}
+
+		if(step==0){
+			
+			for (int i = 1; i <= model.numberOfNodes; i++) {
+			
+				Vect F = model.node[i].F;
+				if(F!=null)
+				model.node[i].setF(F.times(loadFactor0));
+			}
+			
+
+
+		}
+
+		Vect bU1=model.bU.add(model.getbUt(mode));
+		
+		if(step<2){
+			
+
+			
+			Vect u=solve( model, solver,model.Ks ,bU1,step);
+			
+			if(step==1)
+				model.ud=u.sub(model.up).times(1.0/dt);	
+			
+			model.up=u.deepCopy();
+			return u;	
+
+		}
+		
+
+		double beta=.25;
+		double gama=.5;
+		double b1=1./beta/Math.pow(dt,2);
+
+		double b2=-1./beta/dt;
+
+		double b3=1-.5/beta;
+		double b4=gama*dt*b1;
+		double b5=1+gama*dt*b2;
+		double b6=dt*(1+gama*b3-gama);
+		
+		///if(step==0) model.up=new Vect(bU1.length);
+		
+		///if(step>9) bU1.zero();
+
+		
+		SpMat Ks=model.Ks.addNew(model.Ms.timesNew(b1)).addNew(model.Cs.timesNew(b4));
+
+			Vect bp=model.Ms.smul(model.up.times(b1).add(model.ud.times(-b2)).add(model.udd.times(-b3)))
+			.add(model.Cs.smul(model.up.times(b4).add(model.ud.times(-b5)).add(model.udd.times(-b6))));
+
+		
+			bU1=bU1.add(bp);
+
+			Vect u=solve( model, solver,Ks ,bU1,step);
+
+
+
+		model.up=u.deepCopy();
+	
+
+
+		return u;
+		
+
 	}
 
+	
 	public static void main(String[] args) {
 
 		new Main();

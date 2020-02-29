@@ -500,7 +500,7 @@ public class FEMsolver {
 			model.setReluctForce();
 
 			model.setMSForce();
-			model.setDeformation();
+			model.setDeformation(0);
 
 		}
 

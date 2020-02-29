@@ -428,7 +428,16 @@ public class Model{
 
 			return null;
 	}
+	public Vect getVibrationContact(int iter){
+		
+		return contact.getVibration(this, solver,defMode,iter);
+	}
 
+	public Vect getDeformationContact(int iter){
+		
+		return contact.getDeformation(this, solver,defMode,iter);
+	}
+	
 	public void writeMesh(String bunFilePath){
 		writer.writeMesh(this,bunFilePath);
 	}
@@ -1435,26 +1444,24 @@ public class Model{
 
 	}
 
-	public Vect  setDeformation(){
-		return setDeformation(false);
+	public Vect  setDeformation(int step){
+		return setDeformation(step,false);
 	}
 
 
-	public Vect  setDeformation(boolean stress){
+	public Vect  setDeformation(int step,boolean stress){
 
-		boolean dyn=true;
+		boolean dyn=false;
 
 		if(this.Ks==null)
 			this.setStiffMat(dyn);
-
-
 
 
 		Vect u=new Vect();
 
 		if(this.numberOfUnknownU!=0){
 
-			//u=femSolver.solveMech(this);	
+			if(contact!=null) return getDeformationContact(step);
 
 			u=this.mechMat.getDeformation(this, solver,defMode);
 
@@ -1546,7 +1553,12 @@ public class Model{
 
 
 		if(this.numberOfUnknownU!=0){
+			
+			if(contact==null)
 			u=this.getVibration(iter);	
+			else
+			u=this.getVibrationContact(iter);		
+			
 			this.setU(u);	
 
 			double un,umax=0; int im=1;
@@ -3744,34 +3756,6 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 
 
 	}
-
-public Vect runContact(){
-
-	boolean dyn=false;
-
-	if(this.Ks==null)
-		this.setStiffMat(dyn);
-	
-	
-	Vect u=contact.solve(this, solver,defMode);
-
-	
-	this.setU(u);	
-	
-	double un,umax=0; int im=1;
-	for(int i=1;i<=this.numberOfNodes;i++){
-		if(this.node[i].u!=null ){
-			un=this.node[i].u.norm();
-
-			if(un>umax) {umax=un; im=i;}
-		}
-	}
-
-	System.out.println("Deformation Max: "+umax+" at node "+im);
-
-
-	return u;
-}
 
 }
 

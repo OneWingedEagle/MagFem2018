@@ -7,6 +7,7 @@ import static java.lang.Math.abs;
 import main.Main;
 import math.Eigen;
 import math.Mat;
+import math.SpVect;
 import math.Vect;
 import math.util;
 
@@ -134,7 +135,7 @@ public class RunMech {
 			int N=model.nTsteps;
 
 			Vect T=new Vect(N);
-			model.writeMesh( model.resultFolder+"\\bun.txt");
+			model.writeMesh( model.eddyFolder+"\\bun.txt");
 
 			int ix=0;
 
@@ -212,15 +213,8 @@ public class RunMech {
 
 					System.gc();
 					
-					boolean contact=(model.contact!=null);
-					
-					if(contact){
-						u=model.runContact();
-					}
-
-
-					else if(model.timeIntegMode==0){
-						u=model.setDeformation();
+					if(model.timeIntegMode==0){
+						u=model.setDeformation(ix);
 
 
 					}
@@ -246,16 +240,16 @@ public class RunMech {
 
 
 					if(model.saveForce)
-						model.writeNodalField( model.resultFolder+"\\force_out"+i+".txt",1);
+						model.writeNodalField( model.eddyFolder+"\\force_out"+i+".txt",1);
 
 					if(model.saveDisp)
-						model.writeNodalField( model.resultFolder+"\\disp"+i+".txt",-1);
+						model.writeNodalField( model.eddyFolder+"\\disp"+i+".txt",-1);
 
 					if(model.solver.terminate) break;
 
 					if(model.saveStress){
 						model.setStress();
-						model.writeStress( model.resultFolder+"\\stress"+i+".txt");
+						model.writeStress( model.eddyFolder+"\\stress"+i+".txt");
 					}
 
 
@@ -350,7 +344,6 @@ public class RunMech {
 
 
 
-
 		double tstart=System.currentTimeMillis();
 
 
@@ -360,7 +353,7 @@ public class RunMech {
 		int N=model.nTsteps;
 
 		Vect T=new Vect(N);
-		model.writeMesh( model.resultFolder+"\\bun.txt");
+		model.writeMesh( model.eddyFolder+"\\bun.txt");
 
 
 

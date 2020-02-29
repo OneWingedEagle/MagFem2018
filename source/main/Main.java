@@ -177,18 +177,18 @@ import fem.RunMech;
 
 		
 		this.model.resultFolder = new File(model.meshFilePath).getParentFile().getAbsolutePath();
-		
+	
 		if(dated) this.model.resultFolder=this.model.resultFolder+suff;
 
 		
-		File folder = new File(this.model.resultFolder);
-		////if(folder.exists()){
-		//	util.deleteDir(folder);
-		//}
-		//else
-		//	folder.mkdir();
-
-		this.model.eddyFolder = System.getProperty("user.dir") + "\\eddy current"+this.model.dim+"D";
+	File folder = new File(this.model.resultFolder);
+/*		if(folder.exists()){
+			util.deleteDir(folder);
+		}
+		else
+			folder.mkdir();
+*/
+		this.model.eddyFolder = 	this.model.resultFolder + "\\results";
 		folder = new File( this.model.eddyFolder);
 		if(folder.exists())
 			util.deleteDir(folder);
