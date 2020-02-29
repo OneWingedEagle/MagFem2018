@@ -686,14 +686,11 @@ public class SpMat  {
 		return row[0].getLength();
 	}
 
-	public int getNzWidth(){
 
-		return row[0].getNzLength();
-	}
 
 	public void showSize(){
 
-		System.out.format("%10d%10d%10d\n",getnRow(),getnCol(),getNzWidth());
+		System.out.format("%10d%10d%10d\n",getnRow(),getnCol(),size());
 	}
 
 	public int size(){
