@@ -163,7 +163,7 @@ public class RunMech {
 
 
 
-					String file=model.forceFile[ix];
+					String file=model.forceFile[0];
 
 					main.gui.tfX[1].setText(Integer.toString(i)+"/"+(model.nEnd));
 
