@@ -138,8 +138,8 @@ public class ContactAnalysis {
 
 		direct_slv = new MatSolver();
 
-		itmax = 5;
-		nr_itmax = 12;
+		itmax = 1;
+		nr_itmax = 6;
 		nLoads = 1;
 		n_modifNR = 0;
 
@@ -169,7 +169,7 @@ public class ContactAnalysis {
 		for (int im = 0; im < nmu; im++) {
 		///	disp.zero();
 		//	model.setU(disp);
-			mus.el[im] = 1e0 + .1 * (im);
+			mus.el[im] = 1e-1 + .1 * (im);
 			for (int contId = 0; contId < numContacts; contId++)
 				fric_coef[contId] = mus.el[im];
 			
@@ -2362,7 +2362,7 @@ public class ContactAnalysis {
 
 		Vect bU1=model.bU.add(model.getbUt(mode));
 		
-		///bU1.timesVoid((step+1.)/model.nTsteps);
+		bU1.timesVoid((step+1.)/model.nTsteps);
 		
 		double loadFactor0 = 1000;
 
