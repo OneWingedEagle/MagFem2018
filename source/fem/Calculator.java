@@ -3379,6 +3379,13 @@ public class Calculator {
 
 
 		Node[] vertexNode=model.elementNodes(ie);
+		
+/*		Vect[] coords=new Vect[4];
+		for(int i=0;i<this.nElVert;i++){
+			util.pr(vertexNode[i].id);
+			coords[i]=vertexNode[i].getCoord();
+		}*/
+		
 		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
 		for(int i=0;i<this.nElVert;i++)
 			for(int j=0;j<this.nElVert;j++)
@@ -3406,6 +3413,7 @@ public class Calculator {
 				localCo.el[0]=this.PW[0][p];
 				localCo.el[1]=this.PW[0][q];
 
+				
 				jac=jacobian(vertexNode,localCo);
 
 				detJac=abs(jac.determinant());
@@ -3417,6 +3425,89 @@ public class Calculator {
 					ws=detJac;
 
 				gradN=gradN(jac,localCo);
+/*				
+				double[] N=NQuad(localCo);
+				Vect P=new Vect(2);
+				for(int k=0;k<this.nElVert;k++)
+					P=P.add(coords[k].times(N[k]));
+				
+			///	P.show();
+				P=new Vect(1,1);z
+				Vect v1=P.sub(coords[0]);
+				Vect v2=P.sub(coords[3]);
+				Vect e1=coords[1].sub(coords[0]).normalized();
+				Vect e2=coords[2].sub(coords[3]).normalized();
+				double prj1=v1.dot(e1);
+				double prj2=v2.dot(e2);
+				double dU1=v1.sub(e1.times(prj1)).norm();
+				double dU2=v2.sub(e2.times(prj2)).norm();
+				
+			//	util.pr("  ===dU1====>   "+dU1);
+			//	util.pr("  ===dU2====>   "+dU2);
+			//	util.pr("  ===dU1+dU2====>   "+(dU1+dU2));
+				double uc=2*(dU1/(dU1+dU2)-.5);
+			//	util.pr(" u  ========>   "+uc);
+				 v1=P.sub(coords[0]);
+				 v2=P.sub(coords[1]);
+				 e1=coords[3].sub(coords[0]).normalized();
+				 e2=coords[2].sub(coords[1]).normalized();
+				 prj1=v1.dot(e1);
+				 prj2=v2.dot(e2);
+				 dU1=v1.sub(e1.times(prj1)).norm();
+				 dU2=v2.sub(e2.times(prj2)).norm();
+					double vc=2*(dU1/(dU1+dU2)-.5);
+			//	util.pr(" v  ========>   "+vc);
+				
+				
+				double a0=coords[1].el[0]-coords[0].el[0];
+				double a1=coords[3].el[0]-coords[0].el[0];
+				double a2=coords[0].el[0]-coords[1].el[0]+coords[2].el[0]-coords[3].el[0];
+				util.pr("a2 ================================>    "+a2);
+				double b0=coords[1].el[1]-coords[0].el[1];
+				double b1=coords[3].el[1]-coords[0].el[1];
+				double b2=coords[0].el[1]-coords[1].el[1]+coords[2].el[1]-coords[3].el[1];
+				util.pr("b2 ================================>    "+b2);
+
+				
+				Mat M1=new Mat(2,2);
+				Mat M2=new Mat(2,2);
+				Vect x=new Vect(2);
+				Vect dx=new Vect(2);
+
+				double err=1;
+				for(int i=0;i<10;i++){
+		
+					if(err<1e-4) break;
+				M1.el[0][0]=a0;
+				M1.el[0][1]=a1+a2*x.el[0];
+				M1.el[1][0]=b0;
+				M1.el[1][1]=b1+b2*x.el[0];
+				
+				Vect b=P.sub(M1.mul(x));
+
+				err=b.norm()/P.norm();
+		
+				M2.el[0][1]=a2*x.el[0];
+				M2.el[1][1]=b2*x.el[0];
+				
+				Mat M=M1.add(M2);
+				
+				M.show();
+				
+				Mat invM=M.inv2();
+			
+			
+				dx=invM.mul(b);
+				x=x.add(dx);
+				x.show();
+
+				util.pr(" err  ========>   "+err);
+				}
+				
+				Vect uv=x.times(2).add(-1);
+				
+				uv.show();*/
+				
 
 				for(int i=0;i<this.nElVert;i++)
 					for(int j=0;j<this.nElVert;j++){

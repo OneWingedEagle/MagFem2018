@@ -120,7 +120,7 @@ public class SpMatAsym  {
 
 		SpMatAsym T=new SpMatAsym(getnCol(),nRow,cLmax);
 
-		int[] nz=new int[nRow];
+		int[] nz=new int[T.nRow];
 		for(int i=0;i<nRow;i++){
 
 			for(int j=0;j<row[i].nzLength;j++){
