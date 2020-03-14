@@ -238,6 +238,12 @@ public class RunMech {
 
 					ix++;
 
+					for(int p=1;p<=model.numberOfNodes;p++){
+					//	if(model.node[p].getCoord(1)+1e-5>model.node[117].getCoord(1)){
+						//	if(model.node[p].getCoord(2)>.0099){
+						//	model.node[p].F=new Vect(0,0,-400);
+						//}
+					}
 
 					if(model.saveForce)
 						model.writeNodalField( model.eddyFolder+"\\force_out"+i+".txt",1);

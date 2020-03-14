@@ -41,7 +41,6 @@ public class ContactAnalysis {
 	private SpMatAsym Gct = null;
 	private SpMatAsym Gcf = null;
 	private SpMatAsym Gcfadh = null;
-	/// private SpMatAsym Gcfadht=null;
 	private SpMatAsym Gcft = null;
 	private SpMatAsym G_stk = null;
 	private SpMatAsym G_stkt = null;
@@ -74,8 +73,7 @@ public class ContactAnalysis {
 	public double[] fric_coef;
 	public int[] type;
 	public Node[][] slaveNodes;
-//	public Edge[][] masterEdges;
-//	public Element[][] masterFacets;
+
 	public MasterEntity[][]  master_entities;
 	boolean stick[], landed_stick[];
 
@@ -151,7 +149,7 @@ public class ContactAnalysis {
 		direct_slv = new MatSolver();
 
 		itmax = 1;
-		nr_itmax = 8;
+		nr_itmax = 18;
 		nLoads = 1;
 		n_modifNR = 0;
 
@@ -496,15 +494,21 @@ public class ContactAnalysis {
 					int[] nids = master_entities[contId][k].nodeIds;
 		
 
-					Vect normal = normals[contId][k];// new
-														// Vect(-v12.el[1],v12.el[0]).normalized();
+					Vect normal = normals[contId][k];
+					
 					if (normal == null)
 						continue;
+					
+					Vect normal1=normal.deepCopy();
 
+					//normal1.el[1]=0;
+					
 					for(int m=0;m<nids.length;m++){
 					model.node[nids[m]].Fms = normal.deepCopy();
+		
 					for(int p=0;p<model.dim;p++){
 						model.node[nids[m]].Fms.el[p]+=1e-6*Math.random();
+					
 					}
 					}
 					// node2.u=normal.deepCopy();
@@ -540,7 +544,7 @@ public class ContactAnalysis {
 				// node2.u=normal.deepCopy();
 			}
 		model.writeNodalField(model.resultFolder + "\\slave_normal.txt", 2);
-		new SpVect(Fc).shownzA();
+	///	new SpVect(Fc).shownzA();
 		model.setU(Fc.add(Fcf.times(1)).times(-1));
 		// model.setU(aug_N.times(1).add(aug_T.times(1)).times(-1));
 		model.writeNodalField(model.resultFolder + "\\contact_force.txt", -1);
@@ -568,9 +572,9 @@ public class ContactAnalysis {
 		util.pr("totalnumContactingNodes: " + totalnumContactingNodes);
 
 		if (totalnumContactingNodes != 0) {
-
+///Gc.shownzA();
 			Gct = Gc.transpose(100);
-	
+
 			Kadh = new SpMat(dof, dof);
 
 			Kc = new SpMat(dof, dof); // Gct*Gc
@@ -581,9 +585,11 @@ public class ContactAnalysis {
 					SpVect spvx = new SpVect(dof, 100);
 
 					SpVect spv1 = Gct.row[i].deepCopy();
+
 					SpVect spv2 = Gct.row[i].deepCopy();
 					for (int k = 0; k < spv1.nzLength; k++) {
 						int ind = spv1.index[k];
+					//	util.pr(ind+"  / "+weights.length);
 						spv1.el[k] *= weights.el[ind];
 					}
 
@@ -986,9 +992,6 @@ public class ContactAnalysis {
 		// slide_prev.zero();
 		gap.zero();
 
-		// weights.zero();
-		// weightsf.zero();
-
 		numContactingNodes = new int[numContacts];
 
 		totalnumContactingNodes = 0;
@@ -1061,39 +1064,26 @@ public class ContactAnalysis {
 					
 				
 					
-					boolean outside=false;
+					boolean inside=true;
 					for(int j=0;j<4;j++){
 						for(int m=j+1;m<4;m++){
 							double dot=cross[j].dot(cross[m]);
 							if(dot<0) {
-								outside=true;
+								inside=false;
 								break;
 							}
 							}
-						if(outside) break;
+						if(!inside) break;
 						}
 					
-					if(outside) continue;
+					if(!inside) continue;
 	
 					
 					Vect v12=v2.sub(v1);
 					Vect v23=v3.sub(v2);
 					
 					Vect normal = v12.cross(v23).normalized();
-//util.hshow(nids);
-//					v1.hshow();
-//					v2.hshow();
-//					v3.hshow();
-//					v4.hshow();
-//					normal.hshow();
-					
-					if (outside) {
 
-						contacting[sn] = false;
-
-						continue;
-					}
-			
 
 					normals[contId][k] = normal.deepCopy();
 
@@ -1129,32 +1119,15 @@ public class ContactAnalysis {
 					
 					Vect sn_proj = v1.add(v1v_proj);
 
-				//	sn_proj.hshow();
 
 					double a0=v2.el[0]-v1.el[0];
 					double a1=v4.el[0]-v1.el[0];
 					double a2=v1.el[0]-v2.el[0]+v3.el[0]-v4.el[0];
-		//			util.pr("a0 ================================>    "+a0);
-		//			util.pr("a1 ================================>    "+a1);
-		//			util.pr("a2 ================================>    "+a2);
-
+	
 					double b0=v2.el[1]-v1.el[1];
 					double b1=v4.el[1]-v1.el[1];
 					double b2=v1.el[1]-v2.el[1]+v3.el[1]-v4.el[1];
-	//				util.pr("b0 ================================>    "+b0);
-	//				util.pr("b1 ================================>    "+b1);
-	//				util.pr("b2 ================================>    "+b2);
-					
-/*					double a0=coords[1].el[0]-coords[0].el[0];
-					double a1=coords[3].el[0]-coords[0].el[0];
-					double a2=coords[0].el[0]-coords[1].el[0]+coords[2].el[0]-coords[3].el[0];
-					util.pr("a2 ================================>    "+a2);
-					double b0=coords[1].el[1]-coords[0].el[1];
-					double b1=coords[3].el[1]-coords[0].el[1];
-					double b2=coords[0].el[1]-coords[1].el[1]+coords[2].el[1]-coords[3].el[1];
-					util.pr("b2 ================================>    "+b2);
-*/
-					
+			
 					Vect P=sn_proj.sub(v1).v2();
 					
 					 double[] ww1=new double[4];
@@ -1190,24 +1163,7 @@ public class ContactAnalysis {
 					
 					Vect b=P.sub(M1.mul(x));
 					
-					if(a0==0 && b0==0){
-/*						util.pr(" --here--  ");
-						if(b2==0){
-							double vvv1=P.el[1]/b1;
-							double uuu1=P.el[0]/(a1+a2*vvv1);
-							util.pr(uuu1+" <..............>  "+vvv1 );
-						}else{
-						double d=b1*b1+4*b2*P.el[1];
-						util.pr(" --here--  "+d);
-						if(d>=0){
-							double vvv1=(-b1+Math.sqrt(d))/(2*b2);
-							double vvv2=(-b1-Math.sqrt(d))/(2*b2);
-							util.pr(vvv1+" <..............>  "+vvv2 );
-						}
-						}*/
-					}
-//util.pr(j+" =============== ");
-				//	b.show();
+
 					err=b.norm()/P.norm();
 			
 					M2.el[0][1]=a2*x.el[0];
@@ -1237,6 +1193,7 @@ public class ContactAnalysis {
 					 ww[1]=(uu)*(1-vv);
 					 ww[2]=(uu*vv);
 					 ww[3]=(1-uu)*(vv);
+				//	 util.hshow(ww);
 
 					node_node.row[sn] = new SpVect(nnSize, 4);
 					for (int m = 0; m < 4; m++) {
@@ -1255,26 +1212,9 @@ public class ContactAnalysis {
 					if (p < 0)
 						continue;
 
-					// util.pr("node "+sn+" contacted.");
-
-					// Vect
-					// deltaDisp=u.sub(u1.times(alpha).add(u2.times(beta)));
-					/// deltaDisp.times(1e9).hshow();
-					// double proj=deltaDisp.dot(normal);
-
-					// Vect disp_tang=deltaDisp.sub(normal.times(proj));
-
-					// util.pr("-----< "+disp_tang.norm());
-
-					// Vect tang=disp_tang.normalized();
-					// if(tang.norm()==0)
-					// tang=edgeDir.deepCopy();
-
-					// tangentials[contId][k]=tang.deepCopy();
 
 					gap.el[sn] = pen;
 
-					// slide.el[p]=deltaDisp.dot(tang);
 
 					contacting[sn] = true;
 
@@ -1407,12 +1347,12 @@ public class ContactAnalysis {
 	private void assembleConstraintMats() {
 
 		int dof = model.Ks.nRow;
+		int nRows=model.numberOfNodes + 1;
+		Gc = new SpMatAsym(nRows, dof);
+		Gcf = new SpMatAsym(nRows, dof);
+		Gcfadh = new SpMatAsym(nRows, dof);
 
-		Gc = new SpMatAsym(dof, dof);
-		Gcf = new SpMatAsym(dof, dof);
-		Gcfadh = new SpMatAsym(dof, dof);
-
-		G_stk = new SpMatAsym(dof, dof);
+		G_stk = new SpMatAsym(nRows, dof);
 
 		for (int contId = 0; contId < numContacts; contId++)
 			for (int i = 0; i < slaveNodes[contId].length; i++) {
@@ -1432,13 +1372,9 @@ public class ContactAnalysis {
 					if (model.dim == 3)
 						pz = u_index[sn][2];
 
-					int p = px;
-					if (p == -1)
-						p = py;
-					if (p == -1)
-						p = pz;
+	
 
-					Gc.row[p] = new SpVect(dof);
+					Gc.row[sn] = new SpVect(dof);
 
 					Vect normal = normals[contId][normalIndex[contId][i]];
 
@@ -1457,40 +1393,40 @@ public class ContactAnalysis {
 					double alpha = node_node.row[sn].el[0];
 					double beta = node_node.row[sn].el[1];
 
-					Gc.row[p] = new SpVect(dof, 6);
+					Gc.row[sn] = new SpVect(dof, 6);
 
 					int kx = 0;
 					if (px != -1) {
-						Gc.row[p].index[kx] = px;
-						Gc.row[p].el[kx++] = normal.el[0];
+						Gc.row[sn].index[kx] = px;
+						Gc.row[sn].el[kx++] = normal.el[0];
 					}
-					if (p1y != -1) {
-						Gc.row[p].index[kx] = py;
-						Gc.row[p].el[kx++] = normal.el[1];
+					if (py != -1) {
+						Gc.row[sn].index[kx] = py;
+						Gc.row[sn].el[kx++] = normal.el[1];
 					}
 
 					// util.pr(weights.el[com_index]);
 
 					if (p1x >= 0) {
-						Gc.row[p].index[kx] = p1x;
-						Gc.row[p].el[kx++] = -alpha * normal.el[0];
+						Gc.row[sn].index[kx] = p1x;
+						Gc.row[sn].el[kx++] = -alpha * normal.el[0];
 					}
 					if (p1y >= 0) {
-						Gc.row[p].index[kx] = p1y;
+						Gc.row[sn].index[kx] = p1y;
 						;
-						Gc.row[p].el[kx++] = -alpha * normal.el[1];
+						Gc.row[sn].el[kx++] = -alpha * normal.el[1];
 					}
 
 					if (p2x >= 0) {
-						Gc.row[p].index[kx] = p2x;
-						Gc.row[p].el[kx++] = -beta * normal.el[0];
+						Gc.row[sn].index[kx] = p2x;
+						Gc.row[sn].el[kx++] = -beta * normal.el[0];
 					}
 					if (p2y >= 0) {
-						Gc.row[p].index[kx] = p2y;
+						Gc.row[sn].index[kx] = p2y;
 						;
-						Gc.row[p].el[kx++] = -beta * normal.el[1];
+						Gc.row[sn].el[kx++] = -beta * normal.el[1];
 					}
-					Gc.row[p].sortAndTrim(kx);
+					Gc.row[sn].sortAndTrim(kx);
 					;
 
 					// Vect tang=new Vect(-normal.el[1],normal.el[0]);
@@ -1499,35 +1435,35 @@ public class ContactAnalysis {
 
 					// addhesive tangential{
 					// ====
-					Gcfadh.row[p] = new SpVect(dof, 6);
+					Gcfadh.row[sn] = new SpVect(dof, 6);
 					kx = 0;
 					if (px != -1) {
-						Gcfadh.row[p].index[kx] = px;
-						Gcfadh.row[p].el[kx++] = tang.el[0];
+						Gcfadh.row[sn].index[kx] = px;
+						Gcfadh.row[sn].el[kx++] = tang.el[0];
 					}
 					if (p1y != -1) {
-						Gcfadh.row[p].index[kx] = py;
-						Gcfadh.row[p].el[kx++] = tang.el[1];
+						Gcfadh.row[sn].index[kx] = py;
+						Gcfadh.row[sn].el[kx++] = tang.el[1];
 					}
 
 					if (p1x >= 0) {
-						Gcfadh.row[p].index[kx] = p1x;
-						Gcfadh.row[p].el[kx++] = -alpha * tang.el[0];
+						Gcfadh.row[sn].index[kx] = p1x;
+						Gcfadh.row[sn].el[kx++] = -alpha * tang.el[0];
 					}
 					if (p1y >= 0) {
-						Gcfadh.row[p].index[kx] = p1y;
+						Gcfadh.row[sn].index[kx] = p1y;
 						;
-						Gcfadh.row[p].el[kx++] = -alpha * tang.el[1];
+						Gcfadh.row[sn].el[kx++] = -alpha * tang.el[1];
 					}
 
 					if (p2x >= 0) {
-						Gcfadh.row[p].index[kx] = p2x;
-						Gcfadh.row[p].el[kx++] = -beta * tang.el[0];
+						Gcfadh.row[sn].index[kx] = p2x;
+						Gcfadh.row[sn].el[kx++] = -beta * tang.el[0];
 					}
 					if (p2y >= 0) {
-						Gcfadh.row[p].index[kx] = p2y;
+						Gcfadh.row[sn].index[kx] = p2y;
 						;
-						Gcfadh.row[p].el[kx++] = -beta * tang.el[1];
+						Gcfadh.row[sn].el[kx++] = -beta * tang.el[1];
 					}
 
 					// ===
@@ -1535,39 +1471,39 @@ public class ContactAnalysis {
 					if (fric_coef[contId] == 0) {
 						tang.zero();
 					}
-					Gcf.row[p] = new SpVect(dof, 6);
+					Gcf.row[sn] = new SpVect(dof, 6);
 					kx = 0;
 					if (px != -1) {
-						Gcf.row[p].index[kx] = px;
-						Gcf.row[p].el[kx++] = tang.el[0];
+						Gcf.row[sn].index[kx] = px;
+						Gcf.row[sn].el[kx++] = tang.el[0];
 					}
 					if (p1y != -1) {
-						Gcf.row[p].index[kx] = py;
-						Gcf.row[p].el[kx++] = tang.el[1];
+						Gcf.row[sn].index[kx] = py;
+						Gcf.row[sn].el[kx++] = tang.el[1];
 					}
 
 					if (p1x >= 0) {
-						Gcf.row[p].index[kx] = p1x;
-						Gcf.row[p].el[kx++] = -alpha * tang.el[0];
+						Gcf.row[sn].index[kx] = p1x;
+						Gcf.row[sn].el[kx++] = -alpha * tang.el[0];
 					}
 					if (p1y >= 0) {
-						Gcf.row[p].index[kx] = p1y;
+						Gcf.row[sn].index[kx] = p1y;
 						;
-						Gcf.row[p].el[kx++] = -alpha * tang.el[1];
+						Gcf.row[sn].el[kx++] = -alpha * tang.el[1];
 					}
 
 					if (p2x >= 0) {
-						Gcf.row[p].index[kx] = p2x;
-						Gcf.row[p].el[kx++] = -beta * tang.el[0];
+						Gcf.row[sn].index[kx] = p2x;
+						Gcf.row[sn].el[kx++] = -beta * tang.el[0];
 					}
 					if (p2y >= 0) {
-						Gcf.row[p].index[kx] = p2y;
+						Gcf.row[sn].index[kx] = p2y;
 						;
-						Gcf.row[p].el[kx++] = -beta * tang.el[1];
+						Gcf.row[sn].el[kx++] = -beta * tang.el[1];
 					}
 
 					if (stick[sn]) {
-						G_stk.row[p] = Gcf.row[p].deepCopy();
+						G_stk.row[sn] = Gcf.row[sn].deepCopy();
 						// util.pr("node -_______________> "+sn+" stick
 						// "+stick[sn]);
 			/*			if (landed_stick[sn]) {
@@ -1593,7 +1529,7 @@ public class ContactAnalysis {
 
 						//}
 					} else {
-						G_stk.row[p] = Gcf.row[p].times(reduct);
+						G_stk.row[sn] = Gcf.row[sn].times(reduct);
 					}
 
 				}
@@ -1670,11 +1606,11 @@ public class ContactAnalysis {
 						Gc.row[sn].index[kx] = px;
 						Gc.row[sn].el[kx++] = normal.el[0];
 					}
-					if (p1y != -1) {
+					if (py != -1) {
 						Gc.row[sn].index[kx] = py;
 						Gc.row[sn].el[kx++] = normal.el[1];
 					}
-					if (p1z != -1) {
+					if (pz != -1) {
 						Gc.row[sn].index[kx] = pz;
 						Gc.row[sn].el[kx++] = normal.el[2];
 					}
@@ -1709,7 +1645,7 @@ public class ContactAnalysis {
 					}
 					if (p2z >= 0) {
 						Gc.row[sn].index[kx] = p2z;
-						;
+					
 						Gc.row[sn].el[kx++] = -beta * normal.el[2];
 					}
 
@@ -1744,8 +1680,8 @@ public class ContactAnalysis {
 					}
 				
 					Gc.row[sn].sortAndTrim(kx);
-					;
-
+					
+			//		Gc.row[sn].shownzA();
 				}
 			}
 
@@ -2040,20 +1976,28 @@ public class ContactAnalysis {
 					Node node4 = model.node[n4];
 					
 			
+			
 
 					Vect v1 = node1.getCoord();
 					Vect v2 = node2.getCoord();
 					Vect v3 = node3.getCoord();
 					Vect v4 = node4.getCoord();
 					
+		
+					Vect v13=v3.sub(v1);
+					Vect v24=v4.sub(v2);
+					
+					v1 = v1.add(v13.times(-extention_fact));
+					v3 = v3.add(v13.times(extention_fact));
+					v2 = v2.add(v24.times(-extention_fact));
+					v4 = v4.add(v24.times(extention_fact));
+					
 					Vect v12=v2.sub(v1);
 					Vect v23=v3.sub(v2);
 					Vect v34=v4.sub(v3);
 					Vect v41=v1.sub(v4);
-					
-					double totalArea=v12.cross(v23).norm()/2+v34.cross(v41).norm()/2;
-					
-			
+
+						
 					int ns = 0;
 					int[] nnr = model.getRegNodes(nreg);
 					int[] temp = new int[nnr.length];
@@ -2064,23 +2008,46 @@ public class ContactAnalysis {
 						Vect v2v = v.sub(v2);
 						Vect v3v = v.sub(v3);
 						Vect v4v = v.sub(v4);
-						double area1=v1v.cross(v12).norm()/2;
-						double area2=v2v.cross(v23).norm()/2;
-						double area3=v3v.cross(v34).norm()/2;
-						double area4=v4v.cross(v41).norm()/2;
 						
-						double sum=area1+area2+area3+area4;
-
 				
-						if (Math.abs(1-sum/totalArea) <1e-3) {
+						
+						Vect cross[]=new Vect[4];
+						
+						cross[0]=v12.cross(v1v);
+						cross[1]=v23.cross(v2v);
+						cross[2]=v34.cross(v3v);
+						cross[3]=v41.cross(v4v);
+						
+						
+						boolean infront=true;
+						for(int j=0;j<4;j++){
+							for(int m=j+1;m<4;m++){
+								double dot=cross[j].dot(cross[m]);
+								if(dot<0) {
+									infront=false;
+									break;
+								}
+								}
+							if(!infront) break;
+							}
+						
+						if(!infront) continue;
+						
+						Vect normal=v13.cross(v23);
+						double dist=Math.abs(v1v.dot(normal));
+						
+						if(dist>clearFact * minEdgeLenghth) continue;
 
 
 								temp[ns] = n;
 								ns++;
 							
-						}
+						
 
 					}
+					
+					util.pr("contact "+i+":  num. slave nodes ------------------------- " + ns);
+					
 					slaveNodes[i] = new Node[ns];
 
 					for (int k = 0; k < ns; k++) {
@@ -2125,7 +2092,7 @@ public class ContactAnalysis {
 
 							double proj = vv1.dot(edgeDir);
 							double vv1n = vv1.norm();
-							if (Math.abs(proj - vv1n) < clearFact * minEdgeLenghth) {
+							if (Math.abs(proj - vv1n) < 1e-4 * minEdgeLenghth) {
 								// util.pr(dot);
 
 								temp[ns] = n;
@@ -2228,10 +2195,19 @@ public class ContactAnalysis {
 						Vect v3 = node3.getCoord();
 						Vect v4 = node4.getCoord();
 						
+						Vect v13=v3.sub(v1);
+						Vect v24=v4.sub(v2);
+						
+						v1 = v1.add(v13.times(-extention_fact));
+						v3 = v3.add(v13.times(extention_fact));
+						v2 = v2.add(v24.times(-extention_fact));
+						v4 = v4.add(v24.times(extention_fact));
+						
 						Vect v12=v2.sub(v1);
 						Vect v23=v3.sub(v2);
 						Vect v34=v4.sub(v3);
 						Vect v41=v1.sub(v4);
+
 						
 						double totalArea=v12.cross(v23).norm()/2+v34.cross(v41).norm()/2;
 
@@ -2260,33 +2236,39 @@ public class ContactAnalysis {
 									Vect v = model.node[nx].getCoord();
 									cent=cent.add(v.times(.25));
 								}
-							
-								
-							//	boolean inisde=true;
-								
-							//	for(int k=0;k<4;k++){
-							///	int n11 = vertNumb[edgeLocalNodes[j][k]];
-					
-								//Vect v = model.node[n11].getCoord();
-								Vect v1v = cent.sub(v1);
-								Vect v2v = cent.sub(v2);
-								Vect v3v = cent.sub(v3);
-								Vect v4v = cent.sub(v4);
-								double area1=v1v.cross(v12).norm()/2;
-								double area2=v2v.cross(v23).norm()/2;
-								double area3=v3v.cross(v34).norm()/2;
-								double area4=v4v.cross(v41).norm()/2;
-								
-								double sum=area1+area2+area3+area4;
-								
-			
-		
-								if (Math.abs(1-sum/totalArea)>1e-4) {
 
-									continue;
-								
-								}
-				
+								Vect v = cent;
+								Vect v1v = v.sub(v1);
+								Vect v2v = v.sub(v2);
+								Vect v3v = v.sub(v3);
+								Vect v4v = v.sub(v4);
+									
+									Vect cross[]=new Vect[4];
+									
+									cross[0]=v12.cross(v1v);
+									cross[1]=v23.cross(v2v);
+									cross[2]=v34.cross(v3v);
+									cross[3]=v41.cross(v4v);
+									
+									
+									boolean infront=true;
+									for(int k=0;k<4;k++){
+										for(int m=k+1;m<4;m++){
+											double dot=cross[k].dot(cross[m]);
+											if(dot<0) {
+												infront=false;
+												break;
+											}
+											}
+										if(!infront) break;
+										}
+									
+									if(!infront) continue;
+									
+									Vect normal=v13.cross(v23);
+									double dist=Math.abs(v1v.dot(normal));
+									
+									if(dist>1e-4  * minEdgeLenghth) continue;
 					
 								for(int p=0;p<4;p++){
 									int n12 = vertNumb[edgeLocalNodes[j][p]];
@@ -2300,7 +2282,7 @@ public class ContactAnalysis {
 
 						}
 
-					
+						util.pr("contact "+i+":  num. master facets ------------------------- " + nm);
 						master_entities[i] = new MasterEntity[nm];
 
 						for (int k = 0; k < nm; k++) {
@@ -2455,8 +2437,8 @@ public class ContactAnalysis {
 					penalMax = val3;
 
 				// double max=(val1+val2)/2;
-				double max = Math.max(Math.max(val1, val2), val3);
-				/// double max=Math.sqrt(val1*val1+val2*val2);
+			//	double max = Math.max(Math.max(val1, val2), val3);
+			double max=Math.sqrt(val1*val1+val2*val2+val3*val3);
 				// util.pr(max);
 				// max=1e10;
 				//
@@ -2721,7 +2703,7 @@ public class ContactAnalysis {
 		double loadFactor0 = 1000;
 
 		if (model.dim == 3)
-			loadFactor0 = 1;
+			loadFactor0 = 50;
 
 		boolean axi = (model.struc2D == 2);
 
