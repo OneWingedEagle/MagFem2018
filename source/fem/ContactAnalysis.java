@@ -154,13 +154,13 @@ public class ContactAnalysis {
 
 		direct_slv = new MatSolver();
 
-		itmax = 1;
+		itmax = 5;
 		nr_itmax = 10;
 		nLoads = 1;
 		n_modifNR = 0;
 
 		fp = 1;
-		fr = .1;
+		fr = .02;
 
 		aug_normal = true;
 		aug_tang = true;
@@ -337,7 +337,7 @@ public class ContactAnalysis {
 
 					for (int k = 0; k < gap.length; k++) {
 						pgap.el[k] *= weights.el[k] * pf;
-						pslide.el[k] *= -weights.el[k] * pft;
+						pslide.el[k] *= weights.el[k] * pft;
 					}
 
 					double ff = 1;
@@ -545,8 +545,10 @@ public class ContactAnalysis {
 			}
 		model.writeNodalField(model.resultFolder + "\\slave_normal.txt", 2);
 	///	new SpVect(Fc).shownzA();
-		model.setU(Fc.times(0).add(Fcf.times(1)).times(-1));
-		// model.setU(aug_N.times(1).add(aug_T.times(1)).times(-1));
+		if(aug_N.norm()==0)
+			model.setU(Fc.times(1).add(Fcf.times(1)).times(-1));
+		else
+		 model.setU(aug_N.times(1).add(aug_T.times(1)).times(-1));
 		model.writeNodalField(model.resultFolder + "\\contact_force.txt", -1);
 		}
 
@@ -937,8 +939,8 @@ public class ContactAnalysis {
 
 	
 
-				//	Vect deltaDisp = u.sub(u1.times(alpha).add(u2.times(beta)));
-					Vect deltaDisp = v.sub(v1.times(alpha).add(v2.times(beta)));
+					Vect deltaDisp = u.sub(u1.times(alpha).add(u2.times(beta)));
+				//	Vect deltaDisp = v.sub(v1.times(alpha).add(v2.times(beta)));
 					
 					Vect vr=new Vect(u.length);
 					Vect v1r=new Vect(u.length);
@@ -961,7 +963,7 @@ public class ContactAnalysis {
 				
 					Vect deltaDispRef = vr.sub(v1r.times(alpha).add(v2r.times(beta)));
 					
-					deltaDisp=deltaDisp.sub(deltaDispRef);
+				//	deltaDisp=deltaDisp.sub(deltaDispRef);
 					double proj = deltaDisp.dot(normal);
 
 					Vect disp_tang = deltaDisp.sub(normal.times(proj));
