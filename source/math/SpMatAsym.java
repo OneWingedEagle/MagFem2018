@@ -231,6 +231,21 @@ public class SpMatAsym  {
 		return D;
 	}
 	
+	public Vect colVector(int col){
+
+
+		Vect v=new Vect(nRow);
+		for(int i=0;i<nRow;i++)
+			for(int j=0;j<row[i].getNzLength();j++)
+				if(row[i].index[j]==col){
+					v.el[i]=row[i].el[j];
+					break;
+				}
+	
+		return v;
+	}
+	
+	
 	public SpMatAsym offDiag(){
 
 		if(nRow!=getnCol()) throw new IllegalArgumentException("Matrix is not square.");
