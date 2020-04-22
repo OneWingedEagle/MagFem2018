@@ -535,16 +535,15 @@ public class MechMatrix {
 
 		Vect bU1=model.bU.add(model.getbUt(mode));
 
-
-		if(iter<2 && !model.loadPrevMech){
+		if(iter<1&& !model.loadPrevMech){
 			
 			
 			Vect u=null;
 			
-			boolean sss=true;
+/*			boolean sss=false;
 		if(sss){
 			u=getDeformation( model, solver, mode);
-		}else{
+		}else{*/
 
 		/*	SpMat  Ks=model.Ks.deepCopy();
 
@@ -561,10 +560,14 @@ public class MechMatrix {
 			}
 			
 			u.timesVoid(model.Ci);	*/
-		}
+		//}
 			
-			if(iter==1)
-				model.ud=u.sub(model.up).times(1.0/dt);	
+			//if(iter==1)
+			util.pr(bU1.norm()+"  <===============================");
+			u=new Vect(bU1.length);
+			model.ud=new Vect(bU1.length);
+			model.udd=bU1.div(model.Ms.diagSym());
+		//	model.ud=u.sub(model.up).times(1.0/dt);	
 			
 			model.up=u.deepCopy();
 			return u;

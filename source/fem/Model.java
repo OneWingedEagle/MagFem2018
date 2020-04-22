@@ -134,7 +134,7 @@ public class Model{
 
 		node=new Node[this.numberOfNodes+1];
 		for(int i=1;i<=this.numberOfNodes;i++)
-			node[i]=new Node(dim,i);
+			node[i]=new Node(i,dim);
 	}
 
 
