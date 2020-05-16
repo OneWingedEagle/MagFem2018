@@ -1029,8 +1029,10 @@ public class Loader {
 			else
 				model.timeIntegMode=0;
 			
-			line=br.readLine();
-			line=br.readLine();
+		//	line=br.readLine();
+		//	line=br.readLine();
+			line=getNextDataLine(br," /* CONTACT");
+			util.pr(line);
 			 if(line.startsWith("contact")) {
 				model.contact=new ContactAnalysis();
 			model.contact.readContact(this, br,model);
@@ -2016,7 +2018,7 @@ public void average(String bun1, String bun2,String bun3){
 	}
 
 	
-	private double[] getTabedData(String line){
+	public double[] getTabedData(String line){
 		String[] sp=line.split(regex);	
 		int L=sp.length;
 		double[] v=new double[L];
@@ -2534,6 +2536,24 @@ public String getNextDataLine(BufferedReader br) throws IOException{
 return line;
 }
 
+public String getNextDataLine(BufferedReader br,String title) throws IOException{
+	String line="";
+
+	util.pr(title);
+
+	
+	while(true){
+		line=br.readLine();
+		if(line==null) break;
+		
+		if(line.equals("")) continue;
+
+		if(!line.startsWith("/")) break;
+	}
+	util.pr(line);
+	
+return line;
+}
 
 public void setDataMag2D(Model model,BufferedReader br){
 

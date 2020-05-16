@@ -100,24 +100,31 @@ public class ContactAnalysis {
 	double pft = 1e8;
 	double margin = 0.01;
 
-	public int method = 0;
-	int n_modifNR = 0;
-	int itmax = 1;
-	int nr_itmax = 1;
-	int nLoads = 1;
-
-	Vect disp, rhs;
-	boolean applyNodal = false;
-	boolean initialized = false;
-
+	int n_modifNR0 = 5;
+	int aug_itmax0 = 3;
+	int nr_itmax0 = 10;
+	int nLoads0 = 1;
+	double nr_tol0=1e-3;
+	double aug_tol0=1e-6;
 	
+	double nr_tol;
+	double aug_tol;
+	
+	int n_modifNR;
+	int aug_itmax;
+	int nr_itmax;
+	int nLoads;
+	
+	Vect disp, rhs;
+	boolean applyNodal = true;
+	boolean initialized = false;
 	boolean twice_check =false;
 	double fp = 1;
 	double fr = 1;
 	boolean aug_normal = true;
 	boolean aug_tang = true;
 
-	double extention_fact = 0.000;
+	double extention_fact = 0.01;
 	double clrFact = 1e-10;
 	double aug_disp_tol = 1e-12;
 	double gap_tol = 1e-8;
@@ -143,34 +150,22 @@ public class ContactAnalysis {
 		
 		this.K_hat=Khat1.deepCopy();
 		this.rhs_hat=bhat1.deepCopy();
-		//this.rhs_hat.timesVoid((step+1.)/model.nTsteps);
+
 		
 		if(step==model.nTsteps-1) plot_radial=true;
 		
-
-/*		fn_ratio = new double[numContacts];
-		for (int i = 0; i < numContacts; i++)
-			fn_ratio[i] = 1.;*/
-
 		solver.terminate(false);
 		this.model = model;
 
 		direct_slv = new MatSolver();
 
-		itmax =1;
-		nr_itmax = 1;
-		nLoads = 1;
-		n_modifNR = 0;
 
-		fp = 0.01;
-		fr = .02;
 
-		aug_normal = true;
+		fp = 1;
+		fr = .01;
+
+		aug_normal = false;
 		aug_tang = true;
-
-		double nr_tol = 1e-2;
-		double modif_tol = nr_tol;
-
 
 		applyNodal = true;
 
@@ -246,8 +241,8 @@ public class ContactAnalysis {
 
 			Vect dF = null;
 
-			Vect[] urs = new Vect[itmax];
-			for (int i = 0; i < itmax; i++)
+			Vect[] urs = new Vect[aug_itmax];
+			for (int i = 0; i < aug_itmax; i++)
 				urs[i] = new Vect(xr.length);
 
 
@@ -261,7 +256,7 @@ public class ContactAnalysis {
 				double factor = (load_iter + 1.) / nLoads;
 				rhs = load.times(factor);
 
-				for (int cont_iter = 0; cont_iter < itmax; cont_iter++) {
+				for (int cont_iter = 0; cont_iter < aug_itmax; cont_iter++) {
 
 					util.pr("cont_iter: " + cont_iter);
 
@@ -289,7 +284,7 @@ public class ContactAnalysis {
 								KK.lu();
 							}
 
-							modifiedNR(solver, rhs, direct, modif_tol);
+							modifiedNR(solver, rhs, direct, nr_tol);
 
 							modif_done = true;
 						}
@@ -427,19 +422,7 @@ public class ContactAnalysis {
 				}
 			}
 
-/*			if(model.numberOfNodes>=2787){
 
-			int p=u_index[2787][1];
-			if(p!=-1){
-			top.el[step]=disp.el[p];
-			if(model.nTsteps>1 && step==model.nTsteps-1){
-				util.pr("=============================== "+step);
-
-				util.plot(top);
-				top.show();
-			}
-			}
-			}*/
 			
 			if(step==model.nTsteps-1){
 			util.pr("NR error");
@@ -484,12 +467,12 @@ public class ContactAnalysis {
 			// ur.show();
 
 			if (plot_radial) {
-				double[][] data = new double[xr.length][itmax + 1];
+				double[][] data = new double[xr.length][aug_itmax + 1];
 				for (int k = 0; k < xr.length; k++) {
 
 					data[k][0] = xr.el[k];
 
-					for (int i = 0; i < itmax; i++)
+					for (int i = 0; i < aug_itmax; i++)
 						data[k][i + 1] = urs[i].el[k];
 
 				}
@@ -2083,20 +2066,54 @@ public class ContactAnalysis {
 	public void readContact(Loader loader, BufferedReader br, Model model) throws IOException {
 
 		model.setEdge();
+		
 
 		double minEdgeLenghth = model.minEdgeLength;
 		util.pr(" minEdgeLength ------------------------- " + minEdgeLenghth);
 		double clearFact = 1e-4;
+		
+		String line = loader.getNextDataLine(br," / * NUM. CONTACT * NR_ITR. * AUG_ITER  * NLOADS  * MNR /");
 
-		String line = br.readLine();
+		int[] integs=loader.getCSInt(line);
+	
+		
+		
+		int numCont = integs[0];
 
-		int numCont = loader.getIntData(line);
-		if (numCont < 0) {
-			numCont = -numCont;
-			method = 1;
+		nr_itmax = nr_itmax0;
+		aug_itmax =aug_itmax0;
+		nLoads = nLoads0;
+		n_modifNR = n_modifNR0;
+		if(integs.length>1){
+			nr_itmax = integs[1];
+		}
+		
+		if(integs.length>2){
+			aug_itmax = integs[2];
+		}
+		
+		if(integs.length>3){
+			nLoads = integs[3];
+		}
+		
+		if(integs.length>4){
+			n_modifNR = integs[4];
 		}
 
+
 		numContacts = numCont;
+		
+		nr_tol=nr_tol0;
+		aug_tol=aug_tol0;
+		
+		if(integs.length>1){
+			
+			 line = loader.getNextDataLine(br," / * NR_TOL  *  AUG_TOL * /");
+			 double[] tols=loader.getTabedData(line);
+			 nr_tol=tols[0];
+			 if(integs.length>2)
+			 aug_tol=tols[1];
+		}
 
 		slaveNodes = new Node[numCont][];
 		
@@ -2111,18 +2128,18 @@ public class ContactAnalysis {
 		master_edge_size = new double[numCont];
 
 		for (int i = 0; i < numCont; i++) {
-			line = br.readLine();
+			line = loader.getNextDataLine(br," /* PENALTY FACTOR */");
 			penFactor[i] = loader.getScalarData(line);
-			line = br.readLine();
+			line = loader.getNextDataLine(br," /* COEF OF FRICTION */");
 			fric_coef[i] = loader.getScalarData(line);
-			line = br.readLine();
+			line =loader.getNextDataLine(br);
 
 			int type = 0;
 			if (!line.contains("slav"))
 				type = loader.getIntData(line);
 
 			if (type == 0) {
-				line = br.readLine();
+				line = loader.getNextDataLine(br," /* NUM SLAVE NODES */");
 
 				int ns = loader.getIntData(line);
 
@@ -2137,20 +2154,22 @@ public class ContactAnalysis {
 			} else {
 				if (model.dim == 3) {
 					//util.pr("This format of setting contact not ready yet.");
-					line = br.readLine();
+					line = loader.getNextDataLine(br," /* REGION ID */");
 					int nreg = loader.getIntData(line);
-					line = br.readLine();
+					
+					line = loader.getNextDataLine(br," /* CORENR 1 */");
 
 					int n1 = loader.getIntData(line);
 
-					line = br.readLine();
+					line = loader.getNextDataLine(br," /* CORENR 2 */");
 
 					int n2 = loader.getIntData(line);
 					
-					line = br.readLine();
+					line = loader.getNextDataLine(br," /* CORENR 3 */");
 
 					int n3 = loader.getIntData(line);
-					line = br.readLine();
+					
+					line = loader.getNextDataLine(br,"/* CORENR 4 */");
 
 					int n4 = loader.getIntData(line);
 
@@ -2354,26 +2373,27 @@ public class ContactAnalysis {
 					//	edgeLocalNodes = arr1;
 				//	}
 						
-						line = br.readLine();
+		
+						line = loader.getNextDataLine(br," /* REGION ID */");
 						int nreg = loader.getIntData(line);
 						
 						masterReg[i] = nreg;
 						
-						line = br.readLine();
+						line = loader.getNextDataLine(br," /* CORENR 1 */");
 
 						int n1 = loader.getIntData(line);
 
-						line = br.readLine();
+						line = loader.getNextDataLine(br," /* CORENR 2 */");
 
 						int n2 = loader.getIntData(line);
 						
-						line = br.readLine();
+						line = loader.getNextDataLine(br," /* CORENR 3 */");
 
 						int n3 = loader.getIntData(line);
-						line = br.readLine();
+						
+						line = loader.getNextDataLine(br,"/* CORENR 4 */");
 
 						int n4 = loader.getIntData(line);
-
 						Node node1 = model.node[n1];
 						Node node2 = model.node[n2];
 						Node node3 = model.node[n3];
@@ -2570,7 +2590,7 @@ public class ContactAnalysis {
 
 		}
 	
-	boolean node_duplic=true;
+	boolean node_duplic=false;
 	if(node_duplic){
 		
 		for (int contId = 0; contId < numContacts; contId++) {
@@ -2647,6 +2667,7 @@ public class ContactAnalysis {
 
 		
 				boolean on_master=masterReg[contId]==ir;
+				
 				for(int i=md1.region[ir].getFirstEl();i<=md1.region[ir].getLastEl();i++)	{
 					int[] vn=model.element[i].getVertNumb();
 						
@@ -2683,6 +2704,7 @@ public class ContactAnalysis {
 				//util.pr(sn+"  "+slaveNodes[contId][i].id);
 				}
 			}
+			if(contId2!=contId)
 			for (int i = 0; i <master_entities[contId2].length; i++) {
 				
 				int mn1 = master_entities[contId2][i].nodeIds[0];
@@ -3018,12 +3040,12 @@ public class ContactAnalysis {
 		
 		top=new Vect(model.nTsteps);
 		
-		 gap_err = new Vect(itmax*model.nTsteps);
-		 aug_disp_err = new Vect(itmax*model.nTsteps);
-		 slide_err = new Vect(itmax*model.nTsteps);
+		 gap_err = new Vect(aug_itmax*model.nTsteps);
+		 aug_disp_err = new Vect(aug_itmax*model.nTsteps);
+		 slide_err = new Vect(aug_itmax*model.nTsteps);
 
-		 nr_err = new Vect(nLoads * itmax * (nr_itmax + n_modifNR)*model.nTsteps);
-		 nr_it = new int[nLoads * itmax * (nr_itmax + n_modifNR)*model.nTsteps];
+		 nr_err = new Vect(nLoads * aug_itmax * (nr_itmax + n_modifNR)*model.nTsteps);
+		 nr_it = new int[nLoads * aug_itmax * (nr_itmax + n_modifNR)*model.nTsteps];
 	}
 	
 	public Vect getDeformation(Model model, SpMatSolver solver, int mode,int step) {
@@ -3031,6 +3053,11 @@ public class ContactAnalysis {
 		solver.terminate(false);
 		System.out.println(" Static analysis....");
 
+		double loadFactor0 = 1000;
+
+		if (model.dim == 3)
+			loadFactor0 = 1;
+		
 		if (model.centrigForce) {
 			model.setNodalMass();
 			double rpm = 7000;
@@ -3039,7 +3066,7 @@ public class ContactAnalysis {
 			for (int i = 1; i <= model.numberOfNodes; i++) {
 				Vect v = model.node[i].getCoord();
 				double m = model.node[i].getNodalMass();
-				Vect F = v.times(omeag2 * m);
+				Vect F = v.times(omeag2 * m/loadFactor0);
 				model.node[i].setF(F);
 			}
 
@@ -3050,10 +3077,7 @@ public class ContactAnalysis {
 		
 		bU1.timesVoid((step+1.)/model.nTsteps);
 		
-		double loadFactor0 = 5000;
 
-		if (model.dim == 3)
-			loadFactor0 = .1;
 
 		boolean axi = (model.struc2D == 2);
 
