@@ -2132,7 +2132,8 @@ public class ContactAnalysis {
 			penFactor[i] = loader.getScalarData(line);
 			line = loader.getNextDataLine(br," /* COEF OF FRICTION */");
 			fric_coef[i] = loader.getScalarData(line);
-			line =loader.getNextDataLine(br);
+			line = loader.getNextDataLine(br," / * data type */");
+
 
 			int type = 0;
 			if (!line.contains("slav"))
@@ -2147,7 +2148,6 @@ public class ContactAnalysis {
 
 				for (int k = 0; k < ns; k++) {
 					line = br.readLine();
-
 					int sn = loader.getIntData(line);
 					slaveNodes[i][k] = model.node[sn];
 				}
@@ -2260,22 +2260,22 @@ public class ContactAnalysis {
 						
 						//util.pr(sn);
 					}
-				//	util.pr(ns);
+				//	util.pr(ns);ss
 
 
 				} else {
-					line = br.readLine();
+					line = loader.getNextDataLine(br," /* REGION ID */");
+
 					int nreg = loader.getIntData(line);
 					
 					slaveReg[i] = nreg;
 				
 					
-					line = br.readLine();
+					line = loader.getNextDataLine(br," / * n1 */");
 
 					int n1 = loader.getIntData(line);
 
-					line = br.readLine();
-
+					line = loader.getNextDataLine(br," / * n2 */");
 					int n2 = loader.getIntData(line);
 
 					Node node1 = model.node[n1];
@@ -2319,7 +2319,7 @@ public class ContactAnalysis {
 				}
 			}
 
-			line = br.readLine();
+			line = loader.getNextDataLine(br," / * data type */");
 			type = 0;
 			if (!line.contains("mast"))
 				type = loader.getIntData(line);
@@ -2507,14 +2507,17 @@ public class ContactAnalysis {
 						
 						
 				} else {
-					line = br.readLine();
+
+
+					line = loader.getNextDataLine(br," / * Reg ID */");
+
 					int nreg = loader.getIntData(line);
 					
 					masterReg[i] = nreg;
 					
-					line = br.readLine();
+					line = loader.getNextDataLine(br," / * n1 */");
 					int n1 = loader.getIntData(line);
-					line = br.readLine();
+					line = loader.getNextDataLine(br," / * n2 */");
 					int n2 = loader.getIntData(line);
 					Node node1 = model.node[n1];
 					Node node2 = model.node[n2];
@@ -2590,7 +2593,7 @@ public class ContactAnalysis {
 
 		}
 	
-	boolean node_duplic=false;
+	boolean node_duplic=true;
 	if(node_duplic){
 		
 		for (int contId = 0; contId < numContacts; contId++) {
@@ -2666,7 +2669,7 @@ public class ContactAnalysis {
 			for(int ir=1;ir<=md1.numberOfRegions;ir++)		{
 
 		
-				boolean on_master=masterReg[contId]==ir;
+				boolean on_slave=slaveReg[contId]==ir;
 				
 				for(int i=md1.region[ir].getFirstEl();i<=md1.region[ir].getLastEl();i++)	{
 					int[] vn=model.element[i].getVertNumb();
@@ -2675,11 +2678,11 @@ public class ContactAnalysis {
 						if(map[vn[k]]==0 )
 							md1.element[i].setVertNumb(k,vn[k]);
 						else{
-							if(on_master)
-								md1.element[i].setVertNumb(k,vn[k]);
-							else
+							if(on_slave)
 								md1.element[i].setVertNumb(k,map[vn[k]]);
-						
+							else
+								md1.element[i].setVertNumb(k,vn[k]);
+
 						}
 					}
 
@@ -2696,15 +2699,23 @@ public class ContactAnalysis {
 			
 			model=md1.deepCopy();
 			model.meshFilePath=md1.meshFilePath;
-		for (int contId2 = 0; contId2 < numContacts; contId2++) {
+			
+			
+			for (int i = 0; i <slaveNodes[contId].length; i++) {
+				int sn = slaveNodes[contId][i].id;
+			
+				if(map[sn]>0){ slaveNodes[contId][i]=model.node[map[sn]];
+				
+				}
+/*		for (int contId2 = 0; contId2 < numContacts; contId2++) {
 			for (int i = 0; i <slaveNodes[contId2].length; i++) {
 				int sn = slaveNodes[contId2][i].id;
 			
 				if(map[sn]>0){ slaveNodes[contId2][i]=model.node[map[sn]];
-				//util.pr(sn+"  "+slaveNodes[contId][i].id);
+				util.pr(sn+"  "+slaveNodes[contId][i].id);
 				}
-			}
-			if(contId2!=contId)
+			}*/
+/*			if(contId2!=contId)
 			for (int i = 0; i <master_entities[contId2].length; i++) {
 				
 				int mn1 = master_entities[contId2][i].nodeIds[0];
@@ -2716,16 +2727,30 @@ public class ContactAnalysis {
 				if(map[mn2]>0){
 					master_entities[contId2][i].nodeIds[1]=map[mn2];
 				}
-			}
+			}*/
 		}
 			String file = folder + "//duplicated.txt";
-			if(contId==numCont-1){
+			
+			for (int i = 1; i <= model.numberOfElements; i++) {
+				
+				int[] vn=model.element[i].getVertNumb();
+				for(int k=0;k<vn.length;k++){
+						Vect v=model.node[vn[k]].getCoord();
+
+						v.el[0]+=.01*i;
+						//v.el[1]+=.01*i;
+						model.node[vn[k]].setCoord(v);
+				}
+				
+			}
+			
+			if(contId==-numCont-1){
 				int[] nns=model.getRegNodes(7);
 				for (int i = 0; i < nns.length; i++) {
 					int n = nns[i];
 					Vect v=model.node[n].getCoord();
-					v.el[0]+=-.001;
-					v.el[1]+=.001;
+					v.el[0]+=-.01;
+					v.el[1]+=.01;
 					
 					model.node[n].setCoord(v);
 				
