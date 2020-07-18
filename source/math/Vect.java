@@ -595,7 +595,7 @@ public Vect add(double a){
 
 	
 	public int[] bubble(){
-		if(length<1) throw new IllegalArgumentException("Null vector");
+		//if(length<1) throw new IllegalArgumentException("Null vector");
 		int[] indice=new int[length];
 		for(int i=0;i<length;i++)
 			indice[i]=i;

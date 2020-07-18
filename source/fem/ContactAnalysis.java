@@ -162,31 +162,18 @@ public class ContactAnalysis {
 
 
 		fp = 1;
-		fr = .01;
+		fr = .00000;
 
 		aug_normal = false;
 		aug_tang = true;
 
 		applyNodal = true;
 
-		int nmu = 1;
-		Vect mus = new Vect(nmu);
-		Vect mm = new Vect(nmu);
-
-
-
+		
 		KK = null;
 
 		boolean direct = true;
-
-
-		for (int im = 0; im < nmu; im++) {
-		///	disp.zero();
-		//	model.setU(disp);
-			mus.el[im] =1e3 + .1 * (im);
-			for (int contId = 0; contId < numContacts; contId++)
-				fric_coef[contId] = mus.el[im];
-			
+	
 
 
 			if(!initialized){
@@ -217,6 +204,7 @@ public class ContactAnalysis {
 				}
 			}
 
+			util.pr(nout+"  <==== ");
 			Vect xr = new Vect(nout);
 
 	
@@ -477,22 +465,16 @@ public class ContactAnalysis {
 
 				}
 				// util.show(data);
+				if(data.length>0)
 				util.plotBunch(data);
 				// util.plot(x,ur);
 			}
 			
 
-			mm.el[im] = disp.abs().max();
 
 		}
-		if (nmu > 1)
-			util.plot(mus, mm);
-		mm.show("%5.4e");
+	
 
-		// s6.show("%5.4e");
-		// util.plot(s6);
-
-		// model.setU(new Vect(u.length));
 
 			for (int contId = 0; contId < numContacts; contId++)
 				for (int k = 0; k < master_entities[contId].length; k++) {
@@ -556,15 +538,15 @@ public class ContactAnalysis {
 		Fcf=Kcf.smul(disp);
 	///	new SpVect(Fc).shownzA();
 		if(aug_N.norm()==0)
-			model.setU(Fc.times(0).add(Fcf.times(1)).times(-1));
+			model.setU(Fc.times(1).add(Fcf.times(1)).times(-1));
 		else
-		 model.setU(aug_N.times(0).add(aug_T.times(1)).times(-1));
+		 model.setU(aug_N.times(1).add(aug_T.times(1)).times(-1));
 		for (int i = 1; i <= model.numberOfNodes; i++) {
 			// model.node[i].u.el[1]=0;
 		}
 		
 		model.writeNodalField(model.resultFolder + "\\contact_force.txt", -1);
-		}
+		
 
 		model.setU(disp);
 
@@ -582,6 +564,7 @@ public class ContactAnalysis {
 		} else {
 			obtain_node_node3D();
 			assembleConstraintMats3D();
+			//node_node.shownzA();
 		///	Gc.shownzA();
 		}
 
@@ -589,7 +572,7 @@ public class ContactAnalysis {
 
 		if (totalnumContactingNodes != 0) {
 ///Gc.shownzA();
-			Gct = Gc.transpose(100);
+			Gct = Gc.transpose(500);
 
 			Kadh = new SpMat(dof, dof);
 
@@ -658,14 +641,14 @@ public class ContactAnalysis {
 			Kc.times(pf);
 
 
-			Gcft = Gcf.transpose(100);
-			G_stkt = G_stk.transpose(100);
+			Gcft = Gcf.transpose(500);
+			G_stkt = G_stk.transpose(500);
 
 			Kcf = new SpMat(dof, dof); // Gct*Gc
 
 			// === adhisve tang
 			Kadhf = new SpMat(dof, dof);
-			SpMatAsym Gcfadht = Gcfadh.transpose(100);
+			SpMatAsym Gcfadht = Gcfadh.transpose(500);
 
 			for (int i = 0; i < Gcfadht.nRow; i++) {
 				if (Gcfadht.row[i].nzLength > 0) {
@@ -733,6 +716,9 @@ public class ContactAnalysis {
 	private void addMatrices() {
 
 		if (Kc != null) {
+			if(Kcf!=null)
+				Kc=Kc.addGeneral(Kcf);
+		///	Kcf.shownzA();
 
 			Ks = K_hat.addGeneral(Kc);
 			
@@ -1149,7 +1135,7 @@ public class ContactAnalysis {
 							
 					normal = normal.normalized();
 				
-					normal=new Vect(0,1,0);
+			//	normal=new Vect(0,-1,0);
 					normals[contId][k] = normal.deepCopy();
 
 				//	 normal.hshow();
@@ -2072,11 +2058,10 @@ public class ContactAnalysis {
 		util.pr(" minEdgeLength ------------------------- " + minEdgeLenghth);
 		double clearFact = 1e-4;
 		
-		String line = loader.getNextDataLine(br," / * NUM. CONTACT * NR_ITR. * AUG_ITER  * NLOADS  * MNR /");
+		String line = loader.getNextDataLine(br," / * N_CONTACT * NR_ITR. * AUG_ITER  * NLOADS  * MNR /");
 
 		int[] integs=loader.getCSInt(line);
 	
-		
 		
 		int numCont = integs[0];
 
@@ -2133,7 +2118,6 @@ public class ContactAnalysis {
 			line = loader.getNextDataLine(br," /* COEF OF FRICTION */");
 			fric_coef[i] = loader.getScalarData(line);
 			line = loader.getNextDataLine(br," / * data type */");
-
 
 			int type = 0;
 			if (!line.contains("slav"))
@@ -2593,7 +2577,8 @@ public class ContactAnalysis {
 
 		}
 	
-	boolean node_duplic=true;
+	boolean node_duplic=false;
+	
 	if(node_duplic){
 		
 		for (int contId = 0; contId < numContacts; contId++) {
@@ -2707,27 +2692,7 @@ public class ContactAnalysis {
 				if(map[sn]>0){ slaveNodes[contId][i]=model.node[map[sn]];
 				
 				}
-/*		for (int contId2 = 0; contId2 < numContacts; contId2++) {
-			for (int i = 0; i <slaveNodes[contId2].length; i++) {
-				int sn = slaveNodes[contId2][i].id;
-			
-				if(map[sn]>0){ slaveNodes[contId2][i]=model.node[map[sn]];
-				util.pr(sn+"  "+slaveNodes[contId][i].id);
-				}
-			}*/
-/*			if(contId2!=contId)
-			for (int i = 0; i <master_entities[contId2].length; i++) {
-				
-				int mn1 = master_entities[contId2][i].nodeIds[0];
-				int mn2 = master_entities[contId2][i].nodeIds[1];
-			
-				if(map[mn1]>0){
-					master_entities[contId2][i].nodeIds[0]=map[mn1];
-				}
-				if(map[mn2]>0){
-					master_entities[contId2][i].nodeIds[1]=map[mn2];
-				}
-			}*/
+
 		}
 			String file = folder + "//duplicated.txt";
 			
@@ -2756,16 +2721,7 @@ public class ContactAnalysis {
 				
 					
 				}
-		/*		nns=model.getRegNodes(2);
-				for (int i = 0; i < nns.length; i++) {
-					int n = nns[i];
-					Vect v=model.node[n].getCoord();
-					v.el[1]+=-.05;
-					
-					model.node[n].setCoord(v);
-				
-					
-				}*/
+
 			}
 			model.writeMesh(file);
 		
@@ -2776,6 +2732,14 @@ public class ContactAnalysis {
 		
 	}
 
+	
+	for (int contId = 0; contId < numContacts; contId++) {
+		Node[] sns = slaveNodes[contId];
+		MasterEntity[]  med = master_entities[contId];
+		util.pr("===== Slave Nodes ====  "+sns.length);
+		util.pr("===== Master Edges/Facets ====  "+med.length);
+		
+	}
 	}
 
 	private void resetFreedNodes() {
@@ -3081,7 +3045,7 @@ public class ContactAnalysis {
 		double loadFactor0 = 1000;
 
 		if (model.dim == 3)
-			loadFactor0 = 1;
+			loadFactor0 = 10;
 		
 		if (model.centrigForce) {
 			model.setNodalMass();
@@ -3096,7 +3060,19 @@ public class ContactAnalysis {
 			}
 
 		}
-		
+		else if(model.dim == 3){
+
+				for (int i = 1; i <= model.numberOfNodes; i++) {
+					Vect v = model.node[i].getCoord();
+					if(v.el[1]>.299){
+						Vect F = new Vect(0,-300,0);
+					
+					model.node[i].setF(F);
+					}
+				}
+
+			
+		}
 
 		Vect bU1=model.bU.add(model.getbUt(mode));
 		

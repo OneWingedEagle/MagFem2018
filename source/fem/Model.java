@@ -1457,6 +1457,57 @@ public class Model{
 			this.setStiffMat(dyn);
 
 
+
+		Vect u=new Vect();
+		
+		
+
+		if(this.numberOfUnknownU!=0){
+
+			if(this.nonLin){
+				
+				MatNonAnalysis matNon=new MatNonAnalysis();
+				u= matNon.getDeformation(this, solver,defMode,step);
+				this.setU(u);	
+				if(stress)
+					this.setStress();
+				return u;
+			}
+			if(contact!=null) return getDeformationContact(step);
+
+			u=this.mechMat.getDeformation(this, solver,defMode);
+
+			this.setU(u);	
+
+			double un,umax=0; int im=1;
+			for(int i=1;i<=this.numberOfNodes;i++){
+				if(this.node[i].u!=null ){
+					un=this.node[i].u.norm();
+
+					if(un>umax) {umax=un; im=i;}
+				}
+			}
+
+			System.out.println("Deformation Max: "+umax+" at node "+im);
+		}
+
+
+		if(stress)
+			this.setStress();
+
+		return u;
+
+
+	}
+	
+	public Vect  setDeformationNonlin(int step,boolean stress){
+
+		boolean dyn=false;
+
+		if(this.Ks==null)
+			this.setStiffMat(dyn);
+
+
 		Vect u=new Vect();
 
 		if(this.numberOfUnknownU!=0){

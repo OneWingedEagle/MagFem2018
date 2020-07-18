@@ -16,7 +16,7 @@ public class Region {
 	private int firstElement,lastElement;
 	public  boolean hasJ,stranded,circuit, hasM,isConductor,isNonLinear,deformable,MS,rotor,thermal,isotElast;
 	public double Jz,windingSurf,NtS,current,currentp,currCoef1,terminalVoltage0,terminalVoltage,terminalVoltagep,inducedVoltage;
-	
+	double yield, tang_young;
 	public Region(int dim)
 	{
 		this.dim=dim;
@@ -186,6 +186,8 @@ public class Region {
 		this.ro=ro;
 	}
 	
+
+	
 	public void setThermalCoef(double alpha){
 		this.thermalCoef=alpha;
 		if(alpha!=0) thermal=true;
@@ -205,6 +207,23 @@ public class Region {
 		return this.deltaT;
 	
 	}
+	
+	public void setYield(double sy){
+		this.yield=sy;
+	}
+	public void setTangYoung(double Kt){
+		this.tang_young=Kt;
+	}
+	
+	
+	public double getYield(){
+		return this.yield;
+	}
+	
+	public double getTangYoung(){
+		return this.tang_young;
+	}
+
 	
 	public Vect getPois(){
 		if(this.pois==null) return new Vect(dim);;

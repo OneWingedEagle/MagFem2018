@@ -2179,6 +2179,7 @@ private void readAndSetRegDataMech(Model model,int ir,String line){
 		model.region[ir].isotElast=this.getBooleanData(sp[is++]);
 		
 		model.region[ir].setRo(Double.parseDouble(sp[is++]));
+
 		
 		int mdim=model.dim;
 		if(model.region[ir].isotElast)
@@ -2211,12 +2212,23 @@ private void readAndSetRegDataMech(Model model,int ir,String line){
 
 			}
 
-		
+
 		if(is<sp.length)
 			model.region[ir].setThermalCoef(Double.parseDouble(sp[is++]));
 		if(is<sp.length)
 			model.region[ir].setDeltaT(Double.parseDouble(sp[is++]));
-	
+
+		if(is<sp.length){
+			model.nonLin=true;
+
+			model.region[ir].setYield(Double.parseDouble(sp[is++]));
+
+		}
+		
+		if(model.region[ir].getYield()>0)
+		model.region[ir].setTangYoung(Double.parseDouble(sp[is++]));
+
+
 
 	}
 
