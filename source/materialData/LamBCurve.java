@@ -8,13 +8,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Scanner;
 
-import jxl.Workbook;
-import jxl.write.Label;
-import jxl.write.Number;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 import static java.lang.Math.*;
 import math.Mat;
 import math.Vect;
@@ -107,36 +100,7 @@ public class LamBCurve {
 	
 	}
 	
-public void writexls(String file) throws RowsExceededException, WriteException, IOException{
-		
-		WritableWorkbook workbook = Workbook.createWorkbook(new File(file)); 
-		WritableSheet sheet = workbook.createSheet("Lambda curve",0);
-
-
-		int L=this.lamB.length;
-		Number[][] number=new Number[L][2];
-		int c0=6,r0=2;
-		for(int i=0;i<L;i++){
-			number[i][0]=new Number(r0, c0+i, this.lamB[i][0]);
-			number[i][1]=new Number(r0+1, c0+i, this.lamB[i][1]);
-		}
-		
-		Label label = new Label(2,2,"Lambda data");
-		sheet.addCell(label);
-
-	for(int i=0;i<L;i++)
-	{
-			sheet.addCell(number[i][1]);
-			sheet.addCell(number[i][0]);
-		}
-			
-
-		workbook.write();
-		workbook.close();
-		
-		}
-
-		
+	
 	
 	public static void main(String[] args) throws Exception{
 		String file = System.getProperty("user.dir") + "\\LamB\\50H400.txt";
@@ -149,8 +113,6 @@ public void writexls(String file) throws RowsExceededException, WriteException, 
 
 cv.show(true);
 		
-		 file = System.getProperty("user.dir") + "\\Lamb1.xls";
-			lamB.writexls(file);
 
 	
 	}

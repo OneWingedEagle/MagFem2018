@@ -260,9 +260,9 @@ public class ContactAnalysis {
 				
 						assembleContactMatrices();
 						
-
+						util.pr(" here 666");
 						addMatrices();
-					
+						util.pr(" here 777");
 
 						boolean modif_done = false;
 
@@ -563,6 +563,7 @@ public class ContactAnalysis {
 			assembleConstraintMats();
 		} else {
 			obtain_node_node3D();
+			util.pr(" here 444");
 			assembleConstraintMats3D();
 			//node_node.shownzA();
 		///	Gc.shownzA();
@@ -572,7 +573,9 @@ public class ContactAnalysis {
 
 		if (totalnumContactingNodes != 0) {
 ///Gc.shownzA();
-			Gct = Gc.transpose(500);
+			
+			util.pr(" here 1111");
+			Gct = Gc.transpose(200);
 
 			Kadh = new SpMat(dof, dof);
 
@@ -636,19 +639,19 @@ public class ContactAnalysis {
 				}
 			}
 			
-		
+			util.pr(" here 222");
 
 			Kc.times(pf);
 
 
-			Gcft = Gcf.transpose(500);
-			G_stkt = G_stk.transpose(500);
+			Gcft = Gcf.transpose(200);
+			G_stkt = G_stk.transpose(200);
 
 			Kcf = new SpMat(dof, dof); // Gct*Gc
 
 			// === adhisve tang
 			Kadhf = new SpMat(dof, dof);
-			SpMatAsym Gcfadht = Gcfadh.transpose(500);
+			SpMatAsym Gcfadht = Gcfadh.transpose(200);
 
 			for (int i = 0; i < Gcfadht.nRow; i++) {
 				if (Gcfadht.row[i].nzLength > 0) {
@@ -711,6 +714,8 @@ public class ContactAnalysis {
 			Kcf.times(pft);
 
 		}
+		
+		util.pr(" here 3333");
 	}
 
 	private void addMatrices() {
@@ -1839,7 +1844,7 @@ public class ContactAnalysis {
 					}
 				}
 			}
-
+		util.pr(" here 555");
 		// G_stk.shownzA();
 	}
 
@@ -2135,12 +2140,18 @@ public class ContactAnalysis {
 					int sn = loader.getIntData(line);
 					slaveNodes[i][k] = model.node[sn];
 				}
-			} else {
+			} else if (type == 1 || type==2){
+				Vect v1 = null;
+				Vect v2 = null;
+				Vect v3 = null;
+				Vect v4 = null;
+				
 				if (model.dim == 3) {
 					//util.pr("This format of setting contact not ready yet.");
 					line = loader.getNextDataLine(br," /* REGION ID */");
 					int nreg = loader.getIntData(line);
 					
+					if(type==1){
 					line = loader.getNextDataLine(br," /* CORENR 1 */");
 
 					int n1 = loader.getIntData(line);
@@ -2165,11 +2176,29 @@ public class ContactAnalysis {
 			
 			
 
-					Vect v1 = node1.getCoord();
-					Vect v2 = node2.getCoord();
-					Vect v3 = node3.getCoord();
-					Vect v4 = node4.getCoord();
-					
+					 v1 = node1.getCoord();
+					 v2 = node2.getCoord();
+					 v3 = node3.getCoord();
+					 v4 = node4.getCoord();
+					}
+					else{
+						line = loader.getNextDataLine(br," /* v1x  v1y v1z */");
+
+						v1=new Vect(loader.getCSV(line));
+
+						line = loader.getNextDataLine(br," /* v2x  v2y v2z */");
+
+						v2=new Vect(loader.getCSV(line));
+						
+						line = loader.getNextDataLine(br," /* v3x  v3y v3z */");
+
+						v3=new Vect(loader.getCSV(line));
+
+						line = loader.getNextDataLine(br," /* v4x  v4y v4z */");
+
+						v4=new Vect(loader.getCSV(line));
+						
+					}
 		
 					Vect v13=v3.sub(v1);
 					Vect v24=v4.sub(v2);
@@ -2265,9 +2294,9 @@ public class ContactAnalysis {
 					Node node1 = model.node[n1];
 					Node node2 = model.node[n2];
 
-					Vect v1 = node1.getCoord();
-					Vect v2 = node2.getCoord();
-					Vect edgeDir = v2.sub(v1).normalized();
+					Vect v11 = node1.getCoord();
+					Vect v22 = node2.getCoord();
+					Vect edgeDir = v22.sub(v11).normalized();
 					int ns = 0;
 
 					int[] nnr = model.getRegNodes(nreg);
@@ -2342,7 +2371,7 @@ public class ContactAnalysis {
 						}
 					}*/
 				}
-			} else {
+			} else if( type==1 || type==2) {
 				if (model.dim == 3) {
 				//	util.pr("This format of setting contact not ready yet.");
 					
@@ -2357,38 +2386,65 @@ public class ContactAnalysis {
 					//	edgeLocalNodes = arr1;
 				//	}
 						
-		
-						line = loader.getNextDataLine(br," /* REGION ID */");
-						int nreg = loader.getIntData(line);
+						Vect v1 = null;
+						Vect v2 = null;
+						Vect v3 = null;
+						Vect v4 = null;
 						
-						masterReg[i] = nreg;
-						
-						line = loader.getNextDataLine(br," /* CORENR 1 */");
+							//util.pr("This format of setting contact not ready yet.");
+							line = loader.getNextDataLine(br," /* REGION ID */");
+							int nreg = loader.getIntData(line);
+							
+							if(type==1){
+							line = loader.getNextDataLine(br," /* CORENR 1 */");
 
-						int n1 = loader.getIntData(line);
+							int n1 = loader.getIntData(line);
 
-						line = loader.getNextDataLine(br," /* CORENR 2 */");
+							line = loader.getNextDataLine(br," /* CORENR 2 */");
 
-						int n2 = loader.getIntData(line);
-						
-						line = loader.getNextDataLine(br," /* CORENR 3 */");
+							int n2 = loader.getIntData(line);
+							
+							line = loader.getNextDataLine(br," /* CORENR 3 */");
 
-						int n3 = loader.getIntData(line);
-						
-						line = loader.getNextDataLine(br,"/* CORENR 4 */");
+							int n3 = loader.getIntData(line);
+							
+							line = loader.getNextDataLine(br,"/* CORENR 4 */");
 
-						int n4 = loader.getIntData(line);
-						Node node1 = model.node[n1];
-						Node node2 = model.node[n2];
-						Node node3 = model.node[n3];
-						Node node4 = model.node[n4];
-						
+							int n4 = loader.getIntData(line);
+
+							Node node1 = model.node[n1];
+							Node node2 = model.node[n2];
+							Node node3 = model.node[n3];
+							Node node4 = model.node[n4];
+							
+					
+					
+
+							 v1 = node1.getCoord();
+							 v2 = node2.getCoord();
+							 v3 = node3.getCoord();
+							 v4 = node4.getCoord();
+							}
+							else{
+								line = loader.getNextDataLine(br," /* v1x  v1y v1z */");
+
+								v1=new Vect(loader.getCSV(line));
+
+								line = loader.getNextDataLine(br," /* v2x  v2y v2z */");
+
+								v2=new Vect(loader.getCSV(line));
+								
+								line = loader.getNextDataLine(br," /* v3x  v3y v3z */");
+
+								v3=new Vect(loader.getCSV(line));
+
+								line = loader.getNextDataLine(br," /* v4x  v4y v4z */");
+
+								v4=new Vect(loader.getCSV(line));
+								
+							}
 				
 
-						Vect v1 = node1.getCoord();
-						Vect v2 = node2.getCoord();
-						Vect v3 = node3.getCoord();
-						Vect v4 = node4.getCoord();
 						
 						Vect v13=v3.sub(v1);
 						Vect v24=v4.sub(v2);
@@ -3060,7 +3116,7 @@ public class ContactAnalysis {
 			}
 
 		}
-		else if(model.dim == 3){
+		else if(model.dim == 3 && false){
 
 				for (int i = 1; i <= model.numberOfNodes; i++) {
 					Vect v = model.node[i].getCoord();

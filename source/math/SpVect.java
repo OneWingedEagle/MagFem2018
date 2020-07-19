@@ -77,7 +77,7 @@ public class SpVect {
 		index=new int[L];
 	}
 	
-	public static void main(String[] args){
+	public static void main2(String[] args){
 		
 	}
 	
@@ -311,7 +311,41 @@ public class SpVect {
 		
 		if(length!=v.length) throw new IllegalArgumentException("Vectrs have different lengths.");
 		
-	 SpVect sum= new SpVect(this.vectForm().add(v.vectForm()));
+		
+
+		
+		//if(true){
+		SpVect sum=this.deepCopy();
+
+		
+		int kx=this.nzLength;
+		for(int i=0;i<v.nzLength;i++){
+			
+			boolean found=false;
+			
+			for(int j=0;j<this.nzLength;j++){
+				
+			
+				if(this.index[j]==v.index[i]){
+					sum.el[j]+=v.el[i];
+					found=true;
+					break;
+				}
+
+			}
+			
+			if(!found){
+				sum.extend(1);
+				sum.el[kx]=v.el[i];
+				sum.index[kx]=v.index[i];
+				kx++;
+			}
+		}
+
+		 sum.sortAndTrim(sum.nzLength);
+	//}
+	//	else
+	//		sum= new SpVect(this.vectForm().add(v.vectForm()));
 	/// sum.trim();
 	 
 	 return sum;

@@ -8,13 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
-import jxl.Workbook;
-import jxl.write.Label;
-import jxl.write.Number;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 import fem.Model;
 import math.Mat;
 import math.Vect;
@@ -469,45 +462,7 @@ public class LamBSCurve {
 		return j;
 	}
 	
-	public void writexls(String file) throws RowsExceededException, WriteException, IOException{
-		
-		WritableWorkbook workbook = Workbook.createWorkbook(new File(file)); 
-		WritableSheet sheet = workbook.createSheet("First Sheet",0);
 
-		int L=this.lamB[0].length;
-
-		int N=this.lamB.length;
-		Number[][] number=new Number[L][N+1];
-		int c0=6,r0=2;
-	Label[] stress=new Label[L];
-		
-		DecimalFormat df=new DecimalFormat("0.00");
-		for(int p=0;p<N;p++){
-			stress[p] = new Label(r0+p+1, 5, df.format(this.stress[p])+" MPa");
-			sheet.addCell(stress[p]);
-		}
-		for(int i=0;i<L;i++)
-			number[i][0]=new Number(r0, c0+i, this.lamB[0].lamB[i][1]);
-		for(int i=0;i<L;i++)
-			for(int p=0;p<N;p++){
-				number[i][p+1] = new Number(r0+p+1, c0+i,this.lamB[p].lamB[i][0]);
-		
-		}
-		
-		Label label = new Label(2,2,"Lambda-stress data");
-		sheet.addCell(label);
-
-	for(int i=0;i<L;i++)
-		for(int p=0;p<=N;p++){
-			sheet.addCell(number[i][p]);
-		}
-			
-
-		workbook.write();
-		workbook.close();
-		
-		}
-	
 	public void showCurve(){
 		Curve cv=new Curve(this,800,600);
 		cv.show(true);

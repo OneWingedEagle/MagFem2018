@@ -201,7 +201,15 @@ public class RunMech {
 
 						model.loadNodalField(file,1);
 
-
+						if(model.dim==3)
+						for (int p = 1; p <= model.numberOfNodes; p++) {
+							Vect v = model.node[p].getCoord();
+							if(v.el[1]>.299/* && v.el[1]<.201*/){
+								Vect F = new Vect(0,-300,0);
+							
+							model.node[p].setF(F);
+							}
+						}
 
 
 
@@ -238,17 +246,8 @@ public class RunMech {
 
 					ix++;
 
-					for(int p=1;p<=model.numberOfNodes;p++){
-/*						if(p==1){
-							Vect v1=model.node[p].getCoord().add(model.node[p].u);
-							Vect v2=new Vect(v1.el[1],-v1.el[0]);
-							model.node[p].F=v2.normalized();
-						}*/
-					//	if(model.node[p].getCoord(1)+1e-5>model.node[117].getCoord(1)){
-						//	if(model.node[p].getCoord(2)>.0099){
-						//	model.node[p].F=new Vect(0,0,-400);
-						//}
-					}
+		
+
 
 					if(model.saveForce|| ix==model.nTsteps)
 						model.writeNodalField( model.eddyFolder+"\\force_out"+i+".txt",1);

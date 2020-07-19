@@ -6,13 +6,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
-import jxl.Workbook;
-import jxl.write.Label;
-import jxl.write.Number;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
+
 import math.Vect;
 import math.util;
 
@@ -266,37 +260,5 @@ BHCurve BH2=new BHCurve("ttt");
 
 	}
 	
-	public void writexls(String file) throws RowsExceededException, WriteException, IOException{
-		
-		WritableWorkbook workbook = Workbook.createWorkbook(new File(file)); 
-		WritableSheet sheet = workbook.createSheet("First Sheet",0);
-
-		int L=this.BH.length;
-	
-		
-		Number[][] number=new Number[L][2];
-		
-		int c0=6,r0=2;
-		
-		
-		for(int i=0;i<L;i++){
-			number[i][0]=new Number(r0, c0+i, this.BH[i][0]);
-				number[i][1] = new Number(r0+1, c0+i,this.BH[i][1]);
-		}
-		
-		
-		Label label = new Label(2,2,"BH-curve");
-		sheet.addCell(label);
-
-	for(int i=0;i<L;i++)
-		for(int p=0;p<2;p++){
-			sheet.addCell(number[i][p]);
-		}
-			
-
-		workbook.write();
-		workbook.close();
-		
-		}
 	
 }

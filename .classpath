@@ -8,7 +8,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jtransform"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jxl"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JPlot"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jxls"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JAMA"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
