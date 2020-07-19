@@ -127,6 +127,9 @@ public class SpMatAsym  {
 			for(int j=0;j<row[i].nzLength;j++){
 				int cl=row[i].index[j];
 	
+				if(nz[cl]>=cLmax){
+					T.row[cl].extend(nz[cl]-cLmax+1);
+				}
 				T.row[cl].el[nz[cl]]=row[i].el[j];
 				T.row[cl].index[nz[cl]++]=i;
 			}

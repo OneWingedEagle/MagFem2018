@@ -575,7 +575,7 @@ public class ContactAnalysis {
 ///Gc.shownzA();
 			
 			util.pr(" here 1111");
-			Gct = Gc.transpose(200);
+			Gct = Gc.transpose(100);
 
 			Kadh = new SpMat(dof, dof);
 
@@ -644,14 +644,14 @@ public class ContactAnalysis {
 			Kc.times(pf);
 
 
-			Gcft = Gcf.transpose(200);
-			G_stkt = G_stk.transpose(200);
+			Gcft = Gcf.transpose(100);
+			G_stkt = G_stk.transpose(100);
 
 			Kcf = new SpMat(dof, dof); // Gct*Gc
 
 			// === adhisve tang
 			Kadhf = new SpMat(dof, dof);
-			SpMatAsym Gcfadht = Gcfadh.transpose(200);
+			SpMatAsym Gcfadht = Gcfadh.transpose(100);
 
 			for (int i = 0; i < Gcfadht.nRow; i++) {
 				if (Gcfadht.row[i].nzLength > 0) {

@@ -201,15 +201,15 @@ public class RunMech {
 
 						model.loadNodalField(file,1);
 
-						if(model.dim==3)
+/*						if(model.dim==3)
 						for (int p = 1; p <= model.numberOfNodes; p++) {
 							Vect v = model.node[p].getCoord();
-							if(v.el[1]>.299/* && v.el[1]<.201*/){
+							if(v.el[1]>.299 && v.el[1]<.201){
 								Vect F = new Vect(0,-300,0);
 							
 							model.node[p].setF(F);
 							}
-						}
+						}*/
 
 
 
