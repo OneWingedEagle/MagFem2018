@@ -988,6 +988,8 @@ public class Loader {
 						int nf=i%1800;
 						if(model.forceFolder.startsWith("cent")){
 							model.centrigForce=true;
+							 sp=model.forceFolder.split(regex);	
+							 model.rpm=Double.parseDouble(sp[1]);
 						forceFile[ix]=null;
 						}
 						else
@@ -1032,7 +1034,7 @@ public class Loader {
 		//	line=br.readLine();
 		//	line=br.readLine();
 			line=getNextDataLine(br," /* CONTACT");
-			util.pr(line);
+		//	util.pr(line);
 			 if(line.startsWith("contact")) {
 				model.contact=new ContactAnalysis();
 			model.contact.readContact(this, br,model);

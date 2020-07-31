@@ -109,6 +109,7 @@ public class ContactAnalysis {
 	
 	double nr_tol;
 	double aug_tol;
+	double mnr_tol;
 	
 	int n_modifNR;
 	int aug_itmax;
@@ -119,6 +120,7 @@ public class ContactAnalysis {
 	boolean applyNodal = true;
 	boolean initialized = false;
 	boolean twice_check =false;
+	boolean frictional =false;
 	double fp = 1;
 	double fr = 1;
 	boolean aug_normal = true;
@@ -126,8 +128,8 @@ public class ContactAnalysis {
 
 	double extention_fact = 0.01;
 	double clrFact = 1e-10;
-	double aug_disp_tol = 1e-12;
-	double gap_tol = 1e-8;
+	double aug_disp_tol = 1e-4;
+	double gap_tol = 1e-4;
 	double reduct = .0;
 
 
@@ -162,9 +164,9 @@ public class ContactAnalysis {
 
 
 		fp = 1;
-		fr = .00000;
+		fr = .01;
 
-		aug_normal = false;
+		aug_normal = true;
 		aug_tang = true;
 
 		applyNodal = true;
@@ -244,9 +246,9 @@ public class ContactAnalysis {
 				double factor = (load_iter + 1.) / nLoads;
 				rhs = load.times(factor);
 
-				for (int cont_iter = 0; cont_iter < aug_itmax; cont_iter++) {
+				for (int aug_iter = 0; aug_iter < aug_itmax; aug_iter++) {
 
-					util.pr("cont_iter: " + cont_iter);
+					util.pr("aug_iter: " + aug_iter);
 
 					Vect uaug = disp.deepCopy();
 
@@ -260,9 +262,9 @@ public class ContactAnalysis {
 				
 						assembleContactMatrices();
 						
-						util.pr(" here 666");
+						//util.pr(" here 666");
 						addMatrices();
-						util.pr(" here 777");
+					//	util.pr(" here 777");
 
 						boolean modif_done = false;
 
@@ -272,12 +274,20 @@ public class ContactAnalysis {
 								KK.lu();
 							}
 
-							modifiedNR(solver, rhs, direct, nr_tol);
+							er=modifiedNR(solver, rhs, direct, nr_tol);
 
 							modif_done = true;
 						}
 
 						if (modif_done) {
+							
+							if (mnr_tol<nr_tol && er < nr_tol) {
+								nr_err.el[totalNRIter] = er;
+								nr_it[totalNRIter] = totalNRIter;
+								util.pr("nr_iter: " + nr_iter + "           nr_err: " + er + "       disp_err: " + disp_err);
+
+								break;
+							}
 							assembleContactMatrices();
 							addMatrices();
 
@@ -319,25 +329,17 @@ public class ContactAnalysis {
 							break;
 						}
 
-/*						Vect g = Gc.mul(disp);
-						for (int k = 0; k < g.length; k++) {
-							if(g.el[k]>0){
-								remv[k]=true;
-								contacting[k]=false;
-							}
-							else if(g.el[k]<0) remv[k]=false;
-						}*/
 						
 					}
 
 					double dip_err = disp.sub(uaug).norm() / disp.norm();
 
-					aug_disp_err.el[cont_iter] = dip_err;
+					aug_disp_err.el[aug_iter] = dip_err;
 
-					if (dip_err < aug_disp_tol)
-						break;
+					//if (dip_err < aug_disp_tol)
+					//	break;
 
-				gap_err.el[cont_iter] = gap.abs().max();
+
 
 					Vect pgap = gap.deepCopy();
 					Vect pslide = slide.deepCopy();// .sub(slide_prev);
@@ -381,7 +383,10 @@ public class ContactAnalysis {
 					aug_T = Gcft.mul(lamT);
 					
 
-				slide_err.el[cont_iter] = slide.abs().max();
+					double[] aug_errs=getGapAndSlideErrors();
+					
+				gap_err.el[aug_iter] = aug_errs[0];
+				slide_err.el[aug_iter] = aug_errs[1];
 
 					// xr.show();
 					if (plot_radial)
@@ -394,18 +399,22 @@ public class ContactAnalysis {
 								continue;
 
 							int com_index = u_index[n][0];
-							// urs[cont_iter].el[k]=-Math.abs(u.el[com_index])*1e6;
+							// urs[aug_iter].el[k]=-Math.abs(u.el[com_index])*1e6;
 							if (com_index == -1)
 								continue;
-							urs[cont_iter].el[k] = disp.el[com_index] * 1e3;
+							urs[aug_iter].el[k] = disp.el[com_index] * 1e3;
 							if (xr.el[k] < 0)
-								urs[cont_iter].el[k] *= -1;
+								urs[aug_iter].el[k] *= -1;
 
-							//util.pr(urs[cont_iter].el[k]);
+							//util.pr(urs[aug_iter].el[k]);
 						}
 
-					// if(err.el[cont_iter]<1e-6 && (errf.el[cont_iter]<1e-6))
-					// break;
+					// if(gap_err.el[aug_iter]<aug_tol && ( !frictional ||slide.el[aug_iter]<aug_tol))
+						 
+					 if(gap_err.el[aug_iter]<aug_tol && (!frictional ||aug_disp_err.el[aug_iter]<aug_tol))
+					 {
+					 break;
+					 }
 
 				}
 			}
@@ -448,8 +457,10 @@ public class ContactAnalysis {
 			gap_err.show("%5.4e");
 			// util.plot(err);
 
+			if(frictional){
 			util.pr("slide[m] vs aug_iter");
 			slide_err.show("%5.4e");
+			}
 			// util.plot(errf);
 
 			// ur.show();
@@ -563,7 +574,7 @@ public class ContactAnalysis {
 			assembleConstraintMats();
 		} else {
 			obtain_node_node3D();
-			util.pr(" here 444");
+		//	util.pr(" here 444");
 			assembleConstraintMats3D();
 			//node_node.shownzA();
 		///	Gc.shownzA();
@@ -574,7 +585,7 @@ public class ContactAnalysis {
 		if (totalnumContactingNodes != 0) {
 ///Gc.shownzA();
 			
-			util.pr(" here 1111");
+		//	util.pr(" here 1111");
 			Gct = Gc.transpose(100);
 
 			Kadh = new SpMat(dof, dof);
@@ -639,7 +650,7 @@ public class ContactAnalysis {
 				}
 			}
 			
-			util.pr(" here 222");
+		//	util.pr(" here 222");
 
 			Kc.times(pf);
 
@@ -715,7 +726,7 @@ public class ContactAnalysis {
 
 		}
 		
-		util.pr(" here 3333");
+		//util.pr(" here 3333");
 	}
 
 	private void addMatrices() {
@@ -734,7 +745,7 @@ public class ContactAnalysis {
 		
 	}
 
-	private void modifiedNR(SpMatSolver solver, Vect bU1, boolean direct, double tol) {
+	private double modifiedNR(SpMatSolver solver, Vect bU1, boolean direct, double tol) {
 
 		double er1 = 1;
 		Vect uc[] =new Vect[n_modifNR];
@@ -800,6 +811,8 @@ public class ContactAnalysis {
 			disp = uc[min_index].deepCopy();
 			model.setU(disp);
 		//}
+			
+			return er1;
 
 	}
 
@@ -819,9 +832,6 @@ public class ContactAnalysis {
 		for (int contId = 0; contId < numContacts; contId++) {
 			
 
-			
-			double mu = fric_coef[contId];
-			
 			for (int i = 0; i < slaveNodes[contId].length; i++) {
 				Node node = slaveNodes[contId][i];
 				int sn = node.id;
@@ -1844,7 +1854,7 @@ public class ContactAnalysis {
 					}
 				}
 			}
-		util.pr(" here 555");
+		//util.pr(" here 555");
 		// G_stk.shownzA();
 	}
 
@@ -2041,6 +2051,7 @@ public class ContactAnalysis {
 			ps.el[k] *= weights.el[k];
 
 		}
+	
 	//	G_stk.shownzA();
 
 		if(G_stkt!=null)
@@ -2096,14 +2107,19 @@ public class ContactAnalysis {
 		nr_tol=nr_tol0;
 		aug_tol=aug_tol0;
 		
+		mnr_tol=0;
 		if(integs.length>1){
 			
-			 line = loader.getNextDataLine(br," / * NR_TOL  *  AUG_TOL * /");
+			 line = loader.getNextDataLine(br," / * NR_TOL  *  AUG_TOL * MNR_TOL/");
 			 double[] tols=loader.getTabedData(line);
 			 nr_tol=tols[0];
 			 if(integs.length>2)
 			 aug_tol=tols[1];
+			 if(tols.length>2)
+				 mnr_tol=tols[2];
 		}
+		
+		if(mnr_tol==0) mnr_tol=nr_tol;
 
 		slaveNodes = new Node[numCont][];
 		
@@ -2280,7 +2296,6 @@ public class ContactAnalysis {
 					line = loader.getNextDataLine(br," /* REGION ID */");
 
 					int nreg = loader.getIntData(line);
-					
 					slaveReg[i] = nreg;
 				
 					
@@ -2304,8 +2319,8 @@ public class ContactAnalysis {
 					for (int k = 0; k < nnr.length; k++) {
 						int n = nnr[k];
 						Vect v = model.node[n].getCoord();
-						Vect vv1 = v.sub(v1);
-						Vect vv2 = v.sub(v2);
+						Vect vv1 = v.sub(v11);
+						Vect vv2 = v.sub(v22);
 						double dot = vv1.dot(vv2);
 
 						if (dot <= 0) {
@@ -2935,6 +2950,10 @@ public class ContactAnalysis {
 
 		masterElems = new Element[numContacts][];
 		for (int contId = 0; contId < numContacts; contId++) {
+			
+			double mu = fric_coef[contId];
+			if(mu!=0) frictional=true;
+			
 			if (model.dim == 2) {
 				masterElems[contId] = new Element[master_entities[contId].length];
 
@@ -3098,15 +3117,14 @@ public class ContactAnalysis {
 		solver.terminate(false);
 		System.out.println(" Static analysis....");
 
-		double loadFactor0 = 1000;
+		double loadFactor0 = 1;
 
 		if (model.dim == 3)
-			loadFactor0 = 10;
+			loadFactor0 = 1;
 		
 		if (model.centrigForce) {
 			model.setNodalMass();
-			double rpm = 7000;
-			double rps = rpm / 30 * PI;
+			double rps = model.rpm / 30 * PI;
 			double omeag2 = rps * rps;
 			for (int i = 1; i <= model.numberOfNodes; i++) {
 				Vect v = model.node[i].getCoord();
@@ -3250,6 +3268,45 @@ public class ContactAnalysis {
 
 	}
 
+	private double[] getGapAndSlideErrors(){
+		double [] errors=new double [2];
+		
+		double e1max=0;
+		double e2max=0;
+	
+		for (int contId = 0; contId < numContacts; contId++) {
+			
+			double master_size_sq=Math.pow(master_edge_size[contId],2);
+			
+
+			double sum_er1_sq=0;
+			double sum_er2_sq=0;
+			for (int i = 0; i < slaveNodes[contId].length; i++) {
+				Node node = slaveNodes[contId][i];
+				int sn = node.id;
+				
+				double pen=gap.el[sn];
+				double sld=slide.el[sn];
+				
+				sum_er1_sq+=pen*pen;
+				sum_er2_sq+=sld*sld;
+			}
+				double rel_er1=Math.sqrt(sum_er1_sq/master_size_sq);
+				double rel_er2=Math.sqrt(sum_er2_sq/master_size_sq);
+				
+				if(rel_er1>e1max) e1max=rel_er1;
+				if(rel_er2>e1max) e2max=rel_er2;
+				
+				
+			}
+		
+		errors[0]=e1max;
+		errors[1]=e2max;
+		
+		
+	
+		return errors;
+	}
 	
 	public static void main(String[] args) {
 
