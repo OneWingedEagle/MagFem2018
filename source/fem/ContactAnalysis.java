@@ -126,7 +126,7 @@ public class ContactAnalysis {
 	boolean aug_normal = true;
 	boolean aug_tang = true;
 
-	double extention_fact = 0.01;
+	double extention_fact = 0.005;
 	double clrFact = 1e-10;
 	double aug_disp_tol = 1e-4;
 	double gap_tol = 1e-4;
@@ -153,8 +153,10 @@ public class ContactAnalysis {
 		this.K_hat=Khat1.deepCopy();
 		this.rhs_hat=bhat1.deepCopy();
 
+	///	K_hat.shownzA();
+	//	K_hat.diagSym().show();
 		
-		if(step==model.nTsteps-1) plot_radial=true;
+		//if(step==model.nTsteps-1) plot_radial=true;
 		
 		solver.terminate(false);
 		this.model = model;
@@ -164,9 +166,12 @@ public class ContactAnalysis {
 
 
 		fp = 1;
-		fr = .01;
+		fr = 1e-2;
 
 		aug_normal = true;
+		
+		///if(model.dim==3) aug_normal = false;
+			
 		aug_tang = true;
 
 		applyNodal = true;
@@ -181,7 +186,7 @@ public class ContactAnalysis {
 			if(!initialized){
 				
 				disp = new Vect(model.Ks.nRow);
-				if (disp.length > 10000)
+				if (disp.length > 50000)
 					direct = false;
 				
 			initialize();
@@ -256,7 +261,7 @@ public class ContactAnalysis {
 					double disp_err = 1;
 
 					boolean zigzag = false;
-
+					
 					for (int nr_iter = 0; nr_iter < nr_itmax; nr_iter++) {
 
 				
@@ -323,6 +328,9 @@ public class ContactAnalysis {
 							util.pr("\n ********** NR iteration ended with Zigzag condition! *********\n");
 							break;
 						}
+						
+						util.pr(" ********** umax *********    "+disp.abs().max());
+
 
 						totalNRIter++;
 						if (er < nr_tol) {
@@ -922,6 +930,8 @@ public class ContactAnalysis {
 					Vect normal = normals[contId][k];
 
 					double pen = v1v.dot(normal);
+					
+				//	if(pen/master_edge_size[contId]<1e-9) pen=0;
 
 					if (pen < -100 * edgeLength) {
 						// weakenning.el[p]=0;
@@ -1004,6 +1014,10 @@ public class ContactAnalysis {
 					slide.el[sn] = deltaDisp.dot(tang);
 
 
+					if(model.dim==2 ||node.getCoord(2)<1e-6){
+					//	util.pr(sn+"   "+slide.el[sn]);
+					//	util.pr(gap.el[sn]);
+					}
 
 					contacting[sn] = true;
 
@@ -1049,7 +1063,7 @@ public class ContactAnalysis {
 				Vect v = node.getCoord().add(u);
 
 				if (master_edge_size[contId] == 0) {
-					double length = 0;
+					double master_area = 0;
 					for (int k = 0; k < master_entities[contId].length; k++) {
 
 						int[] nids=master_entities[contId][k].nodeIds;
@@ -1057,15 +1071,19 @@ public class ContactAnalysis {
 						Node node1 = model.node[nids[0]];
 						Node node2 = model.node[nids[1]];
 						Node node3 = model.node[nids[2]];
-						Vect v12 = node1.getCoord().add(node3.getCoord());
+						Node node4 = model.node[nids[3]];
+						//Vect v12 = node1.getCoord().add(node3.getCoord());
+						Vect v12 = node2.getCoord().sub(node1.getCoord());
+						Vect v14 = node4.getCoord().sub(node1.getCoord());
 
-						double len=v12.norm();
+						Vect v32 = node2.getCoord().sub(node3.getCoord());
+						Vect v34 = node4.getCoord().sub(node3.getCoord());
+						double area=(v12.cross(v14).norm()+v32.cross(v34).norm())/2;
 						
-						master_entities[contId][k].length=len;
-						length += len;
+						master_area += area;
 						
 					}
-					master_edge_size[contId] = length;
+					master_edge_size[contId] = Math.sqrt(master_area);
 				}
 
 				for (int k = 0; k < master_entities[contId].length; k++) {
@@ -1083,6 +1101,7 @@ public class ContactAnalysis {
 					Vect[] um = new Vect[nnc];
 					for(int m=0;m<nnc;m++)
 						um[m] = m_nodes[m].u;
+					
 				
 
 					Vect[] vm = new Vect[nnc];
@@ -1149,8 +1168,11 @@ public class ContactAnalysis {
 					normal=normal.add(normal2).add(normal3).add(normal4);
 							
 					normal = normal.normalized();
+	/*			if(node.getCoord(1)>.02)
+				normal=new Vect(0,1,0);
+				else
+					normal=new Vect(0,-1,0);*/
 				
-			//	normal=new Vect(0,-1,0);
 					normals[contId][k] = normal.deepCopy();
 
 				//	 normal.hshow();
@@ -1280,15 +1302,52 @@ public class ContactAnalysis {
 						continue;
 
 				//	pen=u.el[2];
+					
+				//	if(pen/master_edge_size[contId]<1e-9) pen=0;
 
 					gap.el[sn] = pen;
 					
 
 					Vect deltaDisp = u.deepCopy();
+					
+					
+
 					for(int m=0;m<nnc;m++){
 						deltaDisp=deltaDisp.sub(um[m].times(ww[m]));
 						
 					}
+					
+					Vect vr=new Vect(u.length);
+					
+					if(u_index[sn][0]>=0)
+					vr.el[0]=	ref_stick.el[u_index[sn][0]];
+					if(u_index[sn][1]>=0)
+					vr.el[1]=	ref_stick.el[u_index[sn][1]];
+					if(u_index[sn][2]>=0)
+						vr.el[2]=	ref_stick.el[u_index[sn][2]];
+						
+					Vect[] vmr=new Vect[nnc];
+					for(int m=0;m<nnc;m++){
+						vmr[m]=new Vect(u.length);
+						int mnd=nids[m];
+						if(u_index[mnd][0]>=0)
+							vmr[m].el[0]=	ref_stick.el[u_index[mnd][0]];
+						if(u_index[mnd][1]>=0)
+							vmr[m].el[1]=	ref_stick.el[u_index[mnd][1]];
+						if(u_index[mnd][2]>=0)
+							vmr[m].el[2]=	ref_stick.el[u_index[mnd][2]];
+					
+					}
+					
+					Vect deltaDisp_ref = vr.deepCopy();
+					for(int m=0;m<nnc;m++){
+					
+						deltaDisp_ref=deltaDisp_ref.sub(vmr[m].times(ww[m]));
+						
+					}
+					
+					deltaDisp=deltaDisp.sub(deltaDisp_ref);
+		
 					//u.sub(u1.times(alpha).add(u2.times(beta)));
 					/// deltaDisp.times(1e9).hshow();
 					 proj = deltaDisp.dot(normal);
@@ -1313,7 +1372,12 @@ public class ContactAnalysis {
 					//double sld=(disp_tang.dot(tang));
 					double sld=Math.abs(disp_tang.dot(tang));
 
+					
 					slide.el[sn]=sld;
+					if(model.dim==2 ||node.getCoord(2)<1e-6){
+				//	util.pr(sn+"   "+slide.el[sn]);
+				//	util.pr(gap.el[sn]);
+					}
 					
 					contacting[sn] = true;
 
@@ -1439,7 +1503,7 @@ public class ContactAnalysis {
 			}
 		}
 
-		resetFreedNodes();
+	///	resetFreedNodes();
 
 	}
 
@@ -2052,10 +2116,12 @@ public class ContactAnalysis {
 
 		}
 	
-	//	G_stk.shownzA();
+		//G_stk.shownzA();
 
 		if(G_stkt!=null)
 		Fcf = G_stkt.mul(ps);
+		
+	///	new SpVect(Fcf).shownzA();
 
 		dF = dF.sub(Fc).sub(Fcf); //
 
@@ -2870,7 +2936,8 @@ public class ContactAnalysis {
 			//	double max = Math.max(Math.max(val1, val2), val3);
 			double max=Math.sqrt(val1*val1+val2*val2+val3*val3);
 				// util.pr(max);
-				// max=1e10;
+				// max=1e8;
+				// penalMax=max;
 				//
 	
 
@@ -3150,8 +3217,6 @@ public class ContactAnalysis {
 
 		Vect bU1=model.bU.add(model.getbUt(mode));
 		
-		bU1.timesVoid((step+1.)/model.nTsteps);
-		
 
 
 		boolean axi = (model.struc2D == 2);
@@ -3277,10 +3342,12 @@ public class ContactAnalysis {
 		for (int contId = 0; contId < numContacts; contId++) {
 			
 			double master_size_sq=Math.pow(master_edge_size[contId],2);
-			
+		
 
 			double sum_er1_sq=0;
 			double sum_er2_sq=0;
+			double max_er1_sq=0;
+			double max_er2_sq=0;
 			for (int i = 0; i < slaveNodes[contId].length; i++) {
 				Node node = slaveNodes[contId][i];
 				int sn = node.id;
@@ -3288,11 +3355,19 @@ public class ContactAnalysis {
 				double pen=gap.el[sn];
 				double sld=slide.el[sn];
 				
-				sum_er1_sq+=pen*pen;
-				sum_er2_sq+=sld*sld;
+				double pen_sq=pen*pen;
+				double sld_sq=sld*sld;
+				
+				sum_er1_sq+=pen_sq;
+				sum_er2_sq+=sld_sq;
+				if(pen_sq>max_er1_sq) max_er1_sq=pen_sq;
+				if(sld_sq>max_er2_sq) max_er2_sq=sld_sq;
 			}
-				double rel_er1=Math.sqrt(sum_er1_sq/master_size_sq);
-				double rel_er2=Math.sqrt(sum_er2_sq/master_size_sq);
+				//double rel_er1=Math.sqrt(sum_er1_sq/master_size_sq);
+				//double rel_er2=Math.sqrt(sum_er2_sq/master_size_sq);
+				
+				double rel_er1=Math.sqrt(max_er1_sq/master_size_sq);
+				double rel_er2=Math.sqrt(max_er2_sq/master_size_sq);
 				
 				if(rel_er1>e1max) e1max=rel_er1;
 				if(rel_er2>e1max) e2max=rel_er2;

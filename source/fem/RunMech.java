@@ -201,15 +201,35 @@ public class RunMech {
 
 						model.loadNodalField(file,1);
 
-/*						if(model.dim==3)
-						for (int p = 1; p <= model.numberOfNodes; p++) {
+					
+/*						for (int p = 1; p <= model.numberOfNodes; p++) {
 							Vect v = model.node[p].getCoord();
-							if(v.el[1]>.299 && v.el[1]<.201){
-								Vect F = new Vect(0,-300,0);
-							
-							model.node[p].setF(F);
+							if(v.el[1]>.0399){
+								Vect F = new Vect(0,-1,0);						
+								
+								model.node[p].setF(F);
+							}else if(v.el[1]<.0001){
+								Vect F = new Vect(0,1,0);						
+								
+								model.node[p].setF(F);
 							}
 						}*/
+/*						double factor=(ix+1.)*1/model.nTsteps;
+						for (int p = 1; p <= model.numberOfNodes; p++) {
+						//	Vect v = model.node[p].getCoord();
+							Vect F = model.node[p].F;
+							if(F!=null){
+								if(Math.abs(F.el[1])<1e-6)
+								{
+									model.node[p].setF(F.times(factor));
+								}else{
+						//	model.node[p].setF(F.times(1e3*factor));
+							}
+							}
+							
+						}*/
+						
+
 
 
 
