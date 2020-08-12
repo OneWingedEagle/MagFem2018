@@ -98,7 +98,7 @@ public class ContactAnalysis {
 	Model model;
 	double pf = 1e8;
 	double pft = 1e8;
-	double margin = 0.01;
+	double margin = 0.02;
 
 	int n_modifNR0 = 5;
 	int aug_itmax0 = 3;
@@ -119,14 +119,14 @@ public class ContactAnalysis {
 	Vect disp, rhs;
 	boolean applyNodal = true;
 	boolean initialized = false;
-	boolean twice_check =true;
+	boolean twice_check =false;
 	boolean frictional =false;
 	double fp = 1;
 	double fr = 1;
 	boolean aug_normal = true;
 	boolean aug_tang = true;
 
-	double extention_fact = 0.01;
+	double extention_fact = 0.02;
 	double clrFact = 1e-10;
 	double aug_disp_tol = 1e-4;
 	double gap_tol = 1e-4;
@@ -136,7 +136,7 @@ public class ContactAnalysis {
 	double adh = 0e6;
 	double adhf = 0e3;
 
-	double relax = .8;
+	double relax = .5;
 	
 	Vect top;
 	SpMat K_hat;
@@ -164,7 +164,7 @@ public class ContactAnalysis {
 
 
 		fp = 1;
-		fr = .02;
+		fr = .01;
 
 		aug_normal = true;
 		aug_tang = true;
@@ -364,7 +364,7 @@ public class ContactAnalysis {
 						double aug = lamN.el[k] + ff * pgap.el[k];
 
 
-						lamN.el[k] = aug * relax;
+						lamN.el[k] = aug*relax ;
 
 					}
 
@@ -840,7 +840,6 @@ public class ContactAnalysis {
 				
 				if(remv[sn]){
 					remv[sn]=false;
-			//		util.pr("------------------- 888 ");
 					continue;
 				}
 
@@ -929,7 +928,6 @@ public class ContactAnalysis {
 						// weakenning.el[p]=0;
 
 						contacting[sn] = false;
-
 						continue;
 					}
 
@@ -943,12 +941,11 @@ public class ContactAnalysis {
 					//	if(contacting[sn]) just_released[sn]=true;
 
 						contacting[sn] = false;
-
 						continue;
 						}
 						
 					}
-
+	
 
 					normalIndex[contId][i] = k;
 
@@ -1044,6 +1041,12 @@ public class ContactAnalysis {
 			for (int i = 0; i < slaveNodes[contId].length; i++) {
 				Node node = slaveNodes[contId][i];
 				int sn = node.id;
+				
+				if(remv[sn]){
+					remv[sn]=false;
+			//		util.pr("------------------- 888 ");
+					continue;
+				}
 
 				node_node.row[sn] = new SpVect(nnSize);
 
@@ -1164,9 +1167,15 @@ public class ContactAnalysis {
 
 					if (pen > clrFact * master_edge_size[contId]) {
 
+						if (!twice_check /*|| !just_released[sn]*/){
+							
+					//	if(contacting[sn]) just_released[sn]=true;
+
 						contacting[sn] = false;
 
 						continue;
+						}
+						
 					}
 
 					normalIndex[contId][i] = k;
@@ -2868,20 +2877,13 @@ public class ContactAnalysis {
 				if (zind != -1)
 					val3 = fp * model.Ks.row[zind].el[model.Ks.row[zind].nzLength - 1];
 
-				if (val1 > penalMax)
-					penalMax = val1;
-				if (val2 > penalMax)
-					penalMax = val2;
-				if (val3 > penalMax)
-					penalMax = val3;
 
 				// double max=(val1+val2)/2;
-			//	double max = Math.max(Math.max(val1, val2), val3);
-			double max=Math.sqrt(val1*val1+val2*val2+val3*val3);
-				// util.pr(max);
-				// max=1e10;
-				//
-	
+				double max = (val1+val2+val3)/3;
+
+				if (max > penalMax)
+					penalMax = max;
+
 
 				if (applyNodal)
 					weights.el[sn] = penFactor[contId] * max;
@@ -3157,7 +3159,7 @@ public class ContactAnalysis {
 		double loadFactor0 = 1;
 
 		if (model.dim == 3)
-			loadFactor0 = 1000;
+			loadFactor0 = 1;
 		
 		if (model.centrigForce) {
 			model.setNodalMass();
