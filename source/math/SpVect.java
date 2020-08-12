@@ -139,6 +139,15 @@ public class SpVect {
 		return b;
 	}
 	
+	public void timesVoid(double a){
+		
+		for(int i=0;i<nzLength;i++){
+		el[i]*=a;
+	
+		}
+		
+	}
+	
 	public void trim(int nzLnew){
 		
 		SpVect b=new SpVect(length,nzLnew);

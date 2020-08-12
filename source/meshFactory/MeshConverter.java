@@ -53,14 +53,14 @@ public class MeshConverter {
 		MeshConverter mf=new MeshConverter();
 	//	mf.hexaToTetraNeu();
 		
-	//mf.quadToTriang();
+	mf.quadToTriang();
 	//mf.triToQuad();
 
 		//mf.prismToHexa();
 	
 	//mf.hexaToTetra();
 		
-		//mf.hexToPrism();
+	//	mf.hexToPrism();
 		//mf.addMidNodesNeu();
 	//mf.refine2ndTo1stTetra();
 	//	mf.refineTetraTo3Tetra();
@@ -89,7 +89,8 @@ public class MeshConverter {
 	Model model=new Model();
 	model.loadMesh(bun);
 
-	String prismMesh = System.getProperty("user.dir") + "//prismEl.txt";
+	String folder=new File(bun).getParentFile().getPath();
+	String prismMesh = folder + "//prismEl.txt";
 
 	if(model.elCode==4)
 		model.writeMeshHexaToPrism(prismMesh,dir);

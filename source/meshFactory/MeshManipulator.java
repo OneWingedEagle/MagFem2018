@@ -15,6 +15,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -46,32 +47,37 @@ public class MeshManipulator {
 
 	public static void main(String[] args){
 
+		
 		MeshManipulator mf=new MeshManipulator();
 
+		//mf.deform();
 		//Model model=new Model("D:\\JavaWorks\\FEM problems\\Hamed solver\\bun1elem.txt");
 		//model.setEdge();
 		//mf.reRegionb();
-	//	mf.connectivity(1e-5);	mf.dropUnusedNodes();
+		double[] bounds={-1,1,-1,1,-1e0, 1e0};
+	//	mf.connectivity(2e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
 		//mf.deform();
-	//	mf.rotate(-3*PI/18);
-	
-		//Model model=mf.rotExtendNfold(2);
+	//	mf.rotate(PI/8);
+	//	Model model=mf.rotExtendNfold(7);
 	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\extenRot.txt");
-		int Nr=10;
+		int Nr=5;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
-			regs0[i-1]=i;
+			regs0[i-1]=i+1;
 		}
-		//mf.revolveLine(new Vect().linspace(1, 10, Nr+1), regs0, 45, PI/2/45);
-		//int[] regs={4,5};
-		//mf.extractReg(regs);mf.dropUnusedNodes();
+		//mf.extractReg(regs0);mf.dropUnusedNodes();
+		//mf.revolveLine(new Vect().linspace(.016, .05, Nr+1), regs0, 1, PI/8);
+		//int[] regs={1,2}; mf.extractReg(regs);mf.dropUnusedNodes();
 		String stat="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\statFF.txt";
 		String rot="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\rotFiner.txt";
-		//mf.assemble(rot,stat);
+	//	mf.assemble(rot,stat);
 
-		//mf.rescale(1.556476989933596);
-		//mf.extractReg(0.,2.0,PI/6,PI/3,0,1);
+		//mf.rescale(new Vect(0.483873333333,0.483873333333,1));
+	//	mf.assemble(rot, body);
+	//	mf.translate(new Vect(0,0,-.15));
+	//	mf.rescale(15./16);
+	//	mf.extractReg(0.,2.0,0,2*PI,-0.1285,-0.127);
 	//	String bun=util.getFile();
 	//	Model model=new Model(bun);
 	//	String folder=new File(bun).getParentFile().getPath();
@@ -96,6 +102,75 @@ public class MeshManipulator {
 	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\compacted.txt");*/
 		//	mf.rotate(PI/2);
 	//	mf.pileUpHexa(1, 1);
+		double[] z0={-.15,-.135,-0.1285};
+		double[] hh0={-0.1285,-0.1265,-0.116,-0.1085,-0.1045};
+		double[] hh1={0.1045,0.1085,0.116,0.1265,0.1285};
+		double[] z1={0.1285,.135,.15};
+		int nX=10;
+		Vect dd=new Vect().linspace(-0.1045,0.1045,nX);
+
+
+		double[] dhm=new double[dd.length-1];
+		for(int i=0;i<dhm.length;i++){
+			dhm[i]=dd.el[i+1]-dd.el[i];
+		}
+		
+
+		double[] dh0=new double[hh0.length-1];
+		for(int i=0;i<dh0.length;i++){
+			dh0[i]=hh0[i+1]-hh0[i];
+		}
+		double[] dh1=new double[hh1.length-1];
+		for(int i=0;i<dh1.length;i++){
+			dh1[i]=hh1[i+1]-hh1[i];
+		}
+		
+		double[] dz0=new double[z0.length-1];
+		for(int i=0;i<z0.length-1;i++){
+			dz0[i]=z0[i+1]-z0[i];
+		}
+		double[] dz1=new double[z1.length-1];
+		for(int i=0;i<z1.length-1;i++){
+			dz1[i]=z1[i+1]-z1[i];
+		}
+		
+		double[] dh=new double[dhm.length+dh0.length+dh1.length+dz0.length+dz1.length];
+		int ix=0;
+		
+		for(int i=0;i<dz0.length;i++){
+			
+			dh[ix++]=dz0[i];
+		}
+		for(int i=0;i<dh0.length;i++){
+			
+			dh[ix++]=dh0[i];
+		}
+		for(int i=0;i<dhm.length;i++){
+		
+			dh[ix++]=dhm[i];
+		}
+
+		for(int i=0;i<dh1.length;i++){
+			
+			dh[ix++]=dh1[i];
+		}
+		for(int i=0;i<dz1.length;i++){
+			
+			dh[ix++]=dz1[i];
+		}
+		//util.show(dh00);
+		//util.show(dh);
+
+		double[] hhr={-0.03483,-0.01161,0.01161,0.03483};
+		
+		double[] dhr=new double[hhr.length-1];
+		for(int i=0;i<dhr.length;i++){
+			dhr[i]=hhr[i+1]-hhr[i];
+		}
+	//	mf.pileUpPrism(dhr,-0.03483);
+	//	util.show(dh);
+	//	mf.pileUpPrism(dh, -0.15);
+	//	mf.pileUpPrism(5, 10e-3);
 		
 	//	mf.pileHelic(6*8, PI/4, .0125*18);
 		
@@ -103,6 +178,8 @@ public class MeshManipulator {
 
 
 		//mf.reRegionb();
+		
+		//mf.extendFlip(1);
 
 	}
 	
@@ -265,8 +342,9 @@ public class MeshManipulator {
 
 
 		md1.scaleFactor=md0.scaleFactor;
-		String file = System.getProperty("user.dir") + "//reflected.txt";
-		md1.writeMesh(file);
+		String folder=new File(md0.meshFilePath).getParentFile().getPath();
+		String prismMesh = folder+ "//reflected.txt";
+		md1.writeMesh(prismMesh);
 
 	}
 
@@ -774,22 +852,33 @@ public class MeshManipulator {
 		Model model=new Model();
 		model.loadMesh(bun);
 
+		String folder=new File(bun).getParentFile().getPath();
+		String scaledMesh = folder + "//scaled.txt";
 
-		String sqaledMesh = System.getProperty("user.dir") + "//scaled.txt";
 
-;
+	//	Set<Double> set = new HashSet<Double>();
 		for(int i=1;i<=model.numberOfNodes;i++)
 		{
 			Vect v=model.node[i].getCoord().times(scale);
 		
+		//	set.add(new Double(v.el[2]));
 			//if(util.getAng(v)<.003) v.el[1]-=.00002;
 
 			//	if(v.norm()<.027755) v=v.normalized().times(.02775);
 			model.node[i].setCoord(v);
 		}
-		model.writeMesh(sqaledMesh);
+		model.writeMesh(scaledMesh);
+		
+/*		Iterator<Double> itr = set.iterator(); 
 
-
+        while (itr.hasNext()) {
+            System.out.println(itr.next());
+        }
+		for(int i=0;i<set.size();i++)
+		{
+	//	util.pr(set);
+		}
+*/
 
 	
 		
@@ -805,8 +894,8 @@ public class MeshManipulator {
 		Model model=new Model();
 		model.loadMesh(bun);
 
-
-		String sqaledMesh = System.getProperty("user.dir") + "//scaled.txt";
+		String folder=new File(bun).getParentFile().getPath();
+		String scaledMesh = folder + "//scaled.txt";
 
 
 
@@ -817,7 +906,7 @@ public class MeshManipulator {
 			//	if(v.norm()<.027755) v=v.normalized().times(.02775);
 			model.node[i].setCoord(v);
 		}
-		model.writeMesh(sqaledMesh);
+		model.writeMesh(scaledMesh);
 
 
 
@@ -1530,10 +1619,13 @@ util.pr(rm);
 
 		if(nn[i]){
 			Vect v=model.node[i].getCoord();
-		double r=v.norm();
-		double tt=util.getAng(v)/2;
-		Vect v2=new Vect(r*Math.cos(tt),r*Math.sin(tt));
+		//double r=v.norm();
+	//	double tt=util.getAng(v)/2;
+	//	Vect v2=new Vect(r*Math.cos(tt),r*Math.sin(tt));
+			if(v.el[0]>1e-6 && v.el[0]<.0399){
+			Vect v2=v.add(new Vect(.002*(.5-Math.random()),.0*(.5-Math.random())));
 		model.node[i].setCoord(v2);
+			}
 		//	model.node[i].setCoord(model.node[i].getCoord().times(.9));
 			}
 		}
@@ -2631,7 +2723,8 @@ for(int i=0; i<dh.length; i++){
 		}
 
 		if(write){
-			String file = System.getProperty("user.dir") + "//bunRotated.txt";
+			String folder=new File(model.meshFilePath).getParentFile().getPath();
+			String file = folder + "//bunRotated.txt";
 
 			model.writeMesh(file);
 		}
@@ -2674,8 +2767,9 @@ for(int i=0; i<dh.length; i++){
 
 		String bun=util.getFile(0);
 		Model model=new Model(bun);
+		String folder=new File(bun).getParentFile().getPath();
 
-		String nodeFile = System.getProperty("user.dir") + "//node4Del.node";
+		String nodeFile = folder + "//node4Del.node";
 		DecimalFormat formatter= new DecimalFormat("0.0000000");
 
 		try{
@@ -3504,7 +3598,7 @@ for(int i=0; i<dh.length; i++){
 
 
 	}
-
+	
 
 	public void meshIPMstator1deg(){
 
@@ -4611,6 +4705,7 @@ for(int i=0; i<dh.length; i++){
 	}
 
 	public void meshFromDel(int nReg) {
+		
 		String nodeFile=System.getProperty("user.dir") + "//node4Del.1.node";
 		String elementFile=System.getProperty("user.dir") + "//node4Del.1.ele";
 
@@ -5653,6 +5748,9 @@ for(int i=0; i<dh.length; i++){
 		model.hasTwoNodeNumb=slice.hasTwoNodeNumb;
 		model.deform=slice.deform;
 
+		String folder=new File(slice.meshFilePath).getParentFile().getPath();
+		String bun = folder+ "//extendRotated.txt";
+		model.writeMesh(bun);
 
 
 		return model;
@@ -6514,6 +6612,12 @@ for(int i=0; i<dh.length; i++){
 	}
 	
 	public void connectivity(double eps){
+	
+		connectivity(eps, null);
+		
+	}
+	
+	public void connectivity(double eps, double[] bounds){
 
 		String bun=util.getFile();
 		if(bun==null || bun.equals("") )  throw new NullPointerException("file not found.");
@@ -6540,6 +6644,17 @@ for(int i=0; i<dh.length; i++){
 			if(!nnc[i]) continue;
 			    
 			Vect v1=model.node[i].getCoord();
+			
+			if(bounds!=null){
+			if(v1.el[0] <bounds[0] || v1.el[0]>bounds[1]) continue;
+			if(v1.el[1] <bounds[2] || v1.el[1]>bounds[3]) continue;
+			if(model.dim==3){
+				if(v1.el[2] <bounds[4] || v1.el[1]>bounds[4]) continue;
+	
+			}
+			}
+			
+			
 			for(int j=i+1;j<=model.numberOfNodes;j++){
 				
 				if(!nnc[j]) continue;

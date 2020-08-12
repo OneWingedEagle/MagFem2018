@@ -47,10 +47,14 @@ public class MeshGeneration {
 	public static void main(String[] args){
 		
 		MeshGeneration mf=new MeshGeneration();
-
+		//mf.writeNodesForDelaunay(P, nNodes, scaleFactor);
+		
+	mf.node4Del();
+mf.Delaunay();
+//mf.meshFromDel();
 		//mf.meshQ();
 		//mf.mesh16WiresTwisted();
-		mf.meshHexa();
+	//	mf.meshHexa();
 		
 	}
 	
@@ -99,6 +103,7 @@ public class MeshGeneration {
 			for(int i=1;i<=model.numberOfNodes;i++){ 
 
 				Vect z=model.node[i].getCoord();
+			
 				pwBun.print(i+" ");
 				for(int j=0;j<model.dim;j++){
 
