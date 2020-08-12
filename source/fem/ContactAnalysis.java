@@ -88,7 +88,7 @@ public class ContactAnalysis {
 	int totalnumContactingNodes;
 
 	boolean[] contacting = null;
-	boolean[] just_released = null;
+	//boolean[] just_released = null;
 	boolean[] remv = null;
 
 
@@ -119,7 +119,7 @@ public class ContactAnalysis {
 	Vect disp, rhs;
 	boolean applyNodal = true;
 	boolean initialized = false;
-	boolean twice_check =false;
+	boolean twice_check =true;
 	boolean frictional =false;
 	double fp = 1;
 	double fr = 1;
@@ -136,7 +136,7 @@ public class ContactAnalysis {
 	double adh = 0e6;
 	double adhf = 0e3;
 
-	double relax = .5;;
+	double relax = .8;
 	
 	Vect top;
 	SpMat K_hat;
@@ -164,7 +164,7 @@ public class ContactAnalysis {
 
 
 		fp = 1;
-		fr = .01;
+		fr = .02;
 
 		aug_normal = true;
 		aug_tang = true;
@@ -328,6 +328,8 @@ public class ContactAnalysis {
 						if (er < nr_tol) {
 							break;
 						}
+						if(twice_check)
+						checkPositiveGap(disp);
 
 						
 					}
@@ -838,7 +840,7 @@ public class ContactAnalysis {
 				
 				if(remv[sn]){
 					remv[sn]=false;
-					util.pr("------------------- 888 ");
+			//		util.pr("------------------- 888 ");
 					continue;
 				}
 
@@ -936,14 +938,14 @@ public class ContactAnalysis {
 
 
 
-					//	if (!twice_check || !just_released[sn]){
+						if (!twice_check /*|| !just_released[sn]*/){
 				
 					//	if(contacting[sn]) just_released[sn]=true;
 
 						contacting[sn] = false;
 
 						continue;
-					//	}
+						}
 						
 					}
 
@@ -3035,7 +3037,7 @@ public class ContactAnalysis {
 
 		stick = new boolean[model.numberOfNodes + 1];
 		contacting = new boolean[model.numberOfNodes + 1];
-		just_released = new boolean[model.numberOfNodes + 1];
+	//	just_released = new boolean[model.numberOfNodes + 1];
 		remv = new boolean[model.numberOfNodes + 1];
 		
 		for (int i = 1; i <= model.numberOfNodes; i++) {
@@ -3118,6 +3120,34 @@ public class ContactAnalysis {
 		 nr_err = new Vect(nLoads * aug_itmax * (nr_itmax + n_modifNR)*model.nTsteps);
 		 nr_it = new int[nLoads * aug_itmax * (nr_itmax + n_modifNR)*model.nTsteps];
 	}
+	
+	
+	private void checkPositiveGap(Vect u){
+
+		boolean opened=false;
+		gap=Gc.mul(u);//.add(gap0);
+
+		
+		for(int i=1;i<=model.numberOfNodes;i++){
+
+				if(twice_check){
+				if(gap.el[i]>0 && !remv[i]){
+					
+					contacting[i]=false;
+					
+					lamN.el[i]=0;
+					lamT.el[i]=0;
+					remv[i]=true;
+					opened=true;
+					}
+				}			
+	
+		}
+
+
+	}
+
+	
 	
 	public Vect getDeformation(Model model, SpMatSolver solver, int mode,int step) {
 
