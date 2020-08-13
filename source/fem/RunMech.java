@@ -297,10 +297,10 @@ public class RunMech {
 
 			model.writeData(model.resultFolder+"\\data_out.txt");
 
-			UU.timesVoid(1e9);
+/*			UU.timesVoid(1e9);
 			util.plot(UU);
 
-			UU.show();
+			UU.show();*/
 
 			/*		for(int i=1;i<=model.numberOfElements;i++)
 			model.element[i].setDeformable(true);
@@ -435,10 +435,10 @@ public class RunMech {
 		}
 
 
-		T=T.times(1e9);
+/*		T=T.times(1e9);
 		util.plot(T);
 		T.show();
-
+*/
 
 
 

@@ -119,6 +119,7 @@ public class ContactAnalysis {
 	Vect disp, rhs;
 	boolean applyNodal = true;
 	boolean initialized = false;
+//	boolean twice_check0 =false;
 	boolean twice_check =false;
 	boolean frictional =false;
 	double fp = 1;
@@ -126,15 +127,15 @@ public class ContactAnalysis {
 	boolean aug_normal = true;
 	boolean aug_tang = true;
 
-	double extention_fact = 0.02;
+	double extention_fact = 0.01;
 	double clrFact = 1e-10;
 	double aug_disp_tol = 1e-4;
 	double gap_tol = 1e-4;
 	double reduct = .0;
 
 
-	double adh = 0e6;
-	double adhf = 0e3;
+	double adh = 0e3;
+	double adhf = 0e8;
 
 	double relax = .5;
 	
@@ -181,7 +182,7 @@ public class ContactAnalysis {
 			if(!initialized){
 				
 				disp = new Vect(model.Ks.nRow);
-				if (disp.length > 10000)
+				if (disp.length > 10000 || n_modifNR==0)
 					direct = false;
 				
 			initialize();
@@ -245,8 +246,11 @@ public class ContactAnalysis {
 
 				double factor = (load_iter + 1.) / nLoads;
 				rhs = load.times(factor);
+				
+			//	twice_check=twice_check0;
 
 				for (int aug_iter = 0; aug_iter < aug_itmax; aug_iter++) {
+					
 
 					util.pr("aug_iter: " + aug_iter);
 
@@ -259,7 +263,9 @@ public class ContactAnalysis {
 
 					for (int nr_iter = 0; nr_iter < nr_itmax; nr_iter++) {
 
-				
+					//	if(aug_iter>0 || nr_iter>1)
+					//		twice_check=false;
+
 						assembleContactMatrices();
 						
 						//util.pr(" here 666");
@@ -351,9 +357,6 @@ public class ContactAnalysis {
 						pslide.el[k] *= weights.el[k] * pft;
 					}
 
-					double ff = 1;
-					/// if(gap.abs().max()<gap_tol) ff=0;
-
 					for (int k = 0; k < pgap.length; k++) {
 
 						if (pgap.el[k] >= 0) {
@@ -361,10 +364,15 @@ public class ContactAnalysis {
 							continue;
 						}
 
-						double aug = lamN.el[k] + ff * pgap.el[k];
+						double aug =0;
+						
+					//	if(lamN.el[k]==0)
+					//		aug= pgap.el[k];
+						//else
+						aug=lamN.el[k]*(1-relax)  + relax * pgap.el[k];
 
 
-						lamN.el[k] = aug*relax ;
+						lamN.el[k] = aug ;
 
 					}
 
@@ -2323,6 +2331,8 @@ public class ContactAnalysis {
 
 					Vect v11 = node1.getCoord();
 					Vect v22 = node2.getCoord();
+				//	v11.hshow();
+				//	v22.hshow();
 					Vect edgeDir = v22.sub(v11).normalized();
 					int ns = 0;
 
@@ -2879,7 +2889,9 @@ public class ContactAnalysis {
 
 
 				// double max=(val1+val2)/2;
-				double max = (val1+val2+val3)/3;
+				double max = (val1+val2+val3);
+				
+			/////	if(model.dim==3) max/=10;
 
 				if (max > penalMax)
 					penalMax = max;
