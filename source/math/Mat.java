@@ -510,6 +510,17 @@ x2.hshow();
 				C.el[i][j]=p*this.el[i][j];
 		return C;						
 	}
+	
+	public void timesVoid(double p){
+		int I,J;
+		I=this.nRow;
+		J=this.nCol;
+
+		for(int i=0;i<I;i++)
+			for(int j=0;j<J;j++)
+				el[i][j]*=p;
+					
+	}
 
 	public Mat ddom(double a,double b){
 		int I;
@@ -622,7 +633,7 @@ x2.hshow();
 		int I,J;
 		I=this.nRow;
 		J=this.nCol;
-		if(I!=J) throw new IllegalArgumentException("Only square natrices cab be transposed.");
+		if(I!=J) throw new IllegalArgumentException("Only square matrices can be transposed in place.");
 
 		double temp;
 		for(int i=0;i<I;i++)

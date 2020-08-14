@@ -17,7 +17,7 @@ public class Calculator {
 	double[][] PWtetra;
 	boolean centerNu;
 	public int dim,elCode,nElVert,nElEdge,numberOfElements,numberOfNodes,numberOfRegions;
-	public int struc2D;
+	public int struc2D; // 0: plane stress. 1: plane strain
 
 	public Calculator(){	}
 
@@ -3373,19 +3373,14 @@ public class Calculator {
 		return Ke;
 	}	
 
+
 	public Mat[][] KeQuad(Model model,int ie){
 		
 		if(struc2D==2)  return KeQuadAxi(model,ie);
 
 
 		Node[] vertexNode=model.elementNodes(ie);
-		
-/*		Vect[] coords=new Vect[4];
-		for(int i=0;i<this.nElVert;i++){
-			util.pr(vertexNode[i].id);
-			coords[i]=vertexNode[i].getCoord();
-		}*/
-		
+
 		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
 		for(int i=0;i<this.nElVert;i++)
 			for(int j=0;j<this.nElVert;j++)
@@ -3425,89 +3420,7 @@ public class Calculator {
 					ws=detJac;
 
 				gradN=gradN(jac,localCo);
-/*				
-				double[] N=NQuad(localCo);
-				Vect P=new Vect(2);
-				for(int k=0;k<this.nElVert;k++)
-					P=P.add(coords[k].times(N[k]));
-				
-			///	P.show();
-				P=new Vect(1,1);z
-				Vect v1=P.sub(coords[0]);
-				Vect v2=P.sub(coords[3]);
-				Vect e1=coords[1].sub(coords[0]).normalized();
-				Vect e2=coords[2].sub(coords[3]).normalized();
-				double prj1=v1.dot(e1);
-				double prj2=v2.dot(e2);
-				double dU1=v1.sub(e1.times(prj1)).norm();
-				double dU2=v2.sub(e2.times(prj2)).norm();
-				
-			//	util.pr("  ===dU1====>   "+dU1);
-			//	util.pr("  ===dU2====>   "+dU2);
-			//	util.pr("  ===dU1+dU2====>   "+(dU1+dU2));
-				double uc=2*(dU1/(dU1+dU2)-.5);
-			//	util.pr(" u  ========>   "+uc);
-				 v1=P.sub(coords[0]);
-				 v2=P.sub(coords[1]);
-				 e1=coords[3].sub(coords[0]).normalized();
-				 e2=coords[2].sub(coords[1]).normalized();
-				 prj1=v1.dot(e1);
-				 prj2=v2.dot(e2);
-				 dU1=v1.sub(e1.times(prj1)).norm();
-				 dU2=v2.sub(e2.times(prj2)).norm();
-					double vc=2*(dU1/(dU1+dU2)-.5);
-			//	util.pr(" v  ========>   "+vc);
-				
-				
-				double a0=coords[1].el[0]-coords[0].el[0];
-				double a1=coords[3].el[0]-coords[0].el[0];
-				double a2=coords[0].el[0]-coords[1].el[0]+coords[2].el[0]-coords[3].el[0];
-				util.pr("a2 ================================>    "+a2);
-				double b0=coords[1].el[1]-coords[0].el[1];
-				double b1=coords[3].el[1]-coords[0].el[1];
-				double b2=coords[0].el[1]-coords[1].el[1]+coords[2].el[1]-coords[3].el[1];
-				util.pr("b2 ================================>    "+b2);
 
-				
-				Mat M1=new Mat(2,2);
-				Mat M2=new Mat(2,2);
-				Vect x=new Vect(2);
-				Vect dx=new Vect(2);
-
-				double err=1;
-				for(int i=0;i<10;i++){
-		
-					if(err<1e-4) break;
-				M1.el[0][0]=a0;
-				M1.el[0][1]=a1+a2*x.el[0];
-				M1.el[1][0]=b0;
-				M1.el[1][1]=b1+b2*x.el[0];
-				
-				Vect b=P.sub(M1.mul(x));
-
-				err=b.norm()/P.norm();
-		
-				M2.el[0][1]=a2*x.el[0];
-				M2.el[1][1]=b2*x.el[0];
-				
-				Mat M=M1.add(M2);
-				
-				M.show();
-				
-				Mat invM=M.inv2();
-			
-			
-				dx=invM.mul(b);
-				x=x.add(dx);
-				x.show();
-
-				util.pr(" err  ========>   "+err);
-				}
-				
-				Vect uv=x.times(2).add(-1);
-				
-				uv.show();*/
-				
 
 				for(int i=0;i<this.nElVert;i++)
 					for(int j=0;j<this.nElVert;j++){
@@ -4432,10 +4345,7 @@ public class Calculator {
 
 	}
 
-	/*
-	public Mat hookNormal(Model model,int ie){
-		return hookNormal(model.element[ie].getYng().el[0],model.element[ie].getPois().el[0] );
-	}*/
+
 
 	public Mat hook3D(Model model, int ie){
 		Vect yng=model.element[ie].getYng();
@@ -4490,6 +4400,7 @@ public class Calculator {
 
 
 
+		if(this.dim==3 || struc2D==1){
 		int m=3*(this.dim-1);
 		Mat D=new Mat(m,m);
 		for(int i=0;i<this.dim;i++)
@@ -4500,8 +4411,26 @@ public class Calculator {
 
 		for(int i=this.dim;i<m;i++)
 			D.el[i][i]=.5-v;
-
+		
 		return D.times(E/((1-2*v)*(1+v)));
+		
+		}else{
+			double	G=E/(1-v*v);
+		
+			Mat D=new Mat(3,3);;
+			
+			D.el[0][0]=1;
+			D.el[1][1]=1;
+			D.el[2][2]=(1.-v)/2;
+			D.el[0][1]=v;
+			D.el[1][0]=v;
+			
+			D=D.times(G);
+
+			return D;
+		}
+
+		
 
 
 	}
@@ -4591,6 +4520,31 @@ public class Calculator {
 
 
 		return strain;
+	}
+
+	
+	
+	
+	public Vect[] getGpStrainQuad(Model model,int ie){
+		
+		
+		int n=this.PW[0].length;	
+		
+		 Vect[] strain=new Vect[n*n];
+		Vect localCo=new Vect(2);
+		int count=0;
+		for(int p=0;p<n;p++)
+			for(int q=0;q<n;q++)
+			{
+				localCo.el[0]=this.PW[0][p];
+				localCo.el[1]=this.PW[0][q];
+				
+				strain[count++]=getElQuadStrain(model,ie,localCo);
+
+			}
+		
+		return strain;
+
 	}
 
 
@@ -5086,6 +5040,100 @@ public class Calculator {
 
 		return nm;
 
+	}
+	
+	public Vect[] BtSigQuad(Model model,int ie,Vect[] gp_stress){
+
+
+		Node[] vertexNode=model.elementNodes(ie);
+		
+
+		
+		Vect[] F=new Vect[this.nElVert];
+		
+		for(int i=0;i<this.nElVert;i++)
+		F[i]=new Vect(model.dim);
+
+
+		double detJac,ws=1;
+		int n=this.PW[0].length;	
+		Mat jac;
+
+		double v=model.element[ie].getPois().el[0];
+		double E=model.element[ie].getYng().el[0];
+		
+		double G=0;
+		if(struc2D==0)
+			G=E/(1-v*v);
+		else
+			G=E/((1+v)*(1-2*v));
+		
+		Mat Bi=new Mat(3,2);;
+		//Mat Bj=new Mat(3,2);;
+		
+		Mat D=new Mat(3,3);;
+		
+		D.el[0][0]=1;
+		D.el[1][1]=1;
+		D.el[2][2]=(1.-v)/2;
+		D.el[0][1]=v;
+		D.el[1][0]=v;
+		
+		D=D.times(G);
+
+
+		Vect[] gradN;
+		Vect localCo=new Vect(3);
+		
+		int count=0;
+		
+		for(int p=0;p<n;p++)
+			for(int q=0;q<n;q++)
+			{
+				localCo.el[0]=this.PW[0][p];
+				localCo.el[1]=this.PW[0][q];
+
+				
+				Vect gp_sig=gp_stress[count++];
+				
+			
+				jac=jacobian(vertexNode,localCo);
+
+				detJac=abs(jac.determinant());
+
+
+				if(n!=2)
+					ws=this.PW[1][p]*this.PW[1][q]*detJac;
+				else
+					ws=detJac;
+
+				gradN=gradN(jac,localCo);
+
+				
+
+
+				for(int i=0;i<this.nElVert;i++){
+					
+					Bi.el[0][0]=gradN[i].el[0];
+					Bi.el[1][1]=gradN[i].el[1];
+					Bi.el[2][0]=gradN[i].el[1];
+					Bi.el[2][1]=gradN[i].el[0];
+					
+					Mat Bit=Bi.transp();
+
+
+					Vect BitSig=Bit.mul(gp_sig);
+					
+					
+		
+					F[i]=F[i].add(BitSig.times(ws));
+
+
+					}
+			}	
+
+		
+		return F;
 	}
 
 	public double[] nodalMassQuad(Model model,int ie){

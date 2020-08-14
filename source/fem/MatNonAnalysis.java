@@ -30,7 +30,7 @@ public class MatNonAnalysis {
 
 
 
-
+	int[][] u_index;
 	Model model;
 
 	int nr_itmax0 = 10;
@@ -86,6 +86,26 @@ public class MatNonAnalysis {
 				if (disp.length > 10000)
 					direct = false;
 				
+				u_index = new int[model.numberOfNodes + 1][model.dim];
+				for (int i = 1; i <= model.numberOfNodes; i++)
+					for (int k = 0; k < model.dim; k++)
+						u_index[i][k] = -1;
+
+				int ix = 0;
+				for (int i = 1; i <= model.numberOfUnknownU; i++) {
+					int nodeNumb = model.unknownUnumber[i];
+
+					if (model.node[nodeNumb].isDeformable()) {
+						for (int k = 0; k < model.dim; k++) {
+							if (!model.node[nodeNumb].is_U_known(k)) {
+								u_index[nodeNumb][k] = ix;
+								ix++;
+							}
+						}
+
+					}
+				}
+
 	
 			initialized=true;
 			
@@ -178,6 +198,8 @@ public class MatNonAnalysis {
 		Ks=model.Ks;
 
 	}
+	
+	
 
 	private Vect solveLinear(SpMatSolver solver, SpMat Ks, Vect dF) {
 
@@ -211,11 +233,89 @@ public class MatNonAnalysis {
 	}
 
 	private Vect calcResidual(Vect u, Vect b) {
+		
+		
+	//	Vect Fint = K_hat.smul(u);
+		
+		//Fint.show();
+		
+		model.setStress();
+		
+		
+		Mat D =new Mat();
 
-		Vect Fint = K_hat.smul(u);
 
-		Vect dF = b.sub(Fint);
+		Vect [] gp_strain;
+		Vect [] gp_stress;
+		
+		for(int i=1;i<=model.numberOfNodes;i++)
+			if(model.node[i].isDeformable())
+			model.node[i].Fms=new Vect(model.dim);
+			
+		for(int i=1;i<=model.numberOfElements;i++){
+			if(model.element[i].getStress()==null) continue; 
+			
+			if(model.dim==3)
+				D=model.femCalc.hook3D(model,i);
+			else
+				D=model.femCalc.hook(model,i);
 
+			gp_strain=model.femCalc.getGpStrainQuad(model,i);
+			gp_stress=new Vect[gp_strain.length];
+			
+			for(int k=0;k<gp_strain.length;k++){
+				gp_stress[k]=D.mul(gp_strain[k]);
+			}
+
+			int[] vertNumb=model.element[i].getVertNumb();
+			
+	
+			Vect[] nodalForce=model.femCalc.BtSigQuad(model,i,gp_stress);
+			for(int j=0;j<model.nElVert;j++){
+				int nn=vertNumb[j];		
+				if(model.node[nn].Fms==null)
+			model.node[nn].Fms=nodalForce[j].deepCopy();
+				else
+					model.node[nn].Fms=model.node[nn].Fms.add(nodalForce[j]);
+			}
+		}
+		
+		
+		
+	
+		Vect Fint1 = new Vect(K_hat.nRow);
+		
+		for (int i = 1; i <= model.numberOfNodes; i++) {
+			//int nodeNumb = model.unknownUnumber[i];
+
+			if (model.node[i].isDeformable()) {
+				
+				Vect Fms=model.node[i].Fms;
+				for (int k = 0; k < model.dim; k++) {
+
+					if (!model.node[i].is_U_known(k)) {
+						int loc=u_index[i][k] ;
+						Fint1.el[loc]=Fms.el[k];
+					//	Fms.el[k]=Fint.el[loc];
+					}
+					else{
+						Fms.el[k]=0;//Fint.el[loc];
+					}
+				}
+
+			}
+		}
+		
+		model.writeNodalField(model.resultFolder + "\\internal_force.txt", 2);
+
+
+		
+	//	Fint1.show();
+	//	Fint.show();
+	//	Vect Fint = K_hat.smul(u);
+	//	Fint.show();
+
+		Vect dF = b.sub(Fint1);
 
 
 		return dF;

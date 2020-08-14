@@ -1711,7 +1711,7 @@ public void average(String bun1, String bun2,String bun3){
 							if(model.node[nn].F!=null){
 								model.node[nn].Fstr=model.node[nn].F.deepCopy();
 							}
-						
+					///v.hshow();	
 							model.node[nn].setF(v);
 					
 						}

@@ -1458,8 +1458,8 @@ util.pr(-a*1e6+" "+seq)*/;
 			Vect[] gradN=new Vect[this.nElVert];
 
 			Mat T=model.element[i].getStressTensor().times(1e6);
-
-
+			
+	
 			Mat jac=new Mat(this.dim,this.dim);;
 			double ws,detJ,wsJ;
 			Vect localCo=new Vect(this.dim);

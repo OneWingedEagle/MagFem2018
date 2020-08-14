@@ -992,7 +992,7 @@ public class ContactAnalysis {
 				
 					Vect deltaDispRef = vr.sub(v1r.times(alpha).add(v2r.times(beta)));
 					
-				//	deltaDisp=deltaDisp.sub(deltaDispRef);
+					deltaDisp=deltaDisp.sub(deltaDispRef);
 					double proj = deltaDisp.dot(normal);
 
 					Vect disp_tang = deltaDisp.sub(normal.times(proj));
