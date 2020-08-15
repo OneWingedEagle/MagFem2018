@@ -3240,6 +3240,16 @@ public class Calculator {
 
 		return Ke;
 	}
+	
+	
+	
+	public Mat[][] Ke_tang(Model model,int ie,boolean[] yield_state){
+
+		if(this.elCode==0) return null;
+		else if(this.elCode==1) return KeQuad_tang(model,ie, yield_state);
+		else return null;
+	}
+	
 
 	public Mat[][] KeTet(Model model,int ie){
 
@@ -3439,6 +3449,81 @@ public class Calculator {
 		return Ke;
 	}
 	
+	
+public Mat[][] KeQuad_tang(Model model,int ie, boolean[] yield_state){
+		
+
+		Node[] vertexNode=model.elementNodes(ie);
+
+		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++)
+				Ke[i][j]=new Mat(2,2);
+
+		double detJac,ws=1;
+		int n=this.PW[0].length;	
+		Mat jac;
+
+		int nr=model.element[ie].getRegion();
+
+		double v=model.element[ie].getPois().el[0];
+		double E=model.element[ie].getYng().el[0];
+		
+		double Et=model.region[nr].getTangYoung();
+		
+		double Gi=0;
+		if(struc2D==0)
+			Gi=E/(1-v*v);
+		else
+			Gi=E/((1+v)*(1-2*v));
+		
+		double Gt=Gi*Et/E;
+
+		Mat BtDB;
+		Vect[] gradN;
+		Vect localCo=new Vect(3);
+		
+		int count=0;
+		
+		for(int p=0;p<n;p++)
+			for(int q=0;q<n;q++)
+			{
+				localCo.el[0]=this.PW[0][p];
+				localCo.el[1]=this.PW[0][q];
+
+				
+				jac=jacobian(vertexNode,localCo);
+
+				detJac=abs(jac.determinant());
+
+				
+				boolean y_state=yield_state[count++];
+			
+				
+				double G=Gi;
+				if(y_state) G=Gt;
+				
+
+				if(n!=2)
+					ws=this.PW[1][p]*this.PW[1][q]*detJac;
+				else
+					ws=detJac;
+
+				gradN=gradN(jac,localCo);
+
+
+				for(int i=0;i<this.nElVert;i++)
+					for(int j=0;j<this.nElVert;j++){
+
+						BtDB=BtDB2D(v,gradN[i],gradN[j]).times(ws*G);
+						Ke[i][j]=Ke[i][j].add(BtDB);
+
+					}
+			}	
+
+
+		return Ke;
+	}
 	
 	public Mat[][] KeQuadAxi(Model model,int ie){
 
@@ -5325,6 +5410,7 @@ public class Calculator {
 
 		return Se;
 	}
+
 
 
 

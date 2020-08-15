@@ -1,6 +1,8 @@
 package fem;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,6 +31,8 @@ public class MatNonAnalysis {
 
 
 
+	 Vect nr_err;
+	int[]  nr_it;
 
 	int[][] u_index;
 	Model model;
@@ -46,12 +50,14 @@ public class MatNonAnalysis {
 	Vect disp, rhs;
 
 	Vect top;
-	SpMat K_hat;
+	//SpMat K_hat;
 	Vect rhs_hat;
 	int totalNRIter = 0;
 	
-	//Vect nr_err;
-	//int nr_it[];
+	Vect [][] gp_strains;
+	Vect [][] gp_stresses;
+	Vect [][] gp_pl_strains;
+	boolean [][] yield_states;
 
 	boolean initialized = false;
 
@@ -59,7 +65,7 @@ public class MatNonAnalysis {
 
 	public Vect solve(Model model, SpMatSolver solver,SpMat Khat1,Vect bhat1,int step) {
 		
-		this.K_hat=Khat1.deepCopy();
+		//this.K_hat=Khat1.deepCopy();
 		this.rhs_hat=bhat1.deepCopy();
 
 		
@@ -106,10 +112,18 @@ public class MatNonAnalysis {
 					}
 				}
 
-	
+				gp_stresses=new Vect[1+model.numberOfElements][];
+				gp_strains=new Vect[1+model.numberOfElements][];
+				gp_pl_strains=new Vect[1+model.numberOfElements][];
+				yield_states=new boolean[1+model.numberOfElements][9];
+				
+				 nr_err = new Vect(nLoads * nr_itmax);
+				 nr_it = new int[nLoads * nr_itmax];
+				 
 			initialized=true;
 			
 			}
+
 
 			rhs =rhs_hat.deepCopy();
 
@@ -139,33 +153,43 @@ public class MatNonAnalysis {
 				
 						calcTangStiff();
 						
+
+						
 						if(nr_iter==0) dF=rhs.deepCopy();
-						else dF=residual.deepCopy();
+										
+						else
+							dF=calcResidual(rhs);
+					
+						er = dF.norm() / rhs.norm();
+						
+						nr_err.el[totalNRIter]=er;
 
+						util.pr("nr_iter: " + nr_iter + "           nr_err: " + er + "       disp_err: " + disp_err);
 
+						if (er < nr_tol && nr_iter>0) {
+							break;
+						}
+
+					
 
 						Vect du = solveLinear(solver, Ks.deepCopy(), dF);
 
 						disp = disp.add(du);
 
-						model.setU(disp);
+					//	model.setU(disp);
 
 						if (disp.norm() > 0)
 							disp_err = du.norm() / disp.norm();
 						
-						residual = this.calcResidual(disp, rhs);
-						
-						er = residual.norm() / rhs.norm();
-
-						util.pr("nr_iter: " + nr_iter + "           nr_err: " + er + "       disp_err: " + disp_err);
+					
 
 			
-						totalNRIter++;
-						if (er < nr_tol) {
-							break;
-						}
+						returnMapping(du);
 
+						
+						totalNRIter++;
 					}
+		
 
 					
 			}
@@ -183,7 +207,7 @@ public class MatNonAnalysis {
 		}
 	
 
-
+			nr_err.show("%12.8e");
 
 		model.setU(disp);
 
@@ -195,7 +219,8 @@ public class MatNonAnalysis {
 
 	private void calcTangStiff() {
 
-		Ks=model.Ks;
+		
+		Ks= model.mechMat.setTangStiffMat(model,false, yield_states);
 
 	}
 	
@@ -232,81 +257,134 @@ public class MatNonAnalysis {
 		return du;
 	}
 
-	private Vect calcResidual(Vect u, Vect b) {
+	
+	private void returnMapping(Vect du) {
 		
-		
-	//	Vect Fint = K_hat.smul(u);
-		
-		//Fint.show();
-		
-		model.setStress();
+		model.setU(du);
 		
 		
 		Mat D =new Mat();
 
 
-		Vect [] gp_strain;
-		Vect [] gp_stress;
+		Vect [] gp_delta_strain;
+		Vect [] gp_delta_stress;
 		
 		for(int i=1;i<=model.numberOfNodes;i++)
 			if(model.node[i].isDeformable())
 			model.node[i].Fms=new Vect(model.dim);
+	
+		for(int ir=1;ir<=model.numberOfRegions;ir++){
 			
-		for(int i=1;i<=model.numberOfElements;i++){
-			if(model.element[i].getStress()==null) continue; 
+			double yield=model.region[ir].getYield();
+			
+		for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
+			
+			int[] vertNumb=model.element[i].getVertNumb();
+			
+			boolean deformable=false;
+			for(int k=0;k<vertNumb.length;k++){
+				if(model.node[vertNumb[k]].isDeformable()){
+					deformable=true;
+					break;
+				}
+			}
+			if(!deformable) continue; 
 			
 			if(model.dim==3)
 				D=model.femCalc.hook3D(model,i);
 			else
 				D=model.femCalc.hook(model,i);
 
-			gp_strain=model.femCalc.getGpStrainQuad(model,i);
-			gp_stress=new Vect[gp_strain.length];
+			gp_delta_strain=model.femCalc.getGpStrainQuad(model,i);
 			
-			for(int k=0;k<gp_strain.length;k++){
-				gp_stress[k]=D.mul(gp_strain[k]);
+			if(gp_stresses[i]==null){
+			gp_stresses[i]=new Vect[gp_delta_strain.length];
+			gp_strains[i]=new Vect[gp_delta_strain.length];
+			gp_pl_strains[i]=new Vect[gp_delta_strain.length];
+			
+			for(int k=0;k<gp_delta_strain.length;k++){
+				gp_stresses[i][k]=new Vect(3*(model.dim-1));
+				gp_strains[i][k]=new Vect(3*(model.dim-1));
+				gp_pl_strains[i][k]=new Vect(3*(model.dim-1));
 			}
+			}
+			
+			for(int k=0;k<gp_delta_strain.length;k++){
+				gp_strains[i][k]=gp_strains[i][k].add(gp_delta_strain[k]);
+			}
+			
+			gp_delta_stress=new Vect[gp_delta_strain.length];
+			
+			for(int k=0;k<gp_delta_stress.length;k++){
+				gp_delta_stress[k]=D.mul(gp_delta_strain[k]);
+				
+				gp_stresses[i][k]=gp_stresses[i][k].add(gp_delta_stress[k]);
+				
+				double seq=calcMises(gp_stresses[i][k]);
+			//	util.pr(seq+"  "+yield);
+				if(seq>yield){
+					yield_states[i][k]=true;
+					
+				///	gp_stresses[i][k]=gp_stresses[i][k].times(.999);
+				}
+				else yield_states[i][k]=false;
+			
+				
+			}
+		}
+	}
+		
 
+	}
+
+	
+	private Vect calcResidual(Vect b) {
+		
+	
+		Vect Fint = new Vect(b.length);
+
+
+		for(int i=1;i<=model.numberOfElements;i++){
+			
 			int[] vertNumb=model.element[i].getVertNumb();
 			
+			boolean deformable=false;
+			for(int k=0;k<vertNumb.length;k++){
+				if(model.node[i].isDeformable()){
+					deformable=true;
+					if(model.node[i].Fms==null) model.node[i].Fms=new Vect(model.dim);
+					break;
+				}
+			}
+			if(!deformable) continue; 
+			
+	
+			Vect [] gp_stress=gp_stresses[i];
 	
 			Vect[] nodalForce=model.femCalc.BtSigQuad(model,i,gp_stress);
 			for(int j=0;j<model.nElVert;j++){
 				int nn=vertNumb[j];		
-				if(model.node[nn].Fms==null)
-			model.node[nn].Fms=nodalForce[j].deepCopy();
-				else
-					model.node[nn].Fms=model.node[nn].Fms.add(nodalForce[j]);
-			}
-		}
-		
-		
-		
-	
-		Vect Fint1 = new Vect(K_hat.nRow);
-		
-		for (int i = 1; i <= model.numberOfNodes; i++) {
-			//int nodeNumb = model.unknownUnumber[i];
 
-			if (model.node[i].isDeformable()) {
 				
-				Vect Fms=model.node[i].Fms;
+				Vect Fms=model.node[nn].Fms;
+				
 				for (int k = 0; k < model.dim; k++) {
 
-					if (!model.node[i].is_U_known(k)) {
-						int loc=u_index[i][k] ;
-						Fint1.el[loc]=Fms.el[k];
-					//	Fms.el[k]=Fint.el[loc];
+					if (!model.node[nn].is_U_known(k)) {
+						int loc=u_index[nn][k] ;
+						Fint.el[loc]+=nodalForce[j].el[k];
+						Fms.el[k]+=nodalForce[j].el[k];
 					}
 					else{
 						Fms.el[k]=0;//Fint.el[loc];
 					}
 				}
-
+				//	model.node[nn].Fms=model.node[nn].Fms.add(nodalForce[j]);
 			}
 		}
 		
-		model.writeNodalField(model.resultFolder + "\\internal_force.txt", 2);
+
+	//	model.writeNodalField(model.resultFolder + "\\internal_force.txt", 2);
 
 
 		
@@ -315,13 +393,11 @@ public class MatNonAnalysis {
 	//	Vect Fint = K_hat.smul(u);
 	//	Fint.show();
 
-		Vect dF = b.sub(Fint1);
-
+		Vect dF = b.sub(Fint);
 
 		return dF;
 
 	}
-
 
 
 	
@@ -369,6 +445,37 @@ public class MatNonAnalysis {
 		return u;
 	}
 	
+	
+
+
+	public double calcMises(Vect sv){
+		double se=0;
+
+		if(model.dim==2){
+			double s1,s2,s12,s3;
+			s1=sv.el[0];
+			s2=sv.el[1];
+			s12=sv.el[2];
+			s3=0.3*(s1+s2);
+
+			se=pow(s1-s2,2)+pow(s2-s3,2)+pow(s1-s3,2)+6*s12;
+		}
+		else{
+			double s1,s2,s3,s12,s23,s13;
+			s1=sv.el[0];
+			s2=sv.el[1];
+			s3=sv.el[2];
+			s12=sv.el[3];
+			s23=sv.el[4];
+			s13=sv.el[5];
+			se=pow(s1-s2,2)+pow(s2-s3,2)+pow(s1-s3,2)+6*s12+6*s23+6*s13;
+		}
+
+		se/=2;
+		se=sqrt(se);
+
+	return se;
+	}
 
 	
 	public static void main(String[] args) {

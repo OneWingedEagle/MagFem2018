@@ -354,6 +354,188 @@ public class MechMatrix {
 
 
 
+	public SpMat setTangStiffMat(Model model,boolean massNeeded, boolean [][] yield_states){
+
+
+		System.out.println(" Structural analysis... ");
+
+		System.out.println();
+		System.out.println(" Number of unknown non-fixed points : "+model.numberOfUnknownU);
+		System.out.println();
+
+		System.out.println(" Calculating stiffness matrix ...");
+		Mat[][] Ke=new Mat[model.nElVert][model.nElVert];
+		Mat[][] Me=new Mat[model.nElVert][model.nElVert];
+		Mat RiT=new Mat(),Rj;
+		int m,row,column,rowNodeNumber,colNodeNumber,rowb=0,ext=4;
+		int[] nz=new int[model.numberOfUnknownU];
+		SpBlockMat BKs=new SpBlockMat(model.numberOfUnknownU,model.numberOfUnknownU,model.nNodNod);
+		SpBlockMat MKs=new SpBlockMat();
+		if(massNeeded){
+			MKs=new SpBlockMat(model.numberOfUnknownU,model.numberOfUnknownU,model.nNodNod);
+		}
+
+		int[][] unknown_U_ind=new int[model.numberOfUnknownU][model.dim];
+		int ix=1;
+		for(int i=0;i<unknown_U_ind.length;i++){
+			int nodeNumb=model.unknownUnumber[i+1];
+
+			for(int k=0;k<model.dim;k++){			
+				if(!model.node[nodeNumb].is_U_known(k)){
+					unknown_U_ind[i][k]=ix++;
+				}
+			}
+		}
+
+
+
+		for(int i=1;i<=model.numberOfElements;i++){
+
+			if(!model.element[i].isDeformable()) {continue;}
+
+			int[] vertNumb=model.element[i].getVertNumb();
+
+
+			if(massNeeded){
+			//	Ke_tang(Model model,int ie,boolean[] yield_state)
+				//Ke=this.calc.Ke_tang(model,i,yield_stateMe);
+
+			}
+			else{
+				Ke=this.calc.Ke_tang(model,i,yield_states[i]);
+
+			}
+
+	
+			for(int j=0;j<model.nElVert;j++){
+
+				rowNodeNumber=vertNumb[j];
+
+				if(model.node[rowNodeNumber].is_U_known()) continue;
+
+				if(model.coordCode==1)
+					if(model.dim==2){
+						RiT=util.rotMat2D(util.getAng(model.node[rowNodeNumber].getCoord())).transp();
+
+					}
+					else {
+						double alpha=util.getAng(model.node[rowNodeNumber].getCoord().v2());
+						RiT=util.rotEuler(new Vect(0,0,1), alpha).transp();
+						
+					}
+
+				row=model.U_unknownIndex[rowNodeNumber]-1;
+
+				for(int k=0;k<model.nElVert;k++){
+
+					colNodeNumber=vertNumb[k];
+
+					if(model.coordCode==1){
+					
+
+						if(model.dim==2){
+							Rj=util.rotMat2D(util.getAng(model.node[colNodeNumber].getCoord()));
+						}
+						else {
+							
+							double alpha=util.getAng(model.node[colNodeNumber].getCoord().v2());
+							Rj=util.rotEuler(new Vect(0,0,1), alpha);
+						
+						
+						}
+
+					
+						Ke[j][k]=RiT.mul(Ke[j][k].mul(Rj));
+						
+						if(massNeeded)
+							Me[j][k]=RiT.mul(Me[j][k].mul(Rj));
+					}
+
+					//=========================
+
+/*					if(model.node[colNodeNumber].has_U_known() ){
+						Vect v;
+						if(model.node[colNodeNumber].getMap()==0) 
+							v=model.node[colNodeNumber].u;									
+						else {
+							v=model.node[model.node[colNodeNumber].getMap()].u;
+						}
+
+						for(int p=0;p<model.dim;p++)
+							if(!model.node[rowNodeNumber].is_U_known(p)){
+								rowb=unknown_U_ind[row][p]-1;
+
+								for(int q=0;q<model.dim;q++)
+									if(model.node[colNodeNumber].is_U_known(q))
+										model.bU.el[rowb]-=Ke[j][k].el[p][q]*v.el[q];
+
+							}
+
+
+					}*/
+
+					if(model.node[colNodeNumber].is_U_known()) 
+						continue;
+
+					column=model.U_unknownIndex[colNodeNumber]-1;
+
+
+					if(column>row) continue;
+
+					m=util.search(BKs.row[row].index,nz[row]-1,column);
+
+					if(m<0)
+					{	
+
+						BKs.row[row].index[nz[row]]=column;															
+						BKs.row[row].el[nz[row]]=Ke[j][k];
+						if(massNeeded){
+							MKs.row[row].index[nz[row]]=column;	
+							MKs.row[row].el[nz[row]]=Me[j][k];
+						}
+
+						nz[row]++;
+
+						if(nz[row]==BKs.row[row].nzLength-1){
+							BKs.row[row].extend(ext);
+							if(massNeeded)
+								MKs.row[row].extend(ext);
+						}
+
+					}
+
+					else{
+
+						BKs.row[row].addToNz(Ke[j][k],m);
+						if(massNeeded)
+							MKs.row[row].addToNz(Me[j][k],m);
+
+
+					}
+				}
+
+			}
+		}
+
+
+		BKs.sortAndTrim(nz);
+
+
+		SpMat Ks=BKs.spMatForm(model,unknown_U_ind);
+		if(massNeeded){
+
+			MKs.sortAndTrim(nz);	
+			model.Ms=MKs.spMatForm(model,unknown_U_ind);
+
+		}
+
+
+		return Ks;
+
+	}
+
+
+
 
 
 	
