@@ -5209,15 +5209,15 @@ public Mat[][] KeQuad_tang(Model model,int ie, boolean[] yield_state){
 
 					Vect BitSig=Bit.mul(gp_sig);
 					
-					
 		
 					F[i]=F[i].add(BitSig.times(ws));
 
+					
 
 					}
 			}	
 
-		
+
 		return F;
 	}
 

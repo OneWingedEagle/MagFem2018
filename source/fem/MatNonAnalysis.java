@@ -57,6 +57,7 @@ public class MatNonAnalysis {
 	Vect [][] gp_strains;
 	Vect [][] gp_stresses;
 	Vect [][] gp_pl_strains;
+	double [][] gp_pl_strains_eq_accum;
 	boolean [][] yield_states;
 
 	boolean initialized = false;
@@ -77,7 +78,7 @@ public class MatNonAnalysis {
 
 
 		nLoads=1;
-		nr_itmax=5;
+		nr_itmax=3;
 		nr_tol=1e-3;
 		
 		KK = null;
@@ -115,6 +116,7 @@ public class MatNonAnalysis {
 				gp_stresses=new Vect[1+model.numberOfElements][];
 				gp_strains=new Vect[1+model.numberOfElements][];
 				gp_pl_strains=new Vect[1+model.numberOfElements][];
+				gp_pl_strains_eq_accum=new double[1+model.numberOfElements][9];
 				yield_states=new boolean[1+model.numberOfElements][9];
 				
 				 nr_err = new Vect(nLoads * nr_itmax);
@@ -173,6 +175,9 @@ public class MatNonAnalysis {
 					
 
 						Vect du = solveLinear(solver, Ks.deepCopy(), dF);
+						
+						util.pr(dF.norm()+"  dF.norm");
+						util.pr(du.norm()+"  du.norm");
 
 						disp = disp.add(du);
 
@@ -221,6 +226,7 @@ public class MatNonAnalysis {
 
 		
 		Ks= model.mechMat.setTangStiffMat(model,false, yield_states);
+	//	Ks= model.Ks;
 
 	}
 	
@@ -263,8 +269,9 @@ public class MatNonAnalysis {
 		model.setU(du);
 		
 		
-		Mat D =new Mat();
+		Mat D =null;
 
+		double mm=0;
 
 		Vect [] gp_delta_strain;
 		Vect [] gp_delta_stress;
@@ -275,7 +282,11 @@ public class MatNonAnalysis {
 	
 		for(int ir=1;ir<=model.numberOfRegions;ir++){
 			
-			double yield=model.region[ir].getYield();
+			double yield0=model.region[ir].getYield();
+			
+			double E=model.region[ir].getYng().el[0];
+			double Et=model.region[ir].getTangYoung();
+			double hardening=Et/(1.-Et/E);
 			
 		for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 			
@@ -316,16 +327,42 @@ public class MatNonAnalysis {
 			gp_delta_stress=new Vect[gp_delta_strain.length];
 			
 			for(int k=0;k<gp_delta_stress.length;k++){
+				
 				gp_delta_stress[k]=D.mul(gp_delta_strain[k]);
 				
 				gp_stresses[i][k]=gp_stresses[i][k].add(gp_delta_stress[k]);
 				
 				double seq=calcMises(gp_stresses[i][k]);
+				
+				
+				double yield =yield0+1*hardening*gp_pl_strains_eq_accum[i][k];
+				
+				if(seq>mm) mm=seq;
 			//	util.pr(seq+"  "+yield);
 				if(seq>yield){
 					yield_states[i][k]=true;
+					double sx=gp_stresses[i][k].el[0];
+					double sy=gp_stresses[i][k].el[1];
+					double sxy=gp_stresses[i][k].el[2];
+				//	gp_stresses[i][k].hshow();
+					Vect dgds=new Vect(.5*(2*sx-sy)/seq,.5*(2*sy-sx)/seq,3.0*sxy/seq);
+					//dgds.show();
+			
+					double denum=D.mul(dgds).dot(dgds);
+				//	util.pr(denum);
+					double dlam=(seq-yield)/denum;
 					
-				///	gp_stresses[i][k]=gp_stresses[i][k].times(.999);
+					Vect pl_strain=dgds.times(dlam);
+					
+					double pls_eq=calcMises(pl_strain);
+
+					gp_pl_strains_eq_accum[i][k]+=pls_eq;
+							
+					Vect stress_correction=D.mul(pl_strain);
+				//	ps_correction.hshow();
+					gp_stresses[i][k]=gp_stresses[i][k].sub(stress_correction);
+			//		gp_stresses[i][k]=gp_stresses[i][k].times(.999);
+
 				}
 				else yield_states[i][k]=false;
 			
@@ -334,6 +371,7 @@ public class MatNonAnalysis {
 		}
 	}
 		
+		util.pr("maxxx "+mm);
 
 	}
 
@@ -380,13 +418,16 @@ public class MatNonAnalysis {
 					}
 				}
 				//	model.node[nn].Fms=model.node[nn].Fms.add(nodalForce[j]);
+				
+				//Fms.hshow();
 			}
 		}
 		
 
-	//	model.writeNodalField(model.resultFolder + "\\internal_force.txt", 2);
+		model.writeNodalField(model.resultFolder + "\\internal_force.txt", 2);
 
 
+		util.pr(Fint.norm()+"  Fint.norm");
 		
 	//	Fint1.show();
 	//	Fint.show();
@@ -458,7 +499,7 @@ public class MatNonAnalysis {
 			s12=sv.el[2];
 			s3=0.3*(s1+s2);
 
-			se=pow(s1-s2,2)+pow(s2-s3,2)+pow(s1-s3,2)+6*s12;
+			se=pow(s1-s2,2)+pow(s2-s3,2)+pow(s1-s3,2)+6*pow(s12,2);
 		}
 		else{
 			double s1,s2,s3,s12,s23,s13;
@@ -468,7 +509,7 @@ public class MatNonAnalysis {
 			s12=sv.el[3];
 			s23=sv.el[4];
 			s13=sv.el[5];
-			se=pow(s1-s2,2)+pow(s2-s3,2)+pow(s1-s3,2)+6*s12+6*s23+6*s13;
+			se=pow(s1-s2,2)+pow(s2-s3,2)+pow(s1-s3,2)+6*(pow(s12,2)+pow(s23,2)+pow(s13,2));
 		}
 
 		se/=2;
