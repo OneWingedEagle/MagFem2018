@@ -368,6 +368,8 @@ public class ContactAnalysis {
 						//else
 						aug=contact.lamN[contId].el[k] +pgap.el[k];
 
+						if(contact.lamN[contId].el[k]==0) relax=.5;
+						else relax=.75;
 
 						contact.lamN[contId].el[k] = aug*relax ;
 
