@@ -114,7 +114,6 @@ public class ContactAnalysis {
 	boolean initialized = false;
 //	boolean twice_check0 =false;
 	//boolean twice_check =false;
-	boolean frictional =false;
 	double fp = 1;
 	double fr = 1;
 	boolean aug_normal = true;
@@ -160,8 +159,7 @@ public class ContactAnalysis {
 		fp = 1;
 		fr = .01;
 
-		aug_normal = true;
-		aug_tang = true;
+
 
 		applyNodal = true;
 
@@ -297,6 +295,7 @@ public class ContactAnalysis {
 						er = dF.norm() / rhs.norm();
 						nr_err.el[totalNRIter] = er;
 						nr_it[totalNRIter] = totalNRIter;
+						
 
 						Vect du = solveLinear(solver, Ks.deepCopy(), dF);
 
@@ -342,10 +341,7 @@ public class ContactAnalysis {
 						
 						Vect gap=contact.gap[contId];
 						Vect slide=contact.slide[contId];
-						
-						Vect lamN=contact.lamN[contId];
-						Vect lamT=contact.lamT[contId];
-						
+
 						Vect weights=contact.weights[contId];
 
 
@@ -356,11 +352,12 @@ public class ContactAnalysis {
 						pgap.el[k] *= weights.el[k] * pf;
 						pslide.el[k] *= weights.el[k] * pft;
 					}
+				
 
 					for (int k = 0; k < pgap.length; k++) {
 
 						if (pgap.el[k] >= 0) {
-							lamN.el[k] = 0;
+							contact.lamN[contId].el[k] = 0;
 							continue;
 						}
 
@@ -369,21 +366,32 @@ public class ContactAnalysis {
 					//	if(lamN.el[k]==0)
 					//		aug= pgap.el[k];
 						//else
-						aug=lamN.el[k]*(1-relax)  + relax * pgap.el[k];
+						aug=contact.lamN[contId].el[k] +pgap.el[k];
 
 
-						lamN.el[k] = aug ;
+						contact.lamN[contId].el[k] = aug*relax ;
 
 					}
 
-					lamT = lamT.add(pslide);
+					contact.lamT[contId] = contact.lamT[contId].add(pslide);
+					
+					
+				//	new SpVect(contact.lamN[contId]).shownzA();
+				//	new SpVect(contact.lamT[contId]).shownzA();
 					
 					}
 					
+					
+
+					double[] aug_errs=getGapAndSlideErrors();
 
 					checkStickSlip();
 
+					aug_N.zero();
+					aug_T.zero();
 					
+
+
 
 					for(int contId=0;contId<contact.numContacts;contId++){
 						
@@ -398,15 +406,15 @@ public class ContactAnalysis {
 						lamT.zero();
 
 					if(contact.constraint_matrix_N_trp[contId]!=null)
-					aug_N = contact.constraint_matrix_N_trp[contId].mul(lamN);
+					aug_N = aug_N.add(contact.constraint_matrix_N_trp[contId].mul(lamN));
 					
-					if(contact.constraint_matrix_T_trp[contId]!=null)
-					aug_T = contact.constraint_matrix_T_trp[contId].mul(lamT);
-					
-					}
-					
+					if(contact.constraint_matrix_T_trp[contId]!=null){
+					aug_T =  aug_T.add(contact.constraint_matrix_T_trp[contId].mul(lamT));
 
-					double[] aug_errs=getGapAndSlideErrors();
+					}
+					}
+
+					
 					
 				gap_err.el[aug_iter] = aug_errs[0];
 				slide_err.el[aug_iter] = aug_errs[1];
@@ -434,7 +442,7 @@ public class ContactAnalysis {
 
 					// if(gap_err.el[aug_iter]<aug_tol && ( !frictional ||slide.el[aug_iter]<aug_tol))
 						 
-					 if(gap_err.el[aug_iter]<aug_tol && (!frictional ||aug_disp_err.el[aug_iter]<aug_tol))
+					 if(gap_err.el[aug_iter]<aug_tol && (!contact.frictional ||aug_disp_err.el[aug_iter]<aug_tol))
 					 {
 					 break;
 					 }
@@ -480,7 +488,7 @@ public class ContactAnalysis {
 			gap_err.show("%5.4e");
 			// util.plot(err);
 
-			if(frictional){
+			if(contact.frictional){
 			util.pr("slide[m] vs aug_iter");
 			slide_err.show("%5.4e");
 			}
@@ -748,6 +756,8 @@ public class ContactAnalysis {
 
 		}
 		
+	//	util.pr(" KcFFFFFFFFFFFFFFFFFFFFFFFFFF   "+Kcf.norm());
+		
 		//util.pr(" here 3333");
 	}
 
@@ -840,7 +850,6 @@ public class ContactAnalysis {
 
 	private void obtain_node_node() {
 
-		// slide_prev.zero();
 
 
 		// weights.zero();
@@ -852,8 +861,10 @@ public class ContactAnalysis {
 		int nnSize = model.numberOfNodes + 1;
 		for (int contId = 0; contId < contact.numContacts; contId++) {
 			
+			contact.numContactingNodes[contId]=0;
 			
 			contact.gap[contId].zero();
+			contact.slide[contId].zero();
 			
 			for (int i = 0; i < contact.slaveNodes[contId].length; i++) {
 				Node node = contact.slaveNodes[contId][i];
@@ -912,7 +923,9 @@ public class ContactAnalysis {
 						dot1 /= v1v.norm() * edgeLength;
 					if (dot2 != 0)
 						dot2 /= v2v.norm() * edgeLength;
+					
 
+					
 					if (dot1 * dot2 > .0) {
 
 						contact.contacting[contId][sn] = false;
@@ -947,6 +960,7 @@ public class ContactAnalysis {
 						continue;
 					}
 
+
 					// if(!gradualSeperation){
 					if (pen > clrFact * contact.master_edge_size[contId]) {
 
@@ -972,7 +986,6 @@ public class ContactAnalysis {
 	
 
 					Vect deltaDisp = u.sub(u1.times(alpha).add(u2.times(beta)));
-				//	Vect deltaDisp = v.sub(v1.times(alpha).add(v2.times(beta)));
 					
 					Vect vr=new Vect(u.length);
 					Vect v1r=new Vect(u.length);
@@ -1014,7 +1027,6 @@ public class ContactAnalysis {
 					contact.slide[contId].el[sn] = deltaDisp.dot(tang);
 
 
-
 					contact.contacting[contId][sn] = true;
 
 					totalnumContactingNodes++;
@@ -1039,7 +1051,6 @@ public class ContactAnalysis {
 
 	private void obtain_node_node3D() {
 
-		// slide_prev.zero();
 	
 
 
@@ -1049,8 +1060,11 @@ public class ContactAnalysis {
 		for (int contId = 0; contId < contact.numContacts; contId++) {
 			
 			contact.gap[contId].zero();
+			contact.slide[contId].zero();	
 			
-			double mu = contact.fric_coef[contId];
+			contact.numContactingNodes[contId]=0;
+			
+
 			for (int i = 0; i < contact.slaveNodes[contId].length; i++) {
 				Node node = contact.slaveNodes[contId][i];
 				int sn = node.id;
@@ -1468,7 +1482,11 @@ public class ContactAnalysis {
 		contact.constraint_matrix_STK[contId] = new SpMatAsym(nRows, dof);
 		}
 
-		for (int contId = 0; contId < contact.numContacts; contId++)
+	//	SpMatAsym	constraint_matrix_TX= new SpMatAsym(nRows, dof);
+
+		for (int contId = 0; contId < contact.numContacts; contId++){
+			
+		
 			for (int i = 0; i < contact.slaveNodes[contId].length; i++) {
 
 				Node node = contact.slaveNodes[contId][i];
@@ -1547,6 +1565,7 @@ public class ContactAnalysis {
 
 					Vect tang = contact.tangentials[contId][contact.normalIndex[contId][i]].deepCopy();
 
+				////	tang.hshow();
 				
 					// ===
 
@@ -1593,6 +1612,18 @@ public class ContactAnalysis {
 
 				}
 			}
+				
+			//	constraint_matrix_TX.addGeneral(contact.constraint_matrix_T[contId]);
+			//	contact.constraint_matrix_T[contId].shownzA();
+			}
+		
+	//	util.pr("GcfTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT "+constraint_matrix_TX.norm2());
+
+
+		//constraint_matrix_TX.shownzA();
+		
+		//util.pr("constraint_matrix_T_ norm2 "+constraint_matrix_TX.norm2());
+
 
 		// G_stk.shownzA();
 
@@ -1851,13 +1882,6 @@ public class ContactAnalysis {
 				continue;
 			
 			
-			Vect lamN=contact.lamN[contId];
-			Vect lamT=contact.lamN[contId];
-			
-			Vect slide=contact.slide[contId];
-
-			boolean[] stick=contact.stick[contId];
-			boolean[] landed_stick=contact.stick[contId];
 			
 			for (int i = 0; i < contact.slaveNodes[contId].length; i++) {
 
@@ -1875,48 +1899,46 @@ public class ContactAnalysis {
 					continue;
 
 				if (contact.node_node_mat[contId].row[sn].nzLength > 0) {
-
-					
-					if (lamN.el[sn] < 0) {
-						double abs_lamT = Math.abs(lamT.el[sn]);
-						double muFn = mu * Math.abs(lamN.el[sn]);
-
+					if (contact.lamN[contId].el[sn] < 0) {
+						double abs_lamT = Math.abs(contact.lamT[contId].el[sn]);
+						double muFn = mu * Math.abs(contact.lamN[contId].el[sn]);
+				
 						if (abs_lamT > muFn * (1 + margin)) {
-							if (lamT.el[sn] > 0)
-								lamT.el[sn] = muFn;
+							if (contact.lamT[contId].el[sn] > 0)
+								contact.lamT[contId].el[sn] = muFn;
 							else
-								lamT.el[sn] = -muFn;
-							stick[sn] = false;
-							landed_stick[sn] = false;
-							slide.el[sn] = 0;
+								contact.lamT[contId].el[sn] = -muFn;
+							contact.stick[contId][sn] = false;
+							contact.landed_stick[contId][sn] = false;
+							contact.slide[contId].el[sn] = 0;
 						} else {
-							if (!stick[sn]) {
-								stick[sn] = true;
+							if (!contact.stick[contId][sn]) {
+								contact.stick[contId][sn] = true;
 
-								landed_stick[sn] = true;
-								slide.el[sn] = 0;
+								contact.landed_stick[contId][sn] = true;
+								contact.slide[contId].el[sn] = 0;
 							}
 						}
 					} else {
-						stick[sn] = false;
-						landed_stick[sn] = false;
-						lamT.el[sn] = 0;
-						slide.el[sn] = 0;
+						contact.stick[contId][sn] = false;
+						contact.landed_stick[contId][sn] = false;
+						contact.lamT[contId].el[sn] = 0;
+						contact.slide[contId].el[sn] = 0;
 						contact.contacting[contId][sn] = false;
 					}
 				} else {
-					stick[sn] = false;
-					landed_stick[sn] = false;
-					lamT.el[sn] = 0;
-					slide.el[sn] = 0;
-					contact.contacting[contId][sn]= false;
+					contact.stick[contId][sn] = false;
+					contact.landed_stick[contId][sn] = false;
+					contact.lamT[contId].el[sn] = 0;
+					contact.slide[contId].el[sn] = 0;
+					contact.contacting[contId][sn] = false;
 				}
 			}
 
 		}
 		
 		for (int contId = 0; contId < contact.numContacts; contId++) {
-			double mu = contact.fric_coef[contId];
+			double mu =  contact.fric_coef[contId];
 			if (mu == 0)
 				continue;
 			for (int i = 0; i < contact.slaveNodes[contId].length; i++) {
@@ -1978,6 +2000,7 @@ public class ContactAnalysis {
 			}
 		countStickSlip();
 
+		new SpVect(ref_stick).shownzA();
 		/*
 		 * int px=0,qx=0;
 		 * 
@@ -2030,12 +2053,13 @@ public class ContactAnalysis {
 		Vect dF = b.sub(Fint);
 		
 		
-		Fc=new Vect(b.length);
-		Fcf=new Vect(b.length);
+		Fc.zero();
+		Fcf.zero();
+		
 		
 		for (int contId = 0; contId < contact.numContacts; contId++) {
 		Vect pg = contact.gap[contId].times(pf);
-	//	new SpVect(pg).shownzA();
+
 		for (int k = 0; k < pg.length; k++) {
 			pg.el[k] *= contact.weights[contId].el[k];
 		}
@@ -2048,12 +2072,13 @@ public class ContactAnalysis {
 		
 
 		Vect ps = contact.slide[contId].times(pft);
+		
+
 		for (int k = 0; k < ps.length; k++) {
 			ps.el[k] *=contact.weights[contId].el[k];
 
 		}
 	
-	//	G_stk.shownzA();
 
 		if(contact.constraint_matrix_STK_trp!=null)
 			Fcf = Fcf.add(contact.constraint_matrix_STK_trp[contId].mul(ps));
@@ -2061,9 +2086,13 @@ public class ContactAnalysis {
 
 		}
 
+		
 		dF = dF.sub(Fc).sub(Fcf); //
 
 		dF = dF.sub(aug_N).sub(aug_T);
+		
+		///util.pr(" aug_TTTTTTTTTTTTTTTTTTTTTT   "+aug_T.norm());
+
 
 		return dF;
 
@@ -2463,6 +2492,7 @@ public class ContactAnalysis {
 				
 				double pen=contact.gap[contId].el[sn];
 				double sld=contact.slide[contId].el[sn];
+			//	util.pr(sld);
 				
 				sum_er1_sq+=pen*pen;
 				sum_er2_sq+=sld*sld;

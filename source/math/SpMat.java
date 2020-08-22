@@ -867,6 +867,27 @@ public class SpMat  {
 		return D;
 	}
 
+	
+	public double norm(){
+		double sum2=norm2();
+		
+		return sqrt(sum2);
+	}
+	
+	public double norm2(){
+
+
+		double sum2=0;
+		for(int i=0;i<nRow;i++){
+			if(row[i].getNzLength()>0){
+				double s=row[i].norm();
+				sum2=s*s;
+			}
+		}
+
+		return sum2;
+	}
+	
 	public double max(){
 		double elMax=0;
 		for(int i=0;i<nRow;i++)

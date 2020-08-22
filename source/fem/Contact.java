@@ -919,7 +919,7 @@ public class Contact {
 			
 			for (int i = 1; i <= model.numberOfNodes; i++) {
 				stick[contId][i] = true;
-				landed_stick[contId][i] = true;
+			//	landed_stick[contId][i] = true;
 			}
 
 			
