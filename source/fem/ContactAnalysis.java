@@ -30,22 +30,11 @@ public class ContactAnalysis {
 
 	private SpMat Ks = null;
 
-	//private SpMatAsym node_node = null;
-	//private SpMatAsym Gc = null;
-	//private SpMatAsym Gct = null;
-	//private SpMatAsym Gcf = null;
-	//private SpMatAsym Gcfadh = null;
-	//private SpMatAsym Gcft = null;
-	//private SpMatAsym G_stk = null;
-	//private SpMatAsym G_stkt = null;
 
 	private SpMat Kc = null;
 	private SpMat Kcf = null;
 	private SpMat Kadh = null;
 	private SpMat Kadhf = null;
-
-//	private Vect lamN, gap;
-//	private Vect lamT, slide;// ,slide_prev;
 
 	Mat KK = null;
 	MatSolver direct_slv = null;
@@ -59,34 +48,10 @@ public class ContactAnalysis {
 	private Vect Fcf;
 
 	private double penalMax;
-	//private Vect weights;
-	//public int numContacts;
-	//public double[] penFactor;
-	//public double[] fn_ratio;
-	//public double[] master_edge_size;
-	//public double[] fric_coef;
-	//public int[] type;
-	//public Node[][] slaveNodes;
-//	public int[] slaveReg;
-	//public int[] masterReg;
 
-//	public MasterEntity[][]  master_entities;
-	//boolean stick[], landed_stick[];
-//
-	//public Element[][] masterElems;
-
-	//int[][] normalIndex;
 	int[][] u_index;
-	//int[] numContactingNodes;
 	int totalnumContactingNodes;
 
-	//boolean[] contacting = null;
-	//boolean[] just_released = null;
-	//boolean[] remv = null;
-
-
-	//[][] normals;
-	//Vect[][] tangentials;
 
 	Model model;
 	double pf = 1e8;
@@ -119,7 +84,7 @@ public class ContactAnalysis {
 	boolean aug_normal = true;
 	boolean aug_tang = true;
 
-	double extention_fact = 0.01;
+	double extention_fact = .01;
 	double clrFact = 1e-10;
 	double aug_disp_tol = 1e-4;
 	double gap_tol = 1e-4;
@@ -145,6 +110,8 @@ public class ContactAnalysis {
 		
 		this.K_hat=Khat1.deepCopy();
 		this.rhs_hat=bhat1.deepCopy();
+
+		if(model.dim==3) 	extention_fact = .02;
 
 		
 		if(step==model.nTsteps-1) plot_radial=true;
@@ -2201,6 +2168,7 @@ public class ContactAnalysis {
 				// double max=(val1+val2)/2;
 				double max = (val1+val2+val3);
 				
+	
 			/////	if(model.dim==3) max/=10;
 
 				if (max > penalMax)
