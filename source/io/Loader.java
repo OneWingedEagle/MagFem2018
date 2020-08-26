@@ -960,8 +960,8 @@ public class Loader {
 				if( line.startsWith("force")) {
 					
 					line=br.readLine();
-					model.forceFolder=line;
-
+				//	model.forceFolder=line;
+					model.forceFolder=model.resultFolder;
 					break;
 				}
 			}

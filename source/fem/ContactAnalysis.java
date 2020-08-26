@@ -1165,97 +1165,12 @@ public class ContactAnalysis {
 					contact.normalIndex[contId][i] = k;
 
 					
-					
+			
 					double proj = v1v.dot(normal);
 
-					Vect v1v_proj = v1v.sub(normal.times(proj));
 					
-					Mat R=util.rotMat(new Vect(0,0,1), normal);
-					v1=R.mul(v1);
-					v2=R.mul(v2);
-					v3=R.mul(v3);
-					v4=R.mul(v4);
-					
-					v1v_proj=R.mul(v1v_proj);
-					
-					
-					Vect sn_proj = v1.add(v1v_proj);
-
-
-					double a0=v2.el[0]-v1.el[0];
-					double a1=v4.el[0]-v1.el[0];
-					double a2=v1.el[0]-v2.el[0]+v3.el[0]-v4.el[0];
-	
-					double b0=v2.el[1]-v1.el[1];
-					double b1=v4.el[1]-v1.el[1];
-					double b2=v1.el[1]-v2.el[1]+v3.el[1]-v4.el[1];
-			
-					Vect P=sn_proj.sub(v1).v2();
-					
-					 double[] ww1=new double[4];
-					 double uu1=.5;
-					 double vv1=.5;
-					 ww1[0]=(1-uu1)*(1-vv1);
-					 ww1[1]=(uu1)*(1-vv1);
-					 ww1[2]=(uu1*vv1);
-					 ww1[3]=(1-uu1)*(vv1);
-					
-				///	P=v1.add(v3).times(.5).v2();
-					
-					Vect x=new Vect(2);
-					
-					if(P.norm()!=0){
-						
-										
-					Mat M1=new Mat(2,2);
-					Mat M2=new Mat(2,2);
+					double [] ww=obtainWeights( v1v, v1,  v2,  v3,  v4,  normal);
 		
-		
-					Vect dx=new Vect(2);
-					double err=1;
-					for(int j=0;j<10;j++){
-			
-						if(err<1e-4) break;
-					M1.el[0][0]=a0;
-					M1.el[0][1]=a1+a2*x.el[0];
-					M1.el[1][0]=b0;
-					M1.el[1][1]=b1+b2*x.el[0];
-					
-				
-					
-					Vect b=P.sub(M1.mul(x));
-					
-
-					err=b.norm()/P.norm();
-			
-					M2.el[0][1]=a2*x.el[0];
-					M2.el[1][1]=b2*x.el[0];
-					
-					Mat M=M1.add(M2);
-					
-				//	M.show();
-					
-					Mat invM=M.inv2();
-				
-				
-					dx=invM.mul(b);
-					x=x.add(dx);
-				//	x.show();
-
-				//	util.pr(" err  ========>   "+err);
-					}
-					}
-					
-					 double uu=x.el[0];
-					 double vv=x.el[1];
-					 
-					 double[] ww=new double[4];
-				
-					 ww[0]=(1-uu)*(1-vv);
-					 ww[1]=(uu)*(1-vv);
-					 ww[2]=(uu*vv);
-					 ww[3]=(1-uu)*(vv);
-
 
 					 contact.node_node_mat[contId].row[sn] = new SpVect(nnSize, 4);
 					for (int m = 0; m < 4; m++) {
@@ -2482,6 +2397,96 @@ public class ContactAnalysis {
 		
 	
 		return errors;
+	}
+	
+	private double [] obtainWeights(Vect v1v,Vect v1, Vect v2, Vect v3, Vect v4, Vect normal){
+		
+
+		
+		double proj = v1v.dot(normal);
+
+		Vect v1v_proj = v1v.sub(normal.times(proj));
+		
+		Mat R=util.rotMat(new Vect(0,0,1), normal);
+		v1=R.mul(v1);
+		v2=R.mul(v2);
+		v3=R.mul(v3);
+		v4=R.mul(v4);
+		
+		v1v_proj=R.mul(v1v_proj);
+		
+		
+		Vect sn_proj = v1.add(v1v_proj);
+
+
+		double a0=v2.el[0]-v1.el[0];
+		double a1=v4.el[0]-v1.el[0];
+		double a2=v1.el[0]-v2.el[0]+v3.el[0]-v4.el[0];
+
+		double b0=v2.el[1]-v1.el[1];
+		double b1=v4.el[1]-v1.el[1];
+		double b2=v1.el[1]-v2.el[1]+v3.el[1]-v4.el[1];
+
+		Vect P=sn_proj.sub(v1).v2();
+		
+		
+	///	P=v1.add(v3).times(.5).v2();
+		
+		Vect x=new Vect(2);
+		
+		if(P.norm()!=0){
+			
+							
+		Mat M1=new Mat(2,2);
+		Mat M2=new Mat(2,2);
+
+
+		Vect dx=new Vect(2);
+		double err=1;
+		for(int j=0;j<10;j++){
+
+			if(err<1e-4) break;
+		M1.el[0][0]=a0;
+		M1.el[0][1]=a1+a2*x.el[0];
+		M1.el[1][0]=b0;
+		M1.el[1][1]=b1+b2*x.el[0];
+		
+	
+		
+		Vect b=P.sub(M1.mul(x));
+		
+
+		err=b.norm()/P.norm();
+
+		M2.el[0][1]=a2*x.el[0];
+		M2.el[1][1]=b2*x.el[0];
+		
+		Mat M=M1.add(M2);
+		
+	//	M.show();
+		
+		Mat invM=M.inv2();
+	
+	
+		dx=invM.mul(b);
+		x=x.add(dx);
+	//	x.show();
+
+	//	util.pr(" err  ========>   "+err);
+		}
+		}
+		
+		 double uu=x.el[0];
+		 double vv=x.el[1];
+		 
+		 double[] ww=new double[4];
+	
+		 ww[0]=(1-uu)*(1-vv);
+		 ww[1]=(uu)*(1-vv);
+		 ww[2]=(uu*vv);
+		 ww[3]=(1-uu)*(vv);
+		 
+		 return ww;
 	}
 	
 	public static void main(String[] args) {

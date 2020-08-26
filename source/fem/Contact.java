@@ -273,6 +273,8 @@ public class Contact {
 						
 						if(!infront) continue;
 						
+					
+						
 						Vect normal=v13.cross(v23);
 						double dist=Math.abs(v1v.dot(normal));
 						
@@ -355,8 +357,59 @@ public class Contact {
 					}
 
 				}
+			}else if(type==3){
+				
+				line = loader.getNextDataLine(br," /* REGION ID */");
+				int nreg = loader.getIntData(line);
+				
+				int[] nnr = model.getRegNodes(nreg);
+				int[] temp = new int[nnr.length];
+				
+				line = loader.getNextDataLine(br," /* r1  r2 t1  t2 z1 z2 */");
+				
+
+				Vect bounds	=new Vect(loader.getCSV(line));
+
+
+				int ns=0;
+
+				for (int k = 0; k < nnr.length; k++) {
+					int n = nnr[k];
+					Vect v = model.node[n].getCoord();
+					double r=v.v2().norm();
+					double tt=180/PI*util.getAng(v.v2());
+					double z=v.el[2];
+					
+					boolean inside=false;
+					
+					if(r>=bounds.el[0] && r<=bounds.el[1] && 
+							tt>=bounds.el[2] && tt<=bounds.el[3]&&
+							z>=bounds.el[4] && z<=bounds.el[5]){
+						inside=true;
+					}
+					
+					if(!inside) continue;
+									
+
+					temp[ns] = n;
+					ns++;
+						
+					
+				}
+				
+				slaveNodes[i] = new Node[ns];
+
+				for (int k = 0; k < ns; k++) {
+
+					int sn = temp[k];
+					slaveNodes[i][k] = model.node[sn];
+					
+					//util.pr(sn);
+				}
+				
 			}
 
+		
 			line = loader.getNextDataLine(br," / * data type */");
 			type = 0;
 			if (!line.contains("mast"))
