@@ -961,7 +961,8 @@ public class Loader {
 					
 					line=br.readLine();
 					model.forceFolder=line;
-
+					if(!model.forceFolder.startsWith("cent"))
+					model.forceFolder=model.resultFolder;
 					break;
 				}
 			}

@@ -174,19 +174,20 @@ public class SpMatAsym  {
 	}
 	
 
+
+
+	public void addSmaller(SpMatAsym constraint_matrix_T){
+
+		for(int i=0;i<nRow;i++)
+			row[i].addSmaller(constraint_matrix_T.row[i]);
+	}
+	
 	public void addGeneral(SpMatAsym mat){
 
 		for(int i=0;i<nRow;i++)
 			row[i]=row[i].addGeneral(mat.row[i]);
 	}
 	
-
-
-	public void addSmaller(SpMat M){
-
-		for(int i=0;i<nRow;i++)
-			row[i].addSmaller(M.row[i]);
-	}
 	
 	public SpMatAsym addNew(SpMat M){
 		SpMatAsym B=this.deepCopy();
@@ -240,13 +241,11 @@ public class SpMatAsym  {
 		return D;
 	}
 	
-	
 	public double norm(){
 		double sum2=norm2();
 		
 		return sqrt(sum2);
 	}
-	
 	
 	public double norm2(){
 
@@ -259,7 +258,7 @@ public class SpMatAsym  {
 			}
 		}
 
-		return sqrt(sum2);
+		return sum2;
 	}
 	
 	public Vect colVector(int col){
