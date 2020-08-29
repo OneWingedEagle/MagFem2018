@@ -111,7 +111,7 @@ public class Model{
 	
 	public int struc2D=0;// 0: plane stress  1: plain strain, 2:axisymmetric
 	public double rpm=0;
-
+	public PressureLoad[] pressLoads=null;
 
 	public Model(){}
 

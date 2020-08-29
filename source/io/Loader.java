@@ -961,13 +961,27 @@ public class Loader {
 					
 					line=br.readLine();
 					model.forceFolder=line;
-					if(!model.forceFolder.startsWith("cent"))
+					if(!model.forceFolder.startsWith("cent") && !model.forceFolder.startsWith("pres"))
 					model.forceFolder=model.resultFolder;
+					
+					if(model.forceFolder.startsWith("pres")){
+						
+						line=getNextDataLine(br," /* NUM. PRESS");
+								
+						int numPress=getIntData(line);		
+						model.pressLoads=new PressureLoad[numPress];
+						for(int k=0;k<numPress;k++){
+							model.pressLoads[k]=new PressureLoad();
+							model.pressLoads[k].readPressureLoad(this, br, model);
+						}
+		
+					}
+					
 					break;
 				}
 			}
-		
 			for(int j=0;j<5;j++){
+				util.pr(line);
 
 				if( line.startsWith("force")) {
 			
@@ -985,13 +999,16 @@ public class Loader {
 					forceFile =new String[N];
 					int ix=0;
 					for(int i=model.nBegin;i<=model.nEnd;i+=	model.nInc){
-						
+						util.pr(model.forceFolder);
 						int nf=i%1800;
 						if(model.forceFolder.startsWith("cent")){
 							model.centrigForce=true;
 							 sp=model.forceFolder.split(regex);	
 							 model.rpm=Double.parseDouble(sp[1]);
 						forceFile[ix]=null;
+						}else if(model.forceFolder.startsWith("pres")){
+	
+							forceFile[ix]=null;
 						}
 						else
 						forceFile[ix]=model.forceFolder+"\\force"+nf+".txt";
