@@ -19,11 +19,6 @@ import math.SpVect;
 import math.Vect;
 import math.util;
 
-/**
- * TODO Put here a description of what this class does.
- *
- * @author Hassan. Created Aug 20, 2012.
- */
 
 public class ContactAnalysis {
 	
@@ -234,7 +229,7 @@ public class ContactAnalysis {
 
 						boolean modif_done = false;
 
-						if ( disp_err<nr_tol &&  totalNRIter > 0 && n_modifNR > 0) {
+						if ( /*disp_err<nr_tol &&  */totalNRIter > 0 && n_modifNR > 0) {
 							if (direct && n_modifNR > 0) {
 								KK = Ks.matForm();
 								KK.lu();
@@ -271,7 +266,8 @@ public class ContactAnalysis {
 						disp = disp.add(du);
 
 						model.setU(disp);
-
+						
+					
 						if (disp.norm() > 0)
 							disp_err = du.norm() / disp.norm();
 
@@ -302,8 +298,8 @@ public class ContactAnalysis {
 
 					aug_disp_err.el[aug_iter] = dip_err;
 
-					//if (dip_err < aug_disp_tol)
-					//	break;
+					if (dip_err < aug_disp_tol)
+						break;
 
 
 					for(int contId=0;contId<contact.numContacts;contId++){
@@ -755,13 +751,17 @@ public class ContactAnalysis {
 		Vect errs=new Vect().ones(n_modifNR).times(-1);
 		for (int sb = 0; sb < n_modifNR; sb++) {
 
-			
-			 if(sb%1==1){ assembleContactMatrices(); addMatrices();
-			
-			 }else
+
 			 
-			if(model.dim==2)
-			updateGap(true);
+			if(model.dim==2){
+				
+				  if(sb%1==0){ 
+					 assembleContactMatrices(); 
+					 addMatrices();
+		 
+				  }else
+					  updateGap(true);
+			}
 			else
 			{
 				obtain_node_node3D();
@@ -1823,7 +1823,7 @@ public class ContactAnalysis {
 
 		}
 		
-		for (int contId = 0; contId < contact.numContacts; contId++) {
+	/*	for (int contId = 0; contId < contact.numContacts; contId++) {
 			double mu =  contact.fric_coef[contId];
 			if (mu == 0)
 				continue;
@@ -1883,12 +1883,13 @@ public class ContactAnalysis {
 			}
 		}
 		
-			}
+			}*/
+		
 		countStickSlip();
 
-	//	new SpVect(ref_stick).shownzA();
+		//new SpVect(ref_stick).shownzA();
 		
-
+		 
 		/// G_stkt.shownzA();
 
 		// G_stk.shownzA();
@@ -2220,11 +2221,11 @@ public class ContactAnalysis {
 			}
 
 		}
-
 		if(model.pressLoads!=null){
 			for(int i=0;i<model.pressLoads.length;i++)
 				model.pressLoads[i].setPressure(model);
 		}
+
 
 		Vect bU1=model.bU.add(model.getbUt(mode));
 		

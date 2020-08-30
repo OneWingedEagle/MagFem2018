@@ -47,6 +47,7 @@ public class MeshManipulator {
 
 	public static void main(String[] args){
 
+	
 		
 		MeshManipulator mf=new MeshManipulator();
 
@@ -68,7 +69,7 @@ public class MeshManipulator {
 		}
 		//mf.extractReg(regs0);mf.dropUnusedNodes();
 		//mf.revolveLine(new Vect().linspace(.016, .05, Nr+1), regs0, 1, PI/8);
-		//int[] regs={1,2}; mf.extractReg(regs);mf.dropUnusedNodes();
+		//int[] regs={3}; mf.extractReg(regs);mf.dropUnusedNodes();
 		String stat="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\statFF.txt";
 		String rot="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\rotFiner.txt";
 	//	mf.assemble(rot,stat);
@@ -170,7 +171,7 @@ public class MeshManipulator {
 	//	mf.pileUpPrism(dhr,-0.03483);
 	//	util.show(dh);
 	//	mf.pileUpPrism(dh, -0.15);
-	//	mf.pileUpPrism(5, 10e-3);
+	//	mf.pileUpPrism(10, 10e-3);
 		
 	//	mf.pileHelic(6*8, PI/4, .0125*18);
 		

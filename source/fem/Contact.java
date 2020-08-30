@@ -76,6 +76,7 @@ public class Contact {
 	public  Vect[][] tangentials;
 	public boolean frictional=false;
 
+	double extention_fact=.01;
 
 	public Contact(int numCont){
 
@@ -137,6 +138,9 @@ public class Contact {
 		util.pr(" minEdgeLength ------------------------- " + minEdgeLenghth);
 		double clearFact = 1e-4;
 		
+		
+		double epsilon=clearFact*minEdgeLenghth;
+				
 		String line;
 		
 		double extention_fact = 0.01;
@@ -152,567 +156,30 @@ public class Contact {
 			if (!line.contains("slav"))
 				type = loader.getIntData(line);
 
-			if (type == 0) {
-				line = loader.getNextDataLine(br," /* NUM SLAVE NODES */");
+			if (model.dim == 3)	{
+			readSlave3D(i,  model,  loader, br, type, epsilon);
 
-				int ns = loader.getIntData(line);
-
-				slaveNodes[i] = new Node[ns];
-
-				for (int k = 0; k < ns; k++) {
-					line = br.readLine();
-					int sn = loader.getIntData(line);
-					slaveNodes[i][k] = model.node[sn];
-				}
-			} else if (type == 1 || type==2){
-				Vect v1 = null;
-				Vect v2 = null;
-				Vect v3 = null;
-				Vect v4 = null;
+			}else{
 				
-				if (model.dim == 3) {
-					//util.pr("This format of setting contact not ready yet.");
-					line = loader.getNextDataLine(br," /* REGION ID */");
-					int nreg = loader.getIntData(line);
-					
-					if(type==1){
-					line = loader.getNextDataLine(br," /* CORENR 1 */");
-
-					int n1 = loader.getIntData(line);
-
-					line = loader.getNextDataLine(br," /* CORENR 2 */");
-
-					int n2 = loader.getIntData(line);
-					
-					line = loader.getNextDataLine(br," /* CORENR 3 */");
-
-					int n3 = loader.getIntData(line);
-					
-					line = loader.getNextDataLine(br,"/* CORENR 4 */");
-
-					int n4 = loader.getIntData(line);
-
-					Node node1 = model.node[n1];
-					Node node2 = model.node[n2];
-					Node node3 = model.node[n3];
-					Node node4 = model.node[n4];
-					
-			
-			
-
-					 v1 = node1.getCoord();
-					 v2 = node2.getCoord();
-					 v3 = node3.getCoord();
-					 v4 = node4.getCoord();
-					}
-					else{
-						line = loader.getNextDataLine(br," /* v1x  v1y v1z */");
-
-						v1=new Vect(loader.getCSV(line));
-
-						line = loader.getNextDataLine(br," /* v2x  v2y v2z */");
-
-						v2=new Vect(loader.getCSV(line));
-						
-						line = loader.getNextDataLine(br," /* v3x  v3y v3z */");
-
-						v3=new Vect(loader.getCSV(line));
-
-						line = loader.getNextDataLine(br," /* v4x  v4y v4z */");
-
-						v4=new Vect(loader.getCSV(line));
-						
-					}
-		
-					Vect v13=v3.sub(v1);
-					Vect v24=v4.sub(v2);
-					
-					v1 = v1.add(v13.times(-extention_fact));
-					v3 = v3.add(v13.times(extention_fact));
-					v2 = v2.add(v24.times(-extention_fact));
-					v4 = v4.add(v24.times(extention_fact));
-					
-					Vect v12=v2.sub(v1);
-					Vect v23=v3.sub(v2);
-					Vect v34=v4.sub(v3);
-					Vect v41=v1.sub(v4);
-
-						
-					int ns = 0;
-					int[] nnr = model.getRegNodes(nreg);
-					int[] temp = new int[nnr.length];
-					for (int k = 0; k < nnr.length; k++) {
-						int n = nnr[k];
-						Vect v = model.node[n].getCoord();
-						Vect v1v = v.sub(v1);
-						Vect v2v = v.sub(v2);
-						Vect v3v = v.sub(v3);
-						Vect v4v = v.sub(v4);
-						
-				
-						
-						Vect cross[]=new Vect[4];
-						
-						cross[0]=v12.cross(v1v);
-						cross[1]=v23.cross(v2v);
-						cross[2]=v34.cross(v3v);
-						cross[3]=v41.cross(v4v);
-						
-						
-						boolean infront=true;
-						for(int j=0;j<4;j++){
-							for(int m=j+1;m<4;m++){
-								double dot=cross[j].dot(cross[m]);
-								if(dot<0) {
-									infront=false;
-									break;
-								}
-								}
-							if(!infront) break;
-							}
-						
-						if(!infront) continue;
-						
-					
-						
-						Vect normal=v13.cross(v23);
-						double dist=Math.abs(v1v.dot(normal));
-						
-						if(dist>clearFact * minEdgeLenghth) continue;
-
-
-								temp[ns] = n;
-								ns++;
-							
-						
-
-					}
-					
-					util.pr("contact "+i+":  num. slave nodes ------------------------- " + ns);
-					
-					slaveNodes[i] = new Node[ns];
-
-					for (int k = 0; k < ns; k++) {
-
-						int sn = temp[k];
-						slaveNodes[i][k] = model.node[sn];
-						
-						//util.pr(sn);
-					}
-				//	util.pr(ns);ss
-
-
-				} else {
-					line = loader.getNextDataLine(br," /* REGION ID */");
-
-					int nreg = loader.getIntData(line);
-					slaveReg[i] = nreg;
-				
-					
-					line = loader.getNextDataLine(br," / * n1 */");
-
-					int n1 = loader.getIntData(line);
-
-					line = loader.getNextDataLine(br," / * n2 */");
-					int n2 = loader.getIntData(line);
-
-					Node node1 = model.node[n1];
-					Node node2 = model.node[n2];
-
-					Vect v11 = node1.getCoord();
-					Vect v22 = node2.getCoord();
-				//	v11.hshow();
-				//	v22.hshow();
-					Vect edgeDir = v22.sub(v11).normalized();
-					int ns = 0;
-
-					int[] nnr = model.getRegNodes(nreg);
-					int[] temp = new int[nnr.length];
-					for (int k = 0; k < nnr.length; k++) {
-						int n = nnr[k];
-						Vect v = model.node[n].getCoord();
-						Vect vv1 = v.sub(v11);
-						Vect vv2 = v.sub(v22);
-						double dot = vv1.dot(vv2);
-
-						if (dot <= 0) {
-
-							double proj = vv1.dot(edgeDir);
-							double vv1n = vv1.norm();
-							if (Math.abs(proj - vv1n) < 1e-4 * minEdgeLenghth) {
-								// util.pr(dot);
-
-								temp[ns] = n;
-								ns++;
-							}
-						}
-
-					}
-					slaveNodes[i] = new Node[ns];
-
-					for (int k = 0; k < ns; k++) {
-
-						int sn = temp[k];
-						slaveNodes[i][k] = model.node[sn];
-					}
-
-				}
-			}else if(type==3){
-				
-				line = loader.getNextDataLine(br," /* REGION ID */");
-				int nreg = loader.getIntData(line);
-				
-				int[] nnr = model.getRegNodes(nreg);
-				int[] temp = new int[nnr.length];
-				
-				line = loader.getNextDataLine(br," /* r1  r2 t1  t2 z1 z2 */");
-				
-
-				Vect bounds	=new Vect(loader.getCSV(line));
-
-
-				int ns=0;
-
-				for (int k = 0; k < nnr.length; k++) {
-					int n = nnr[k];
-					Vect v = model.node[n].getCoord();
-					double r=v.v2().norm();
-					double tt=180/PI*util.getAng(v.v2());
-					double z=v.el[2];
-					
-					boolean inside=false;
-					
-					if(r>=bounds.el[0] && r<=bounds.el[1] && 
-							tt>=bounds.el[2] && tt<=bounds.el[3]&&
-							z>=bounds.el[4] && z<=bounds.el[5]){
-						inside=true;
-					}
-					
-					if(!inside) continue;
-									
-
-					temp[ns] = n;
-					ns++;
-						
-					
-				}
-				
-				slaveNodes[i] = new Node[ns];
-
-				for (int k = 0; k < ns; k++) {
-
-					int sn = temp[k];
-					slaveNodes[i][k] = model.node[sn];
-					
-					//util.pr(sn);
-				}
+				readSlave2D(i,  model,  loader, br, type, epsilon);
 				
 			}
-
 		
 			line = loader.getNextDataLine(br," / * data type */");
 			type = 0;
 			if (!line.contains("mast"))
 				type = loader.getIntData(line);
-			if (type == 0) {
-				line = br.readLine();
-
-				int nm = loader.getIntData(line);
-
-		
-				master_entities[i] = new MasterEntity[nm];
 
 
-				for (int k = 0; k < nm; k++) {
-					line = br.readLine();
+			if (model.dim == 3)	{
+			readMaster3D(i,  model,  loader, br, type, epsilon);
 
-					int[] nn = loader.getCSInt(line);
-				//	if (model.dim == 2) {
-			
-						Node node1=model.node[nn[0]];
-						Node node2=model.node[nn[1]];
-						master_entities[i][k]=new MasterEntity(2);
-						master_entities[i][k].nodeIds[0]=nn[0];
-						master_entities[i][k].nodeIds[1]=nn[1];
-						master_entities[i][k].length= node1.getCoord().sub(node2.getCoord()).norm();
-	/*				} else {
-
-						
-						if (nn.length == 3) {
-							masterFacets[i][k] = new Element("triangle");
-							masterFacets[i][k].setVertNumb(nn);
-
-						} else if (nn.length == 4) {
-							masterFacets[i][k] = new Element("quad");
-							masterFacets[i][k].setVertNumb(nn);
-
-						}
-					}*/
-				}
-			} else if( type==1 || type==2) {
-				if (model.dim == 3) {
-				//	util.pr("This format of setting contact not ready yet.");
-					
-					byte[][] arr_hxa = { { 0, 1,2,3 }, { 4,7,6,5 }, { 0,4,5,1 },{2,6,7,3},{0,3,7,4 }, {1,5,6,2}};
-					//byte[][] arr_penta = { { 0, 2,1}, { 3,4,5 }, { 0,1,4,3 }, { 1,2,5,4 },{ 2,0,3,5 } };
-					byte[][] arr_penta = { { 0, 2,1}, { 3,4,5 }, { 0,3,4,1 }, { 1,4,5,2 },{ 2,5,3,0 } };
-
-
-					byte[][] edgeLocalNodes = null;
-					if (model.elCode == 4) {
-						edgeLocalNodes = arr_hxa;
-					//	;
-					} else if (model.elCode == 3) {
-						edgeLocalNodes = arr_penta;
-					}
-						
-						Vect v1 = null;
-						Vect v2 = null;
-						Vect v3 = null;
-						Vect v4 = null;
-						
-							//util.pr("This format of setting contact not ready yet.");
-							line = loader.getNextDataLine(br," /* REGION ID */");
-							int nreg = loader.getIntData(line);
-							
-							if(type==1){
-							line = loader.getNextDataLine(br," /* CORENR 1 */");
-
-							int n1 = loader.getIntData(line);
-
-							line = loader.getNextDataLine(br," /* CORENR 2 */");
-
-							int n2 = loader.getIntData(line);
-							
-							line = loader.getNextDataLine(br," /* CORENR 3 */");
-
-							int n3 = loader.getIntData(line);
-							
-							line = loader.getNextDataLine(br,"/* CORENR 4 */");
-
-							int n4 = loader.getIntData(line);
-
-							Node node1 = model.node[n1];
-							Node node2 = model.node[n2];
-							Node node3 = model.node[n3];
-							Node node4 = model.node[n4];
-							
-					
-					
-
-							 v1 = node1.getCoord();
-							 v2 = node2.getCoord();
-							 v3 = node3.getCoord();
-							 v4 = node4.getCoord();
-							}
-							else{
-								line = loader.getNextDataLine(br," /* v1x  v1y v1z */");
-
-								v1=new Vect(loader.getCSV(line));
-
-								line = loader.getNextDataLine(br," /* v2x  v2y v2z */");
-
-								v2=new Vect(loader.getCSV(line));
-								
-								line = loader.getNextDataLine(br," /* v3x  v3y v3z */");
-
-								v3=new Vect(loader.getCSV(line));
-
-								line = loader.getNextDataLine(br," /* v4x  v4y v4z */");
-
-								v4=new Vect(loader.getCSV(line));
-								
-							}
+			}else{
 				
-
-						
-						Vect v13=v3.sub(v1);
-						Vect v24=v4.sub(v2);
-						
-						v1 = v1.add(v13.times(-extention_fact));
-						v3 = v3.add(v13.times(extention_fact));
-						v2 = v2.add(v24.times(-extention_fact));
-						v4 = v4.add(v24.times(extention_fact));
-						
-						Vect v12=v2.sub(v1);
-						Vect v23=v3.sub(v2);
-						Vect v34=v4.sub(v3);
-						Vect v41=v1.sub(v4);
-
-						
-
-						int[] nnr = model.getRegNodes(nreg);
-						boolean[] nc = new boolean[model.numberOfNodes + 1];
-						for (int k = 0; k < nnr.length; k++) {
-							int n = nnr[k];
-							nc[n] = true;
-						}
-						
-						int nm=0;
-						
-						int[][] tempEd = new int[model.numberOfEdges * edgeLocalNodes.length][4];
-						for (int ie = model.region[nreg].getFirstEl(); ie <= model.region[nreg].getLastEl(); ie++) {
-							int[] vertNumb = model.element[ie].getVertNumb();
-							
-							
-							
+				readMaster2D(i,  model,  loader, br, type, epsilon);
 				
-
-							for (int j = 0; j < edgeLocalNodes.length; j++) {
-								
-								int nv=edgeLocalNodes[j].length;
-								Vect cent=new Vect(3);
-								for(int k=0;k<nv;k++){
-									int nx = vertNumb[edgeLocalNodes[j][k]];
-									Vect v = model.node[nx].getCoord();
-									cent=cent.add(v);
-								}
-								
-								cent.timesVoid(1./nv);
-
-								Vect v = cent;
-								Vect v1v = v.sub(v1);
-								Vect v2v = v.sub(v2);
-								Vect v3v = v.sub(v3);
-								Vect v4v = v.sub(v4);
-									
-									Vect cross[]=new Vect[4];
-									
-									cross[0]=v12.cross(v1v);
-									cross[1]=v23.cross(v2v);
-									cross[2]=v34.cross(v3v);
-									cross[3]=v41.cross(v4v);
-									
-									
-									boolean infront=true;
-									for(int k=0;k<4;k++){
-										for(int m=k+1;m<4;m++){
-											double dot=cross[k].dot(cross[m]);
-											if(dot<0) {
-												infront=false;
-												break;
-											}
-											}
-										if(!infront) break;
-										}
-									
-									if(!infront) continue;
-									
-									Vect normal=v13.cross(v23);
-									double dist=Math.abs(v1v.dot(normal));
-									
-									if(dist>1e-4  * minEdgeLenghth) continue;
-					
-								for(int p=0;p<4;p++){
-									int n12 = vertNumb[edgeLocalNodes[j][p]];
-						
-										tempEd[nm][p] = n12;
-									
-									}
-							//	util.hshow(tempEd[nm]);
-								nm++;
-							}
-
-						}
-
-						util.pr("contact "+i+":  num. master facets ------------------------- " + nm);
-						master_entities[i] = new MasterEntity[nm];
-
-						for (int k = 0; k < nm; k++) {
-
-							master_entities[i][k] = new MasterEntity(4);
-							for(int p=0;p<4;p++){
-								master_entities[i][k].nodeIds[p]=tempEd[k][p];
-							}
-						}
-							
-						
-						
-				} else {
-
-
-					line = loader.getNextDataLine(br," / * Reg ID */");
-
-					int nreg = loader.getIntData(line);
-					
-					masterReg[i] = nreg;
-					
-					line = loader.getNextDataLine(br," / * n1 */");
-					int n1 = loader.getIntData(line);
-					line = loader.getNextDataLine(br," / * n2 */");
-					int n2 = loader.getIntData(line);
-					Node node1 = model.node[n1];
-					Node node2 = model.node[n2];
-					Vect v1 = node1.getCoord();
-					Vect v2 = node2.getCoord();
-					Vect edgeDir = v2.sub(v1).normalized();
-					int nm = 0;
-
-					int[] nnr = model.getRegNodes(nreg);
-					boolean[] nc = new boolean[model.numberOfNodes + 1];
-					for (int k = 0; k < nnr.length; k++) {
-						int n = nnr[k];
-						nc[n] = true;
-					}
-
-					byte[][] arr0 = { { 0, 1 }, { 1, 2 }, { 2, 0 } };
-					byte[][] arr1 = { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 } };
-
-					byte[][] edgeLocalNodes = null;
-					if (model.elCode == 0) {
-						edgeLocalNodes = arr0;
-						
-					} else if (model.elCode == 1) {
-						edgeLocalNodes = arr1;
-					}
-
-					int[][] tempEd = new int[model.numberOfEdges * edgeLocalNodes.length][2];
-					for (int ie = model.region[nreg].getFirstEl(); ie <= model.region[nreg].getLastEl(); ie++) {
-						int[] vertNumb = model.element[ie].getVertNumb();
-
-						for (int j = 0; j < edgeLocalNodes.length; j++) {
-							int n11 = vertNumb[edgeLocalNodes[j][0]];
-							int n12 = vertNumb[edgeLocalNodes[j][1]];
-
-							Vect v = model.node[n11].getCoord().add(model.node[n12].getCoord()).times(0.5);
-							Vect vv1 = v.sub(v1);
-							Vect vv2 = v.sub(v2);
-							double dot = vv1.dot(vv2);
-
-							if (dot <= 0) {
-
-								double proj = vv1.dot(edgeDir);
-								double vv1n = vv1.norm();
-								if (Math.abs(proj - vv1n) < clearFact * minEdgeLenghth) {
-									// util.pr(dot);
-
-									tempEd[nm][0] = n11;
-									tempEd[nm][1] = n12;
-									nm++;
-								}
-							}
-						}
-
-					}
-
-					master_entities[i] = new MasterEntity[nm];
-
-					for (int k = 0; k < nm; k++) {
-
-						Node node11 = model.node[tempEd[k][0]];
-						Node node12 = model.node[tempEd[k][1]];
-
-						master_entities[i][k]=new MasterEntity(2);
-						master_entities[i][k].nodeIds[0]=tempEd[k][0];
-						master_entities[i][k].nodeIds[1]=tempEd[k][1];
-				
-						master_entities[i][k].length= node11.getCoord().sub(node12.getCoord()).norm();
-
-					}
-				}
-
 			}
-
+		
 		}
 	
 	boolean node_duplic=false;
@@ -1008,6 +475,701 @@ public class Contact {
 	}
 	
 
+	private void readSlave3D(int contId, Model model, Loader loader,BufferedReader br,int type,double epsilon) throws IOException{
+		
+		String line;
+		
+		if(type==0){
+			return;
+		}
+		
+		Vect v1=new Vect(3);
+		Vect v2=new Vect(3);
+		Vect v3=new Vect(3);
+		Vect v4=new Vect(3);
+		
+		
+		
+		
+		line = loader.getNextDataLine(br," /* REGION ID */");
+		int nreg = loader.getIntData(line);
+		
+		slaveReg[contId]=nreg;
+		
+		if(type==1){
+			line = loader.getNextDataLine(br," /* CORENR 1 */");
+
+			int n1 = loader.getIntData(line);
+
+			line = loader.getNextDataLine(br," /* CORENR 2 */");
+
+			int n2 = loader.getIntData(line);
+			
+			line = loader.getNextDataLine(br," /* CORENR 3 */");
+
+			int n3 = loader.getIntData(line);
+			
+			line = loader.getNextDataLine(br,"/* CORENR 4 */");
+
+			int n4 = loader.getIntData(line);
+
+			Node node1 = model.node[n1];
+			Node node2 = model.node[n2];
+			Node node3 = model.node[n3];
+			Node node4 = model.node[n4];
+			
+	
+	
+
+			 v1 = node1.getCoord();
+			 v2 = node2.getCoord();
+			 v3 = node3.getCoord();
+			 v4 = node4.getCoord();
+			}
+			else if (type==2){
+				line = loader.getNextDataLine(br," /* v1x  v1y v1z */");
+
+				v1=new Vect(loader.getCSV(line));
+
+				line = loader.getNextDataLine(br," /* v2x  v2y v2z */");
+
+				v2=new Vect(loader.getCSV(line));
+				
+				line = loader.getNextDataLine(br," /* v3x  v3y v3z */");
+
+				v3=new Vect(loader.getCSV(line));
+
+				line = loader.getNextDataLine(br," /* v4x  v4y v4z */");
+
+				v4=new Vect(loader.getCSV(line));
+				
+			}
+
+			Vect v13=v3.sub(v1);
+			Vect v24=v4.sub(v2);
+			
+			v1 = v1.add(v13.times(-extention_fact));
+			v3 = v3.add(v13.times(extention_fact));
+			v2 = v2.add(v24.times(-extention_fact));
+			v4 = v4.add(v24.times(extention_fact));
+			
+			Vect v12=v2.sub(v1);
+			Vect v23=v3.sub(v2);
+			Vect v34=v4.sub(v3);
+			Vect v41=v1.sub(v4);
+
+				
+			int ns = 0;
+			int[] nnr = model.getRegNodes(nreg);
+			int[] temp = new int[nnr.length];
+			for (int k = 0; k < nnr.length; k++) {
+				int n = nnr[k];
+				Vect v = model.node[n].getCoord();
+				Vect v1v = v.sub(v1);
+				Vect v2v = v.sub(v2);
+				Vect v3v = v.sub(v3);
+				Vect v4v = v.sub(v4);
+				
+		
+				
+				Vect cross[]=new Vect[4];
+				
+				cross[0]=v12.cross(v1v);
+				cross[1]=v23.cross(v2v);
+				cross[2]=v34.cross(v3v);
+				cross[3]=v41.cross(v4v);
+				
+				
+				boolean infront=true;
+				for(int j=0;j<4;j++){
+					for(int m=j+1;m<4;m++){
+						double dot=cross[j].dot(cross[m]);
+						if(dot<0) {
+							infront=false;
+							break;
+						}
+						}
+					if(!infront) break;
+					}
+				
+				if(!infront) continue;
+				
+			
+				
+				Vect normal=v13.cross(v23);
+				double dist=Math.abs(v1v.dot(normal));
+				
+				if(dist>epsilon) continue;
+
+
+						temp[ns] = n;
+						ns++;
+					
+				
+
+			}
+			
+			util.pr("contact "+contId+":  num. slave nodes ------------------------- " + ns);
+			
+			slaveNodes[contId] = new Node[ns];
+
+			for (int k = 0; k < ns; k++) {
+
+				int sn = temp[k];
+				slaveNodes[contId][k] = model.node[sn];
+				
+				//util.pr(sn);
+			}
+		//	util.pr(ns);ss
+
+
+	}
+	
+	private void readMaster3D(int contId, Model model, Loader loader,BufferedReader br,int type,double epsilon) throws IOException{
+		
+		String line;
+
+		int ns=0;
+				
+		if(type==0){
+			
+			
+		}
+
+		//	util.pr("This format of setting contact not ready yet.");
+			
+			byte[][] arr_hxa = { { 0, 1,2,3 }, { 4,7,6,5 }, { 0,4,5,1 },{2,6,7,3},{0,3,7,4 }, {1,5,6,2}};
+			//byte[][] arr_penta = { { 0, 2,1}, { 3,4,5 }, { 0,1,4,3 }, { 1,2,5,4 },{ 2,0,3,5 } };
+			byte[][] arr_penta = { { 0, 2,1}, { 3,4,5 }, { 0,3,4,1 }, { 1,4,5,2 },{ 2,5,3,0 } };
+
+
+			byte[][] edgeLocalNodes = null;
+			if (model.elCode == 4) {
+				edgeLocalNodes = arr_hxa;
+			//	;
+			} else if (model.elCode == 3) {
+				edgeLocalNodes = arr_penta;
+			}
+				
+				Vect v1 = null;
+				Vect v2 = null;
+				Vect v3 = null;
+				Vect v4 = null;
+				
+					//util.pr("This format of setting contact not ready yet.");
+					line = loader.getNextDataLine(br," /* REGION ID */");
+					int nreg = loader.getIntData(line);
+					
+					if(type==1){
+					line = loader.getNextDataLine(br," /* CORENR 1 */");
+
+					int n1 = loader.getIntData(line);
+
+					line = loader.getNextDataLine(br," /* CORENR 2 */");
+
+					int n2 = loader.getIntData(line);
+					
+					line = loader.getNextDataLine(br," /* CORENR 3 */");
+
+					int n3 = loader.getIntData(line);
+					
+					line = loader.getNextDataLine(br,"/* CORENR 4 */");
+
+					int n4 = loader.getIntData(line);
+
+					Node node1 = model.node[n1];
+					Node node2 = model.node[n2];
+					Node node3 = model.node[n3];
+					Node node4 = model.node[n4];
+					
+			
+			
+
+					 v1 = node1.getCoord();
+					 v2 = node2.getCoord();
+					 v3 = node3.getCoord();
+					 v4 = node4.getCoord();
+					}
+					else if (type==2){
+						line = loader.getNextDataLine(br," /* v1x  v1y v1z */");
+
+						v1=new Vect(loader.getCSV(line));
+
+						line = loader.getNextDataLine(br," /* v2x  v2y v2z */");
+
+						v2=new Vect(loader.getCSV(line));
+						
+						line = loader.getNextDataLine(br," /* v3x  v3y v3z */");
+
+						v3=new Vect(loader.getCSV(line));
+
+						line = loader.getNextDataLine(br," /* v4x  v4y v4z */");
+
+						v4=new Vect(loader.getCSV(line));
+						
+					}
+		
+
+				
+				Vect v13=v3.sub(v1);
+				Vect v24=v4.sub(v2);
+				
+				v1 = v1.add(v13.times(-extention_fact));
+				v3 = v3.add(v13.times(extention_fact));
+				v2 = v2.add(v24.times(-extention_fact));
+				v4 = v4.add(v24.times(extention_fact));
+				
+				Vect v12=v2.sub(v1);
+				Vect v23=v3.sub(v2);
+				Vect v34=v4.sub(v3);
+				Vect v41=v1.sub(v4);
+
+				
+
+				int[] nnr = model.getRegNodes(nreg);
+				boolean[] nc = new boolean[model.numberOfNodes + 1];
+				for (int k = 0; k < nnr.length; k++) {
+					int n = nnr[k];
+					nc[n] = true;
+				}
+				
+				int nm=0;
+				
+				int[][] tempEd = new int[model.numberOfEdges * edgeLocalNodes.length][4];
+				for (int ie = model.region[nreg].getFirstEl(); ie <= model.region[nreg].getLastEl(); ie++) {
+					int[] vertNumb = model.element[ie].getVertNumb();
+					
+					
+					
+		
+
+					for (int j = 0; j < edgeLocalNodes.length; j++) {
+						
+						int nv=edgeLocalNodes[j].length;
+						Vect cent=new Vect(3);
+						for(int k=0;k<nv;k++){
+							int nx = vertNumb[edgeLocalNodes[j][k]];
+							Vect v = model.node[nx].getCoord();
+							cent=cent.add(v);
+						}
+						
+						cent.timesVoid(1./nv);
+
+						Vect v = cent;
+						Vect v1v = v.sub(v1);
+						Vect v2v = v.sub(v2);
+						Vect v3v = v.sub(v3);
+						Vect v4v = v.sub(v4);
+							
+							Vect cross[]=new Vect[4];
+							
+							cross[0]=v12.cross(v1v);
+							cross[1]=v23.cross(v2v);
+							cross[2]=v34.cross(v3v);
+							cross[3]=v41.cross(v4v);
+							
+							
+							boolean infront=true;
+							for(int k=0;k<4;k++){
+								for(int m=k+1;m<4;m++){
+									double dot=cross[k].dot(cross[m]);
+									if(dot<0) {
+										infront=false;
+										break;
+									}
+									}
+								if(!infront) break;
+								}
+							
+							if(!infront) continue;
+							
+							Vect normal=v13.cross(v23);
+							double dist=Math.abs(v1v.dot(normal));
+							
+							if(dist>epsilon) continue;
+			
+						for(int p=0;p<4;p++){
+							int n12 = vertNumb[edgeLocalNodes[j][p]];
+				
+								tempEd[nm][p] = n12;
+							
+							}
+					//	util.hshow(tempEd[nm]);
+						nm++;
+					}
+
+				}
+
+				util.pr("contact "+contId+":  num. master facets ------------------------- " + nm);
+				master_entities[contId] = new MasterEntity[nm];
+
+				for (int k = 0; k < nm; k++) {
+
+					master_entities[contId][k] = new MasterEntity(4);
+					for(int p=0;p<4;p++){
+						master_entities[contId][k].nodeIds[p]=tempEd[k][p];
+					}
+				}
+					
+
+		
+	}
+	
+private void readSlave2D(int contId, Model model, Loader loader,BufferedReader br,int type,double epsilon) throws IOException{
+		
+		String line;
+		
+		
+		int ns=0;
+				
+		if(type==0){
+			line = loader.getNextDataLine(br," /* NUM SLAVE NODES */");
+
+			 ns = loader.getIntData(line);
+
+			slaveNodes[contId] = new Node[ns];
+
+			for (int k = 0; k < ns; k++) {
+				line = br.readLine();
+				int sn = loader.getIntData(line);
+				slaveNodes[contId][k] = model.node[sn];
+			}
+			
+			
+		}
+		
+		
+		line = loader.getNextDataLine(br," /* REGION ID */");
+		int nreg = loader.getIntData(line);
+		
+		int[] nnr = model.getRegNodes(nreg);
+		int[] temp = new int[nnr.length];
+		slaveReg[contId]=nreg;
+
+
+		
+		Vect v1=new Vect(3);
+		Vect v2=new Vect(3);
+		
+		if(type<3){
+		
+		
+		if(type==1){
+			line = loader.getNextDataLine(br," /* CORENR 1 */");
+
+			int n1 = loader.getIntData(line);
+
+			line = loader.getNextDataLine(br," /* CORENR 2 */");
+
+			int n2 = loader.getIntData(line);
+			
+
+			Node node1 = model.node[n1];
+			Node node2 = model.node[n2];
+
+	
+	
+
+			 v1 = node1.getCoord();
+			 v2 = node2.getCoord();
+
+			}
+			else if (type==2){
+				line = loader.getNextDataLine(br," /* v1x  v1y  */");
+
+				v1=new Vect(loader.getCSV(line)).v2();
+
+				line = loader.getNextDataLine(br," /* v2x  v2y  */");
+
+				v2=new Vect(loader.getCSV(line)).v2();
+				
+				
+			}
+
+		Vect v12=v2.sub(v1);
+
+		 
+		v1 = v1.add(v12.times(-extention_fact));
+		v2 = v2.add(v12.times(extention_fact));
+		
+
+
+		
+		Vect edgeDir = v2.sub(v1).normalized();
+		 ns = 0;
+
+		for (int k = 0; k < nnr.length; k++) {
+			int n = nnr[k];
+			Vect v = model.node[n].getCoord();
+			Vect vv1 = v.sub(v1);
+			Vect vv2 = v.sub(v2);
+			double dot = vv1.dot(vv2);
+
+			if (dot <= 0) {
+
+				double proj = vv1.dot(edgeDir);
+				double vv1n = vv1.norm();
+				if (Math.abs(proj - vv1n) <epsilon) {
+					// util.pr(dot);
+
+					temp[ns] = n;
+					ns++;
+				}
+			}
+
+		}
+		slaveNodes[contId] = new Node[ns];
+
+		for (int k = 0; k < ns; k++) {
+
+			int sn = temp[k];
+			slaveNodes[contId][k] = model.node[sn];
+		}
+
+
+}			else if (type==3){
+	
+
+	line = loader.getNextDataLine(br," /* r1  r2 t1  t2 z1 z2 */");
+	
+
+	Vect bounds	=new Vect(loader.getCSV(line));
+
+
+	 ns=0;
+
+	for (int k = 0; k < nnr.length; k++) {
+		int n = nnr[k];
+		Vect v = model.node[n].getCoord();
+		double r=v.v2().norm();
+		double tt=180/PI*util.getAng(v.v2());
+		double z=v.el[2];
+		
+		boolean inside=false;
+		
+		if(r>=bounds.el[0] && r<=bounds.el[1] && 
+				tt>=bounds.el[2] && tt<=bounds.el[3]&&
+				z>=bounds.el[4] && z<=bounds.el[5]){
+			inside=true;
+		}
+		
+		if(!inside) continue;
+						
+
+		temp[ns] = n;
+		ns++;
+			
+		
+	}
+	
+	
+}
+			
+			util.pr("contact "+contId+":  num. slave nodes ------------------------- " + ns);
+			
+			slaveNodes[contId] = new Node[ns];
+
+			for (int k = 0; k < ns; k++) {
+
+				int sn = temp[k];
+				slaveNodes[contId][k] = model.node[sn];
+				
+				//util.pr(sn);
+			}
+		//	util.pr(ns);ss
+
+		
+
+		
+	}
+
+
+
+
+private void readMaster2D(int contId, Model model, Loader loader,BufferedReader br,int type,double epsilon) throws IOException{
+	
+	String line;
+
+	int ns=0;
+			
+	if(type==0){
+		line = br.readLine();
+
+		int nm = loader.getIntData(line);
+
+
+		master_entities[contId] = new MasterEntity[nm];
+
+
+		for (int k = 0; k < nm; k++) {
+			line = br.readLine();
+
+			int[] nn = loader.getCSInt(line);
+		//	if (model.dim == 2) {
+	
+				Node node1=model.node[nn[0]];
+				Node node2=model.node[nn[1]];
+				master_entities[contId][k]=new MasterEntity(2);
+				master_entities[contId][k].nodeIds[0]=nn[0];
+				master_entities[contId][k].nodeIds[1]=nn[1];
+				master_entities[contId][k].length= node1.getCoord().sub(node2.getCoord()).norm();
+
+		}
+		
+	}
+	
+	
+	line = loader.getNextDataLine(br," /* REGION ID */");
+	int nreg = loader.getIntData(line);
+	
+	int[] nnr = model.getRegNodes(nreg);
+	int[] temp = new int[nnr.length];
+	masterReg[contId]=nreg;
+
+	if(type<3){
+	
+	Vect v1=new Vect(3);
+	Vect v2=new Vect(3);
+	
+	
+	if(type==1){
+
+	
+		if(type==1)
+		line = loader.getNextDataLine(br," / * n1 */");
+		int n1 = loader.getIntData(line);
+		line = loader.getNextDataLine(br," / * n2 */");
+		int n2 = loader.getIntData(line);
+		Node node1 = model.node[n1];
+		Node node2 = model.node[n2];
+		 v1 = node1.getCoord();
+		 v2 = node2.getCoord();
+		 
+	}else if(type==2){
+		line = loader.getNextDataLine(br," /* v1x  v1y */");
+
+		v1=new Vect(loader.getCSV(line)).v2();
+
+		line = loader.getNextDataLine(br," /* v2x  v2y */");
+
+		v2=new Vect(loader.getCSV(line)).v2();
+		
+
+		
+	}
+	Vect v12=v2.sub(v1);
+
+		 
+	v1 = v1.add(v12.times(-extention_fact));
+	v2 = v2.add(v12.times(extention_fact));
+	
+		Vect edgeDir = v2.sub(v1).normalized();
+		int nm = 0;
+
+		boolean[] nc = new boolean[model.numberOfNodes + 1];
+		for (int k = 0; k < nnr.length; k++) {
+			int n = nnr[k];
+			nc[n] = true;
+		}
+
+		byte[][] arr0 = { { 0, 1 }, { 1, 2 }, { 2, 0 } };
+		byte[][] arr1 = { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 } };
+
+		byte[][] edgeLocalNodes = null;
+		if (model.elCode == 0) {
+			edgeLocalNodes = arr0;
+			
+		} else if (model.elCode == 1) {
+			edgeLocalNodes = arr1;
+		}
+
+		int[][] tempEd = new int[model.numberOfEdges * edgeLocalNodes.length][2];
+		for (int ie = model.region[nreg].getFirstEl(); ie <= model.region[nreg].getLastEl(); ie++) {
+			int[] vertNumb = model.element[ie].getVertNumb();
+
+			for (int j = 0; j < edgeLocalNodes.length; j++) {
+				int n11 = vertNumb[edgeLocalNodes[j][0]];
+				int n12 = vertNumb[edgeLocalNodes[j][1]];
+
+				Vect v = model.node[n11].getCoord().add(model.node[n12].getCoord()).times(0.5);
+				Vect vv1 = v.sub(v1);
+				Vect vv2 = v.sub(v2);
+				double dot = vv1.dot(vv2);
+
+				if (dot <= 0) {
+
+					double proj = vv1.dot(edgeDir);
+					double vv1n = vv1.norm();
+					if (Math.abs(proj - vv1n) < epsilon) {
+						// util.pr(dot);
+
+						tempEd[nm][0] = n11;
+						tempEd[nm][1] = n12;
+						nm++;
+					}
+				}
+			}
+
+		}
+
+		master_entities[contId] = new MasterEntity[nm];
+
+		for (int k = 0; k < nm; k++) {
+
+			Node node11 = model.node[tempEd[k][0]];
+			Node node12 = model.node[tempEd[k][1]];
+
+			master_entities[contId][k]=new MasterEntity(2);
+			master_entities[contId][k].nodeIds[0]=tempEd[k][0];
+			master_entities[contId][k].nodeIds[1]=tempEd[k][1];
+	
+			master_entities[contId][k].length= node11.getCoord().sub(node12.getCoord()).norm();
+
+		}
+	
+		
+
+}			else if (type==3){
+
+
+line = loader.getNextDataLine(br," /* r1  r2 t1  t2 z1 z2 */");
+
+
+Vect bounds	=new Vect(loader.getCSV(line));
+
+
+ ns=0;
+
+for (int k = 0; k < nnr.length; k++) {
+	int n = nnr[k];
+	Vect v = model.node[n].getCoord();
+	double r=v.v2().norm();
+	double tt=180/PI*util.getAng(v.v2());
+	double z=v.el[2];
+	
+	boolean inside=false;
+	
+	if(r>=bounds.el[0] && r<=bounds.el[1] && 
+			tt>=bounds.el[2] && tt<=bounds.el[3]&&
+			z>=bounds.el[4] && z<=bounds.el[5]){
+		inside=true;
+	}
+	
+	if(!inside) continue;
+					
+
+	temp[ns] = n;
+	ns++;
+		
+	
+}
+
 
 }
 
+
+	
+}
+
+
+}
