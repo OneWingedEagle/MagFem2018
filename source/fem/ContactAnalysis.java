@@ -74,8 +74,7 @@ public class ContactAnalysis {
 	Vect disp, rhs;
 	boolean applyNodal = true;
 	boolean initialized = false;
-//	boolean twice_check0 =false;
-	//boolean twice_check =false;
+
 	double fp = 1;
 	double fr = 1;
 	boolean aug_normal = true;
@@ -322,26 +321,26 @@ public class ContactAnalysis {
 					for (int k = 0; k < pgap.length; k++) {
 
 						if (pgap.el[k] >= 0) {
-							contact.lamN[contId].el[k] = 0;
-							continue;
+						//	contact.lamN[contId].el[k] = 0;
+						//	continue;
 						}
 
-						double aug =0;
-						
-					//	if(lamN.el[k]==0)
-					//		aug= pgap.el[k];
-						//else
-						aug=contact.lamN[contId].el[k] +pgap.el[k];
+						double aug =contact.lamN[contId].el[k] +pgap.el[k];
 
 						if(contact.lamN[contId].el[k]==0) relax=.5;
 						else relax=.75;
 
 						contact.lamN[contId].el[k] = aug*relax ;
+						
+						
+						double augT =contact.lamT[contId].el[k] +pslide.el[k];
+
+						contact.lamT[contId].el[k] = augT;//*relax ;
 
 					}
 
-					contact.lamT[contId] = contact.lamT[contId].add(pslide);
-					
+				//	contact.lamT[contId] = contact.lamT[contId].add(pslide);
+					///contact.lamT[contId].timesVoid(.9);;
 					
 				//	new SpVect(contact.lamN[contId]).shownzA();
 				//	new SpVect(contact.lamT[contId]).shownzA();
@@ -955,31 +954,43 @@ public class ContactAnalysis {
 					contact.node_node_mat[contId].row[sn].el[1] = beta;
 
 	
-
 					Vect deltaDisp = u.sub(u1.times(alpha).add(u2.times(beta)));
+
+
+					//Vect deltaDisp = v.sub(v1.times(alpha).add(v2.times(beta)));
 					
-					Vect vr=new Vect(u.length);
-					Vect v1r=new Vect(u.length);
-					Vect v2r=new Vect(u.length);
-					if(u_index[sn][0]>=0)
-					vr.el[0]=	ref_stick.el[u_index[sn][0]];
-					if(u_index[sn][1]>=0)
-						vr.el[1]=	ref_stick.el[u_index[sn][1]];
-					
-					if(u_index[mn1][0]>=0)
-					v1r.el[0]=	ref_stick.el[u_index[mn1][0]];
-					if(u_index[mn1][1]>=0)
-						v1r.el[1]=	ref_stick.el[u_index[mn1][1]];
-					
-					if(u_index[mn2][0]>=0)
-						v2r.el[0]=	ref_stick.el[u_index[mn2][0]];
-						if(u_index[mn2][1]>=0)
-							v2r.el[1]=	ref_stick.el[u_index[mn2][1]];
+					Vect ur=new Vect(u.length);
+					Vect u1r=new Vect(u.length);
+					Vect u2r=new Vect(u.length);
 						
+					if(contact.frictional){
+					for(int p=0;p<model.dim;p++){
+					if(u_index[sn][p]>=0)
+						ur.el[p]=ref_stick.el[u_index[sn][p]];
+		
+						int loc=u_index[mn1][p];
+						if(loc>=0)
+							u1r.el[p]=ref_stick.el[loc];
 				
+						loc=u_index[mn2][p];
+						if(loc>=0)
+							u2r.el[p]=ref_stick.el[loc];
+
+					}
+				}
+					
+					Vect vr=node.getCoord().add(ur);
+					Vect v1r=node1.getCoord().add(u1r);
+					Vect v2r=node2.getCoord().add(u2r);
+					
+				
+					v1r = v1r.add(v12.times(-extention_fact));
+					v2r = v2r.add(v12.times(extention_fact));
+					
 					Vect deltaDispRef = vr.sub(v1r.times(alpha).add(v2r.times(beta)));
 					
-					deltaDisp=deltaDisp.sub(deltaDispRef);
+					
+				//	deltaDisp=deltaDisp.sub(deltaDispRef);
 					double proj = deltaDisp.dot(normal);
 
 					Vect disp_tang = deltaDisp.sub(normal.times(proj));
@@ -996,7 +1007,6 @@ public class ContactAnalysis {
 	
 					contact.gap[contId].el[sn] = pen;
 					contact.slide[contId].el[sn] = deltaDisp.dot(tang);
-
 
 					contact.contacting[contId][sn] = true;
 
@@ -1195,14 +1205,62 @@ public class ContactAnalysis {
 
 					contact.gap[contId].el[sn] = pen;
 					
+					if(contact.frictional){	
 
+/*					Vect deltaDisp = v.deepCopy();
+					for(int m=0;m<nnc;m++){
+						deltaDisp=deltaDisp.sub(vm[m].times(ww[m]));
+						
+					}*/
+					
 					Vect deltaDisp = u.deepCopy();
 					for(int m=0;m<nnc;m++){
 						deltaDisp=deltaDisp.sub(um[m].times(ww[m]));
 						
 					}
-					//u.sub(u1.times(alpha).add(u2.times(beta)));
-					/// deltaDisp.times(1e9).hshow();
+					
+					Vect[] umr = new Vect[nnc];	
+					Vect ur = new Vect(model.dim);
+
+					for(int q=0;q<nids.length;q++){
+						umr[q]= new Vect(model.dim);
+					}
+					
+					Vect vr;
+					Vect[] vmr = new Vect[nnc];
+	
+		
+					for(int j=0;j<model.dim;j++){
+						if(u_index[sn][j]>=0)
+							ur.el[j]=ref_stick.el[u_index[sn][j]];
+			
+						for(int q=0;q<nids.length;q++){
+							
+							int mn=nids[q];
+							int loc=u_index[mn][j];;//util.pr(loc);util.pr(disp.length);
+							if(loc>=0)
+								umr[q].el[j]=ref_stick.el[loc];
+					
+						}
+
+					}
+					
+					vr=node.getCoord().add(ur);
+					
+					for(int q=0;q<nids.length;q++){
+						vmr[q]=m_nodes[q].getCoord().add(umr[q]);
+					}
+				
+					
+					Vect deltaDispRef = vr.deepCopy();
+					for(int m=0;m<nnc;m++){
+						deltaDispRef=deltaDispRef.sub(vmr[m].times(ww[m]));
+						
+					}
+					
+				//	deltaDisp=deltaDisp.sub(deltaDispRef);
+
+					
 					 proj = deltaDisp.dot(normal);
 					 
 
@@ -1226,6 +1284,7 @@ public class ContactAnalysis {
 					double sld=Math.abs(disp_tang.dot(tang));
 
 					contact.slide[contId].el[sn]=sld;
+					}
 					
 					contact.contacting[contId][sn] = true;
 
@@ -1661,6 +1720,7 @@ public class ContactAnalysis {
 
 					// Vect tang=new Vect(-normal.el[1],normal.el[0]);
 
+					if(contact.frictional){
 					Vect tang = contact.tangentials[contId][ contact.normalIndex[contId][i]].deepCopy();
 
 				
@@ -1754,6 +1814,7 @@ public class ContactAnalysis {
 					} else {
 						contact.constraint_matrix_STK[contId].row[sn] = contact.constraint_matrix_T[contId].row[sn].times(reduct);
 					}
+					}
 				}
 			}
 		//util.pr(" here 555");
@@ -1823,7 +1884,7 @@ public class ContactAnalysis {
 
 		}
 		
-	/*	for (int contId = 0; contId < contact.numContacts; contId++) {
+		for (int contId = 0; contId < contact.numContacts; contId++) {
 			double mu =  contact.fric_coef[contId];
 			if (mu == 0)
 				continue;
@@ -1835,55 +1896,27 @@ public class ContactAnalysis {
 
 			if (contact.landed_stick[contId][sn]) {
 				
-
-				int px = u_index[sn][0];
-				int py = u_index[sn][1];
-				int pz = -1;
-				if (model.dim == 3)
-					pz = u_index[sn][2];
-
-				int p = px;
-				if (p == -1)
-					p = py;
-				if (p == -1)
-					p = pz;
-
-
 				int[] nids=contact.master_entities[contId][contact.normalIndex[contId][i]].nodeIds;
 
-				int mn1 = nids[0];
-				int mn2 = nids[1];
 
-				int p1x = u_index[mn1][0];
-				int p1y = u_index[mn1][1];
-
-				int p2x = u_index[mn2][0];
-				int p2y = u_index[mn2][1];
+				for(int p=0;p<model.dim;p++){
+				if(u_index[sn][p]>=0)
+					ref_stick.el[u_index[sn][p]]=disp.el[u_index[sn][p]];
 				
-				Vect u = model.node[sn].getU();
-				if (px >= 0)
-					ref_stick.el[px] = u.el[0];
-				if (py >= 0)
-					ref_stick.el[py] = u.el[1];
-
-				u = model.node[mn1].getU();
-				if (p1x >= 0)
-					ref_stick.el[p1x] = u.el[0];
-				if (p1y >= 0)
-					ref_stick.el[p1y] = u.el[1];
-
-				u = model.node[mn2].getU();
-				if (p2x >= 0)
-					ref_stick.el[p2x] = u.el[0];
-				if (p2y >= 0)
-					ref_stick.el[p2y] = u.el[1];
-
+				for(int q=0;q<nids.length;q++){
+					int mn=nids[q];
+					int loc=u_index[mn][p];
+					if(loc>=0)
+						ref_stick.el[loc]=disp.el[loc];
+				}
+				}
+		
 				contact.landed_stick[contId][sn] = false;
 
 			}
 		}
 		
-			}*/
+			}
 		
 		countStickSlip();
 
