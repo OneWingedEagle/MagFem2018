@@ -1,6 +1,8 @@
 package fem;
 
 
+import static java.lang.Math.PI;
+
 import math.BandMat;
 import math.Eigen;
 import math.Mat;
@@ -184,13 +186,19 @@ public class MechMatrix {
 		System.out.println(" Calculating stiffness matrix ...");
 		Mat[][] Ke=new Mat[model.nElVert][model.nElVert];
 		Mat[][] Me=new Mat[model.nElVert][model.nElVert];
+		Mat[][] Ge=new Mat[model.nElVert][model.nElVert];
+		boolean gyro=true;
 		Mat RiT=new Mat(),Rj;
 		int m,row,column,rowNodeNumber,colNodeNumber,rowb=0,ext=4;
 		int[] nz=new int[model.numberOfUnknownU];
 		SpBlockMat BKs=new SpBlockMat(model.numberOfUnknownU,model.numberOfUnknownU,model.nNodNod);
 		SpBlockMat MKs=new SpBlockMat();
+		SpBlockMat GKs=new SpBlockMat();
 		if(massNeeded){
 			MKs=new SpBlockMat(model.numberOfUnknownU,model.numberOfUnknownU,model.nNodNod);
+		}
+		if(gyro){
+			GKs=new SpBlockMat(model.numberOfUnknownU,model.numberOfUnknownU,model.nNodNod);
 		}
 
 		int[][] unknown_U_ind=new int[model.numberOfUnknownU][model.dim];
@@ -214,8 +222,10 @@ public class MechMatrix {
 
 			int[] vertNumb=model.element[i].getVertNumb();
 
-
-			if(massNeeded){
+			if(gyro){
+				Ke=this.calc.Ke(model,i,Me,Ge);
+			}
+			else if(massNeeded){
 
 				Ke=this.calc.Ke(model,i,Me);
 
@@ -312,6 +322,10 @@ public class MechMatrix {
 							MKs.row[row].index[nz[row]]=column;	
 							MKs.row[row].el[nz[row]]=Me[j][k];
 						}
+						if(gyro){
+							GKs.row[row].index[nz[row]]=column;	
+							GKs.row[row].el[nz[row]]=Ge[j][k];
+						}
 
 						nz[row]++;
 
@@ -319,6 +333,10 @@ public class MechMatrix {
 							BKs.row[row].extend(ext);
 							if(massNeeded)
 								MKs.row[row].extend(ext);
+							
+							if(gyro){
+								GKs.row[row].extend(ext);
+							}
 						}
 
 					}
@@ -328,6 +346,10 @@ public class MechMatrix {
 						BKs.row[row].addToNz(Ke[j][k],m);
 						if(massNeeded)
 							MKs.row[row].addToNz(Me[j][k],m);
+						
+						if(gyro){
+							GKs.row[row].addToNz(Ge[j][k],m);
+						}
 
 
 					}
@@ -349,6 +371,12 @@ public class MechMatrix {
 		}
 
 
+		if(gyro){
+
+			GKs.sortAndTrim(nz);	
+			model.Gs=GKs.spMatForm(model,unknown_U_ind);
+
+		}
 
 	}
 
@@ -714,6 +742,7 @@ public class MechMatrix {
 		System.out.println(" Calculating vibration using the Newmark method....");
 
 		double dt=model.dt;
+		
 
 		Vect bU1=model.bU.add(model.getbUt(mode));
 
@@ -767,11 +796,15 @@ public class MechMatrix {
 		double b4=gama*dt*b1;
 		double b5=1+gama*dt*b2;
 		double b6=dt*(1+gama*b3-gama);
-
+		
+		
 		SpMat Ks=model.Ks.addNew(model.Ms.timesNew(b1)).addNew(model.Cs.timesNew(b4));
 
 			Vect bp=model.Ms.smul(model.up.times(b1).add(model.ud.times(-b2)).add(model.udd.times(-b3)))
 			.add(model.Cs.smul(model.up.times(b4).add(model.ud.times(-b5)).add(model.udd.times(-b6))));
+			
+			if(model.Gs!=null)
+				bp=bp.add(model.Gs.smul(model.ud));
 
 			bU1=bU1.add(bp);
 

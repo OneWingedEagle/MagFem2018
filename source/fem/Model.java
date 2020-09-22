@@ -73,7 +73,7 @@ public class Model{
 	public BHCurve[] BH;
 	public CurrentWaveForm ia,ib,ic,va,vb,vc;
 	public String elType="hexahedron";
-	public SpMat Hs,Ms,Ks,Ls,Cs,Ss,Ps,Qs,Fs;
+	public SpMat Hs,Ms,Ks,Ls,Cs,Ss,Ps,Qs,Fs,Gs;
 	public SpMat Rs,Bs,BtBs;
 	public Mat eigVects,bigMat,Q;
 	public Vect lams,RHS,bU,bT,HpAp,HkAk;
@@ -1593,6 +1593,8 @@ public class Model{
 			double a2=this.rayBeta;
 
 			this.Cs=this.Ms.timesNew(a1).addNew(this.Ks.timesNew(a2));
+			
+			this.Cs=this.Cs.addGeneral(this.Gs);
 
 			if(this.timeIntegMode==3)
 			{	

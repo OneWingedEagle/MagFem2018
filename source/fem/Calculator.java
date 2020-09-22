@@ -3383,6 +3383,102 @@ public class Calculator {
 		return Ke;
 	}	
 
+	public Mat[][] Ke(Model model,int ie, Mat[][] Me,Mat[][] Ge){
+
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++){
+				Me[i][j]=new Mat(3,3);
+				Ge[i][j]=new Mat(3,3);
+			}
+		
+		Mat Omega=new Mat(3,3);
+		double rpm=5000;
+		double ww=rpm/30*Math.PI;
+		Omega.el[0][1]=ww;
+		Omega.el[1][0]=-ww;
+
+		Node[] vertexNode=model.elementNodes(ie);
+		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
+		Mat M1=new Mat(this.nElVert,this.nElVert);
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++)
+				Ke[i][j]=new Mat(3,3);
+
+		double detJac,ws=1;
+		int n=this.PW[0].length;	
+		Mat jac;
+
+
+		boolean isotElast=model.region[model.element[ie].getRegion()].isotElast;
+
+		Vect v=model.element[ie].getPois();
+		Vect E=model.element[ie].getYng();
+		Vect G=model.element[ie].getShear();
+
+		double ro=model.element[ie].getRo();
+		Mat BtDB;
+		Vect[] gradN;
+		double[] N;
+		Mat Nv=new Mat(1,this.nElVert);
+		Vect localCo=new Vect(3);
+		for(int p=0;p<n;p++)
+			for(int q=0;q<n;q++)
+				for(int r=0;r<n;r++){
+					localCo.el[0]=this.PW[0][p];
+					localCo.el[1]=this.PW[0][q];
+					localCo.el[2]=this.PW[0][r];
+
+					jac=jacobian(vertexNode,localCo);
+
+					detJac=abs(jac.determinant());
+
+
+					if(n!=2)
+						ws=this.PW[1][p]*this.PW[1][q]*this.PW[1][r]*detJac;
+					else
+						ws=detJac;
+
+					gradN=gradN(jac,localCo);
+
+					N=N(localCo);
+
+					for(int j=0;j<this.nElVert;j++)
+						Nv.el[0][j]=N[j];
+
+					for(int i=0;i<this.nElVert;i++)
+						for(int j=0;j<this.nElVert;j++){
+
+							if(isotElast)
+								BtDB=BtDB(v.el[0],G.el[0],gradN[i],gradN[j]).times(ws);
+							else
+								BtDB=BtDB(E,v,G,gradN[i],gradN[j]).times(ws);
+							Ke[i][j]=Ke[i][j].add(BtDB);
+							
+							Ge[i][j]=Ge[i][j].add(Omega.times(2*N[i]*N[j]*ws*ro));
+
+						}
+
+
+					M1=M1.add(Nv.transp().mul(Nv).times(ws));
+
+
+				}	
+
+
+		for(int i=0;i<this.nElVert;i++)
+			for(int j=0;j<this.nElVert;j++){
+				for(int ir=0;ir<3;ir++)
+				{
+					Me[i][j].el[ir][ir]=ro*M1.el[i][j];
+
+				}
+
+			}
+
+
+		return Ke;
+	}	
+
 
 	public Mat[][] KeQuad(Model model,int ie){
 		

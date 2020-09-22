@@ -54,7 +54,7 @@ public class MeshManipulator {
 		//mf.deform();
 		//Model model=new Model("D:\\JavaWorks\\FEM problems\\Hamed solver\\bun1elem.txt");
 		//model.setEdge();
-		//mf.reRegionb();
+	//	mf.reRegionb();
 		double[] bounds={-1,1,-1,1,-1e0, 1e0};
 	//	mf.connectivity(2e-5);	mf.dropUnusedNodes();
 	//	mf.dropUnusedNodes();
@@ -62,12 +62,12 @@ public class MeshManipulator {
 	//	mf.rotate(PI/8);
 	//	Model model=mf.rotExtendNfold(7);
 	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\extenRot.txt");
-		int Nr=5;
+		int Nr=2;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
-			regs0[i-1]=i+1;
+			regs0[i-1]=i;
 		}
-		//mf.extractReg(regs0);mf.dropUnusedNodes();
+	//	mf.extractReg(regs0);mf.dropUnusedNodes();
 		//mf.revolveLine(new Vect().linspace(.016, .05, Nr+1), regs0, 1, PI/8);
 		//int[] regs={3}; mf.extractReg(regs);mf.dropUnusedNodes();
 		String stat="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\statFF.txt";
@@ -171,7 +171,7 @@ public class MeshManipulator {
 	//	mf.pileUpPrism(dhr,-0.03483);
 	//	util.show(dh);
 	//	mf.pileUpPrism(dh, -0.15);
-	//	mf.pileUpPrism(10, 10e-3);
+	//mf.pileUpPrism(10, 30e-3);
 		
 	//	mf.pileHelic(6*8, PI/4, .0125*18);
 		
@@ -180,7 +180,7 @@ public class MeshManipulator {
 
 		//mf.reRegionb();
 		
-		//mf.extendFlip(1);
+	//	mf.extendFlip(2);
 
 	}
 	
@@ -1172,11 +1172,14 @@ public void hexaToTetra()
 					nn2[7]=nn[3];
 					model.element[i].setVertNumb(nn2);
 				}
+			//	if(i==10 || i==80||i==45|| i==115)
 				
-				model.element[i].setRegion(2);
+			
 				Vect c=model.getElementCenter(i);
+				if(ir==1 &&c.el[2]>3.001e-3)
+					model.element[i].setRegion(3);
 				//util.pr(c.v2().norm());
-				if(c.v2().norm()<.5) model.element[i].setRegion(1);
+			//	if(c.v2().norm()<.5) model.element[i].setRegion(1);
 /*				if(ir>7) model.element[i].setRegion(5);
 				else if(ir==7) model.element[i].setRegion(4);
 				else if(ir<4) model.element[i].setRegion(1);

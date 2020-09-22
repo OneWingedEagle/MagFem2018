@@ -34,53 +34,6 @@ public class RunMech {
 
 		}
 		
-/*		
-		for(int n=1;n<=model.numberOfNodes;n++){
-			if(model.node[n].getCoord(2)>.000999){
-				double r=model.node[n].getCoord().v2().norm();
-				if(Math.abs(r-.005)<1e6){
-					if(model.node[n].getCoord(1)<.0001) r/=2;
-				//if(r<.0011 || r>.00999 || model.node[n].getCoord(0)<.0001 || model.node[n].getCoord(1)<.0001) r/=2;
-				util.pr(n+"\t"+"0	.0001  "+(-r*100000));
-				}
-			}
-		}
-*/
-		//*************************
-		//*************************
-		//*************************
-		//*************************
-
-		/*			model.region[2].thermal=true;
-		model.region[2].deltaT=-100;
-
-		model.region[2].thermalCoef=1.1e-5;
-
-		for(int ir=1;ir<=model.numberOfRegions;ir++){
-			if(model.region[ir].thermal)
-				for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
-
-					model.element[i].setHasThermal(true);
-					model.element[i].setDeltaT(model.region[ir].deltaT);
-
-				}
-
-		}	*/
-
-
-		//*************************
-		//*************************
-		//*************************
-		//*************************
-
-		/*		model.setThermalForce();
-
-		for(int i=1;i<=model.numberOfNodes;i++){
-			if(model.node[i].Fms!=null)
-
-			model.node[i].F=model.node[i].Fms.deepCopy();
-		}
-		 */
 
 
 		//=======================================
@@ -135,6 +88,8 @@ public class RunMech {
 			int N=model.nTsteps;
 
 			Vect T=new Vect(N);
+			
+			Mat xy=new Mat(N,2);
 			model.writeMesh( model.eddyFolder+"\\bun.txt");
 
 			int ix=0;
@@ -200,7 +155,13 @@ public class RunMech {
 
 
 						model.loadNodalField(file,1);
-
+						
+						if(true){
+							int p=7;
+							model.node[p].F.el[0]=0;
+							model.node[p].F.el[1]=-1000;//*Math.sin(2*PI*ix/40);
+						}
+						
 				if(false){
 					for (int p = 1; p <= model.numberOfNodes; p++) {
 							Vect v = model.node[p].getCoord();
@@ -264,6 +225,10 @@ public class RunMech {
 
 					//	UU.el[ix]=model.node[nx].getU(cmp);
 
+					
+					xy.el[ix][0]=model.node[7].u.el[0];
+					xy.el[ix][1]=model.node[7].u.el[1];
+
 
 					ix++;
 
@@ -296,24 +261,6 @@ public class RunMech {
 			}
 
 			model.writeData(model.resultFolder+"\\data_out.txt");
-
-/*			UU.timesVoid(1e9);
-			util.plot(UU);
-
-			UU.show();*/
-
-			/*		for(int i=1;i<=model.numberOfElements;i++)
-			model.element[i].setDeformable(true);
-			 */
-
-			/*		model.setStress();
-		model.writeStress(model.resultFolder+"\\stress.txt");*/
-			/*	util.p		double tend=System.currentTimeMillis();
-		double compTime=(tend-tstart)/1000;
-
-		util.pr("Computation time: "+compTime+" seconds");
-	lot(T);
-		T.show();*/
 
 
 
@@ -355,6 +302,7 @@ public class RunMech {
 
 			}
 
+			util.plot(xy);
 
 
 		}
@@ -370,6 +318,7 @@ public class RunMech {
 			// TODO Auto-generated catch-block stub.
 			exception.printStackTrace();
 		}
+		
 
 
 	}
