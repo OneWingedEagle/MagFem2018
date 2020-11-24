@@ -76,13 +76,14 @@ public class MeshManipulator {
 
 		//mf.rescale(new Vect(0.483873333333,0.483873333333,1));
 	//	mf.assemble(rot, body);
-	//	mf.translate(new Vect(0,0,-.15));
-	//	mf.rescale(15./16);
+	//	mf.translate(new Vect(.4,0));
+	//	mf.rescale(1e-5);
 	//	mf.extractReg(0.,2.0,0,2*PI,-0.1285,-0.127);
 	//	String bun=util.getFile();
 	//	Model model=new Model(bun);
 	//	String folder=new File(bun).getParentFile().getPath();
 
+	//	mf.extendFlip(0);
 	//String outMesh = folder + "//quads2.txt";
 	//	model.writeMeshQuadToTri(outMesh);
 		//model.writeMeshTriToQuad(outMesh);

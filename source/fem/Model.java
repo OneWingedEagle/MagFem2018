@@ -112,6 +112,8 @@ public class Model{
 	public int struc2D=0;// 0: plane stress  1: plain strain, 2:axisymmetric
 	public double rpm=0;
 	public PressureLoad[] pressLoads=null;
+	
+	public Vect rotax=new Vect(0,0,1);
 
 	public Model(){}
 
@@ -1594,6 +1596,7 @@ public class Model{
 
 			this.Cs=this.Ms.timesNew(a1).addNew(this.Ks.timesNew(a2));
 			
+			if(this.Gs!=null)
 			this.Cs=this.Cs.addGeneral(this.Gs);
 
 			if(this.timeIntegMode==3)

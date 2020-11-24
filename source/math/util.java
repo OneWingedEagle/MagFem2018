@@ -37,8 +37,43 @@ public class util {
 	static String regex="[ : ,=\\t]+";
 
 	public util(){}
-
+	
 	public static void main(String[] args) {
+		
+		int N=80;
+		
+		Mat spcs=new Mat(N,3);
+		Vect spc=new Vect(N);
+		Vect frq=new Vect(N);
+
+		
+		for(int i=0;i<N;i++){
+			double fx=5+i*.05;
+		
+			double amp=flat_spring(-fx,false);
+			
+	
+			frq.el[i]=fx;
+		//	spc.el[i]=amp;
+			spcs.el[i][0]=fx;
+			spcs.el[i][1]=amp;
+			// amp=flat_spring(-fx);
+			 amp=flat_springFQ(fx);
+			// amp=flat_spring(fx);
+			 spcs.el[i][2]=amp;
+
+		}
+		if(N>0){
+		util.plotBunch(spcs.el);
+	//	util.plot(frq,spc);
+		spcs.show();
+		}
+	//	mass_spring(false);
+	//	double amp=mass_spring(true);
+
+	}
+
+	public static void main1(String[] args) {
 
 		String fileMat="C:\\Users\\Hassan\\Desktop\\Km3.txt";
 		SpMat Ms=loadSpMat(fileMat);
@@ -78,7 +113,315 @@ public class util {
 
 
 	}
+	
 
+	private static  double flat_spring(double fx,boolean plot){
+		
+		boolean twy=false;
+		if(fx<0){
+			twy=true;
+			fx*=-1;
+		}
+		
+		double M=6.908e-5;
+		double K=0.4850382;
+//K=0.46
+		double tk=1e-3;
+		double I=.333333;
+		double I2=I*I;
+		double F0=(-49.125)*tk*I2;
+		
+		double L=0.17;
+		double Lt=0.21;
+
+		double Kh=8.835*tk*1e3*I2*L*Lt;
+		//util.pr(Kh);
+		
+		//K+=.5*Kh;
+				
+		double fr=fx;
+		
+		double damp=1e-3;
+		double C=damp*(M+K);
+		double freq=sqrt(K/M)/PI/2;
+		util.pr(freq);
+		double f0=50;
+		double T=1/f0;
+		int N0=40;
+		double dt=T/N0;
+		
+		int N=80*N0;
+		
+		
+		Vect u=new Vect(N);
+		Vect ff=new Vect(N);
+
+		Vect tt=new Vect(N);
+		
+		double beta=0.25;
+		double gama=0.5;
+
+		double dt2=Math.pow(dt, 2);
+		double b1=1./beta/dt2;
+		double b2=-1/beta/dt;
+		double b3=1-.5/beta;
+		double b4=gama*dt*b1;
+		double b5=1+gama*dt*b2;
+		double b6=dt*(1+gama*b3-gama);
+		
+		double up=0;
+		double K1=K+M*b1+C*b4;
+	
+
+		double trq1=F0*L;
+		double omega=2*PI*fr;
+		
+		double hr=K-M*Math.pow(omega, 2);
+		double hm=C*omega;
+		double amp1=trq1/sqrt(hr*hr+hm*hm);
+
+		double ud=0;
+		double udd=0;
+		double F=0;
+		
+		for(int i=1;i<N;i++){
+			
+			tt.el[i]=i*dt;
+			double t=tt.el[i];
+			up=u.el[i-1];
+			if(!twy)
+				F=(-49.125)*tk*I2;
+			//F=-1e-3;
+			else{
+				double u1=up*1e3;
+				F=(0.72*u1*u1*u1-2.04*u1*u1+8.835*u1-49.125)*tk*I2;
+				//F=(-49.125)*tk*I2-10.5*up;
+			//	F=-1e-3-K.0*up;
+				//F=(8.835*u1-49.125)*tk*I2;
+				//F=(-49.125)*tk*I2;
+			//	if(F<-.1) F=-.1;
+			//	if(F>.1) F=.1;
+
+			}
+			
+			double fact=Math.sin(omega*t);
+			double fact2=Math.pow(fact, 2);
+			
+			F*=fact2;
+			
+			trq1=F*L*Lt;
+			
+			ff.el[i]=F;
+			
+			double trq2=trq1;
+			
+			double bp=M*(up*b1+ud*(-b2)+udd*(-b3));
+			
+			bp+=C*(up*b4+ud*(-b5)+udd*(-b6));
+			
+			trq2+=bp;
+			
+			double sol=trq2/K1;
+			u.el[i]=sol;
+			double ud1=ud;
+			double udd1=udd;
+			double ut=u.el[i];
+			double up1=u.el[i-1];
+			
+			ud=(ut-up1)*b4+ud1*b5+udd1*b6;
+			udd=(ut-up1)*b1+ud1*b2+udd1*b3;
+	
+			
+			}
+		
+		u.timesVoid(1e3);
+		
+		if(plot)
+		util.plot(tt,u);
+		
+		double umin=1e100;
+		double umax=-1e100;
+		
+		for(int i=N/2;i<N;i++){
+			if(u.el[i]>umax) umax=u.el[i];
+			if(u.el[i]<umin) umin=u.el[i];		
+		}
+
+		double amp2=(umax-umin)/2;
+		
+	//	util.pr(amp2);
+		
+		
+		return amp2;
+		
+		
+	}
+	
+	private static  double flat_springFQ(double fx){
+		
+
+		double M=6.908e-5;
+		double K=0.4850382;
+	
+		double I=.333333;
+		double I2=I*I;
+
+		
+		double damp=1e-3;
+		double C=damp*(M+K);
+		
+		double omega=2*PI*fx;
+		double omg2=2*omega;
+		double omga2_sq=omg2*omg2;
+	//	double omga2_sq=omega*omega;
+		
+		double L=0.17;
+		double Lt=0.21;
+		
+		
+		double tk=1e-3;
+		
+
+
+		double F=(-49.125)*tk*I2;
+		
+		double hr=K-M*omga2_sq;
+		double hm=C*omg2;
+		
+		//double magn=0.5*L*Lt/sqrt(hr*hr+hm*hm);
+		double magn=-0.5*F*L/sqrt(hr*hr+hm*hm)*Lt*1e3;
+
+		return magn;
+	}
+	
+private static  double mass_spring(boolean twy){
+		
+
+		double M=1e-3;
+		double K=10;
+		
+		double damp=1e-3;
+
+		double C=damp*(M+K);
+
+		
+		double kx=5;
+		if(twy)
+		K+=kx;
+
+
+		//double Kh=8.835*tk*1e3*I2*L*Lt;
+		//util.pr(Kh);
+		
+		//K+=.5*Kh;
+				
+	//	double fr=fx;
+		
+		double freq=sqrt(K/M);
+		
+		double f0=50;
+		double T=1/f0;
+		int N0=400;
+		double dt=T/N0;
+		
+		int N=8*N0;
+		
+		
+		Vect u=new Vect(N);
+		Vect ff=new Vect(N);
+
+		Vect tt=new Vect(N);
+		
+		double beta=0.25;
+		double gama=0.5;
+
+		double dt2=Math.pow(dt, 2);
+		double b1=1./beta/dt2;
+		double b2=-1/beta/dt;
+		double b3=1-.5/beta;
+		double b4=gama*dt*b1;
+		double b5=1+gama*dt*b2;
+		double b6=dt*(1+gama*b3-gama);
+
+		
+		double up=0;
+		double K1=K+M*b1+C*b4;
+	
+
+
+
+
+		double ud=0;
+		double udd=0;
+		double F=0;
+		
+		for(int i=1;i<N;i++){
+			
+			tt.el[i]=i*dt;
+			double t=tt.el[i];
+			up=u.el[i-1];
+			if(!twy)
+				F=1;
+			//F=-1e-3;
+			else{
+			//	double u1=up*1e3;
+			//	F=(0.72*u1*u1*u1-2.04*u1*u1+8.835*u1-49.125)*tk*I2;
+				//F=(-49.125)*tk*I2-10.5*up;
+			//	F=-1e-3-K.0*up;
+				F=1+kx*up+0*damp*kx*ud;
+				//F=(-49.125)*tk*I2;
+			//	if(F<-.1) F=-.1;
+			//	if(F>.1) F=.1;
+
+			}
+			
+		
+			
+			ff.el[i]=F;
+			
+			
+			double bp=M*(up*b1+ud*(-b2)+udd*(-b3));
+			
+			bp+=C*(up*b4+ud*(-b5)+udd*(-b6));
+			
+			F+=bp;
+			
+			double sol=F/K1;
+			u.el[i]=sol;
+			double ud1=ud;
+			double udd1=udd;
+			double ut=u.el[i];
+			double up1=u.el[i-1];
+			
+			ud=(ut-up1)*b4+ud1*b5+udd1*b6;
+			udd=(ut-up1)*b1+ud1*b2+udd1*b3;
+	
+			
+			}
+		
+		u.timesVoid(1e3);
+		
+		//if(plot)
+		util.plot(tt,u);
+		
+		double umin=1e100;
+		double umax=-1e100;
+		
+		for(int i=N/2;i<N;i++){
+			if(u.el[i]>umax) umax=u.el[i];
+			if(u.el[i]<umin) umin=u.el[i];		
+		}
+
+		double amp2=(umax-umin)/2;
+		
+	//	util.pr(amp2);
+		
+		
+		return amp2;
+		
+		
+	}
+	
 	public static void gmeshFunc() 		{
 		double height=10;
 		//DFTdecopler();

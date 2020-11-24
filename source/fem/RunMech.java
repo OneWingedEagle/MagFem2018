@@ -156,7 +156,19 @@ public class RunMech {
 
 						model.loadNodalField(file,1);
 						
-						if(true){
+						if(ix<0){
+							
+							int nx=580;
+							Vect ff=model.node[nx].F;
+							double uy=model.node[nx].u.el[1]*1e3;
+						//	ff.el[1]+=uy*2;
+							double wt=833*2*PI*ix*model.dt;
+							double sin2=Math.sin(wt)*Math.sin(wt);
+							
+							model.node[nx].F=ff.times(sin2);
+							
+						}
+						if(false){
 							int p=7;
 							model.node[p].F.el[0]=0;
 							model.node[p].F.el[1]=-1000;//*Math.sin(2*PI*ix/40);
@@ -215,20 +227,19 @@ public class RunMech {
 					if(snap && ix<D)
 						W.setCol(u, ix);
 
-					int nx0=2352;
-					nx0=1558;int cmp=1; //react
-					//nx0=15;
-					//	nx0=24697; cmp=0;// motor half
-
-
+					int nx0=603;
+					int cmp=1;
 					int nx=Math.min(nx0,model.numberOfNodes);
 
-					//	UU.el[ix]=model.node[nx].getU(cmp);
+					T.el[ix]=model.node[nx].getU(cmp);
 
 					
 					xy.el[ix][0]=model.node[7].u.el[0];
 					xy.el[ix][1]=model.node[7].u.el[1];
 
+					
+				///	Vect tip=model.node[7].getCoord().add(model.node[7].u.times(100000));
+				///	model.rotax=	tip.normalized().times(0);
 
 					ix++;
 
@@ -301,12 +312,18 @@ public class RunMech {
 
 
 			}
+			
+			T=T.times(1e6);
+			util.plot(T);
+			T.show();
 
-			util.plot(xy);
+
+			//util.plot(xy);
 
 
 		}
 
+		
 		double tend=System.currentTimeMillis();
 		double compTime=(tend-tstart)/1000;
 
@@ -366,11 +383,9 @@ public class RunMech {
 
 
 
-			int nx0=2352;
-			nx0=1558;int cmp=1; //react
+			int nx0=603;
+			int cmp=1; //react
 			//nx0=15;
-			nx0=24697; cmp=0;// motor half
-
 			int nx=Math.min(nx0,model.numberOfNodes);
 
 			T.el[ix]=model.node[nx].getU(cmp);
@@ -384,10 +399,10 @@ public class RunMech {
 		}
 
 
-/*		T=T.times(1e9);
+		T=T.times(1e9);
 		util.plot(T);
 		T.show();
-*/
+
 
 
 

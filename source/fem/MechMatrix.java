@@ -187,7 +187,7 @@ public class MechMatrix {
 		Mat[][] Ke=new Mat[model.nElVert][model.nElVert];
 		Mat[][] Me=new Mat[model.nElVert][model.nElVert];
 		Mat[][] Ge=new Mat[model.nElVert][model.nElVert];
-		boolean gyro=true;
+		boolean gyro=false;
 		Mat RiT=new Mat(),Rj;
 		int m,row,column,rowNodeNumber,colNodeNumber,rowb=0,ext=4;
 		int[] nz=new int[model.numberOfUnknownU];

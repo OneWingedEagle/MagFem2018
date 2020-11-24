@@ -999,7 +999,7 @@ public class Loader {
 					forceFile =new String[N];
 					int ix=0;
 					for(int i=model.nBegin;i<=model.nEnd;i+=	model.nInc){
-						util.pr(model.forceFolder);
+
 						int nf=i%1800;
 						if(model.forceFolder.startsWith("cent")){
 							model.centrigForce=true;

@@ -3394,8 +3394,13 @@ public class Calculator {
 		Mat Omega=new Mat(3,3);
 		double rpm=5000;
 		double ww=rpm/30*Math.PI;
-		Omega.el[0][1]=ww;
-		Omega.el[1][0]=-ww;
+		
+		Omega.el[1][2]=-ww*model.rotax.el[0];
+		Omega.el[2][1]=ww*model.rotax.el[0];;
+		Omega.el[0][2]=ww*model.rotax.el[1];
+		Omega.el[2][0]=-ww*model.rotax.el[1];;
+		Omega.el[0][1]=-ww*model.rotax.el[2];
+		Omega.el[1][0]=ww*model.rotax.el[2];;
 
 		Node[] vertexNode=model.elementNodes(ie);
 		Mat[][] Ke=new Mat[this.nElVert][this.nElVert];
