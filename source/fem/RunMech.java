@@ -177,9 +177,15 @@ public class RunMech {
 				if(false){
 					for (int p = 1; p <= model.numberOfNodes; p++) {
 							Vect v = model.node[p].getCoord();
-							if(v.el[1]>.299){
-								Vect F = new Vect(0,-1,0);						
-								
+							if(v.el[2]>.199){
+								Vect F = null;
+								if(abs(v.el[1])<.1 && abs(v.el[1])<.1)
+								F=new Vect(0,0,-4e2);		
+								else if(abs(v.el[1])==.1 && abs(v.el[1])==.1){
+									F=new Vect(0,0,-1e2);
+								}else
+									F=new Vect(0,0,-3e2);
+							
 								model.node[p].setF(F);
 							}else if(v.el[1]<.0001){
 							//	Vect F = new Vect(0,1,0);						

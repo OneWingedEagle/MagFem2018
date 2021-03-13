@@ -38,7 +38,7 @@ public class util {
 
 	public util(){}
 	
-	public static void main(String[] args) {
+	public static void main6(String[] args) {
 		
 		int N=80;
 		
@@ -73,7 +73,54 @@ public class util {
 
 	}
 
-	public static void main1(String[] args) {
+	
+	
+public static void readFR(){
+		
+	String file=util.getFile();
+		String regex1="[ : ,()=\\t]+";
+		
+		Vect v=null;
+
+		try{
+			FileReader fr=new FileReader(file);
+			BufferedReader br = new BufferedReader(fr);
+			String line;
+			String s;
+			String[] sp;
+
+			int Nmax=3*108;
+			double[] vals=new double[Nmax];
+			int count=0;
+			line=br.readLine();
+			for(int i=0;i<4*Nmax;i++){
+				line=br.readLine();
+				if(line==null) break;
+				if(line.startsWith("result")) continue;
+				if(line=="") continue;
+				if(line.length()==0) continue;
+				//util.pr(line);
+				vals[count]=90-Double.parseDouble(line);
+				sp=line.split(regex1);
+				count++;
+				util.pr(count);
+
+				//util.pr(row+" , "+col+" , "+val);
+			}
+			util.show(vals);
+			util.plot(vals);
+
+
+			br.close();
+			fr.close();
+		}
+		catch(IOException e){
+			e.printStackTrace();//System.err.println("Error in loading model file.");
+		}
+
+	}
+
+public static void main1(String[] args) {
 
 		String fileMat="C:\\Users\\Hassan\\Desktop\\Km3.txt";
 		SpMat Ms=loadSpMat(fileMat);
@@ -947,28 +994,17 @@ private static  double mass_spring(boolean twy){
 
 	}
 
-	public static void main5(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception{
 
-		eigenSpMat();
-
+		//eigenSpMat();
+		readFR();
 
 		boolean bb=false;
 		if(bb){
 			Loader loader =new Loader();
 			String mat1=System.getProperty("user.dir") + "\\EMSol\\elementMatrix2ndOrder24.txt";
-			String mat2=System.getProperty("user.dir") + "\\EMSol\\elementMatrix2ndOrderAhagon18.txt";
+			String mat2= "D:\\JavaWorks\\FEM problems\\EM\\edge element\\mat.txt";
 
-
-			//	String spMatFile1=System.getProperty("user.dir") + "\\higherOrderElems\\smallerMesh\\sparseMat24BIROELIMA_Phi.txt";
-			//	String spMatFile2=System.getProperty("user.dir") + "\\higherOrderElems\\smallerMesh\\sparseMat18AhagonA_Phi.txt";// 1775
-
-			//SpMat	Ms=loader.loadSparseMat(1775, spMatFile1);
-			//SpMat	Ms=loader.loadSparseMat(1847,400, spMatFile1);
-			//SpMat	Ms=loader.loadSparseMat(100, spMatFile);
-			//Vect v=new Vect(Ms.nRow);
-			//v=v.ones(Ms.nRow);
-			//Ms.shownz();
-			//Ms.shownz();
 
 			//Mat	M=new Mat(loader.loadArrays(24, 24, arrayPath));
 
@@ -978,82 +1014,19 @@ private static  double mass_spring(boolean twy){
 
 
 
-			Mat	M=loader.loadMatSymm(24, mat1);
-			Mat M1=new Mat(14,14);
-			int ix=-1;
-			for(int i=0;i<M.nRow;i++){
-				boolean valid=false;
-
-				for(int k=0;k<validEges.length;k++)
-				{
-					if(i==validEges[k])	{
-						valid=true;
-						break;
-					}
-				}
-				if(!valid) continue;
-				ix++;
-				int jx=-1;	
-				for(int j=0;j<M.nCol;j++){
-
-					valid=false;
-
-					for(int k=0;k<validEges.length;k++)
-					{
-						if(j==validEges[k])	{
-							valid=true;
-							break;
-						}
-					}
-					if(!valid) continue;
-					jx++;
-					M1.el[ix][jx]=M.el[i][j];
-
-				}
-			}
-
-			//util.pr(ix);
-			//Ms.shift(-1e10);
-
-			//Mat	M=Ms.matForm(true);
-
-			/*	Mat M2=new Mat(3,3);
-				M2.setRow(new Vect(0.00000e+000  ,1.00000e+000  ,1.00000e+000), 0);
-				M2.setRow(new Vect(-1.00000e+000 , 0.00000e+000 , -1.00000e+000), 1);
-				M2.setRow(new Vect(1.00000e+000  ,-1.00000e+000  ,0.00000e+000 ), 2);*/
-
-			///util.pr(determinant());
-			//	M1=M2.mul(M2.transp());
-
-
-			M1.show();
-
-
-			Eigen eg1=new Eigen(M1);
+			Mat	M=loader.loadMatSymm(75, mat2);
+	
+M.show();
+			Eigen eg1=new Eigen(M);
 			eg1.lam.show();
-			//eg1.V.show();
-			//Ms.shownz();
-			//Eigen eg=new Eigen();
-			//double lam1=eg.eigMin(Ms,1e-6,new SpMatSolver());
-			//double lam1=eg.eigMax(Ms,1e-6);
-			//	util.pr(lam1);
-			//	SpMat I=new SpMat().eye(Ms.nRow);
-			//Ms.eigLanc(50).show();
-			//Ms.shift(-1000);
-			//Ms.eigSubspace(10, 1e-6).hshow();
-			//	Vect lam=eg.subspace(Ms, 50,I,1e-6,1000,new SpMatSolver());
-			//Vect lam=Ms.eigSubspace(50,1e-6,new SpMatSolver());
-			//lam.show();
 
-			// Vect lam=eg1.lam;
-			// lam.show();
 		}
 
 	}
 
 	public static void eigenSpMat() {
 		Loader loader =new Loader();
-		String spMatFile="C:\\Works\\2017 works\\Higher_order_AHAGON-san's\\Problem7\\ForElementMatrixEigenvalues\\localguage20-static.txt";
+		String spMatFile="D:\\JavaWorks\\FEM problems\\EM\\edge element\\mat.txt";
 		SpMat	Ms=loader.loadSparseMat(20, 20,spMatFile);
 		Mat M=Ms.matForm(true);
 		M.show();

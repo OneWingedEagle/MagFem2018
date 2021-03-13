@@ -541,7 +541,7 @@ public Vect add(double a){
 	public void normalize(){
 		double nr=this.norm();
 		
-		if(nr==0) 	this.timesVoid(0);
+		if(nr==0) 	return;
 		double normRev=1/nr;
 		this.timesVoid(normRev);
 	}
