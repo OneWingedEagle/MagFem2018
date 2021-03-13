@@ -107,7 +107,7 @@ public class ContactAnalysis {
 		this.K_hat=Khat1.deepCopy();
 		this.rhs_hat=bhat1.deepCopy();
 
-		if(model.dim==3) 	extention_fact = .00;
+		if(model.dim==3) 	extention_fact = .02;
 
 		
 		if(step==model.nTsteps-1) plot_radial=true;
@@ -717,7 +717,8 @@ public class ContactAnalysis {
 
 					for (int k = 0; k < spv1.nzLength; k++) {
 						int ind = spv1.index[k];
-						spv1.el[k] *= contact.weights[contId].el[sn];
+						ind=u_index_inv[ind];
+						spv1.el[k] *= contact.weights[contId].el[ind];
 					}
 
 					int kx = 0;
