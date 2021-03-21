@@ -714,6 +714,8 @@ public class Contact {
 				Vect v13=v3.sub(v1);
 				Vect v24=v4.sub(v2);
 				
+				double ms_size=Math.max(v13.norm(), v24.norm());
+						
 				v1 = v1.add(v13.times(-extention_fact));
 				v3 = v3.add(v13.times(extention_fact));
 				v2 = v2.add(v24.times(-extention_fact));
@@ -809,6 +811,11 @@ public class Contact {
 					for(int p=0;p<4;p++){
 						master_entities[contId][k].nodeIds[p]=tempEd[k][p];
 					}
+					
+					
+		
+					master_entities[contId][k].length= ms_size;
+
 				}
 					
 
