@@ -63,18 +63,19 @@ public class MeshManipulator {
 	//	mf.rotate(PI/8);
 	//	Model model=mf.rotExtendNfold(7);
 	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\extenRot.txt");
-		int Nr=2;
+		int Nr=1;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
-			regs0[i-1]=i;
+			regs0[i-1]=i+1;
 		}
-		mf.extractReg(regs0);mf.dropUnusedNodes();
+		//mf.extractReg(regs0);mf.dropUnusedNodes();
 		//mf.revolveLine(new Vect().linspace(.016, .05, Nr+1), regs0, 1, PI/8);
 		//int[] regs={3}; mf.extractReg(regs);mf.dropUnusedNodes();
 		String stat="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\statFF.txt";
 		String rot="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\rotFiner.txt";
 	//	mf.assemble(rot,stat);
 
+	//	mf.assemble();
 		//mf.rescale(new Vect(0.483873333333,0.483873333333,1));
 	//	mf.assemble(rot, body);
 	//	mf.translate(new Vect(.4,0));
@@ -6818,6 +6819,18 @@ for(int i=0; i<dh.length; i++){
 
 
 	}
+	public void assemble(){
+
+		String body=util.getFile();
+		if(body==null || body.equals("") )return;
+		
+		String cap=util.getFile();
+		if(cap==null || cap.equals("") )return;
+	
+	assemble(cap,body);
+
+	}
+
 
 
 	public void assemble(String rot, String body){

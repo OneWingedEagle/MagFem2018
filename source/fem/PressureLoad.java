@@ -59,16 +59,15 @@ public class PressureLoad {
 			line = loader.getNextDataLine(br," /* nx  ny nz */");
 			
 			double[] nrm=loader.getCSV(line);
-			
+				
 			if(model.dim==2) normal=new Vect(nrm[0],nrm[1]);
-			else new Vect(nrm[0],nrm[1],nrm[2]);
+			else normal= new Vect(nrm[0],nrm[1],nrm[2]);
 			
 			normal.normalize();
 			
 			line = loader.getNextDataLine(br," / * data type */");
 
 			int type =  loader.getIntData(line);
-
 
 			if (type == 0) {
 				line = br.readLine();
@@ -361,13 +360,15 @@ public class PressureLoad {
 	
 	public void setPressure(Model model){
 		
+		
+		
 		for (int k = 0; k < segments.length; k++) {
 
 			int[] nids=segments[k].nodeIds;
 			
 			Node node1 = model.node[nids[0]];
 			Node node2 = model.node[nids[1]];
-	
+//	util.pr(node1.id+"  "+node2.id);
 
 			Vect v1 = node1.getCoord();
 			Vect v2 = node2.getCoord();
