@@ -89,7 +89,7 @@ public class ContactAnalysis {
 	double adh = 0e3;
 	double adhf = 0e8;
 
-	double relax = 0.5;
+	double relax =.5;
 	
 	Vect top;
 	SpMat K_hat;
@@ -362,20 +362,20 @@ public class ContactAnalysis {
 						double update_tol=1e-3;			
 						//util.pr(Math.abs(gap.el[snid])/master_elem_size);
 						//if(maxLamN==0 || Math.abs(gap.el[snid])/master_overal_size>aug_tol){
-							double f2=1;
+						//	double f2=1;
 						//	if(contact.lamN[contId].el[snid]!=0 && gap.el[snid]>1e-6)
-								f2=0.5;
-							double aug =contact.lamN[contId].el[snid] +pgap.el[snid];
+							//	f2=0.5;
+							double aug =contact.lamN[contId].el[snid] +pgap.el[snid]*relax;
 						//	if(gap_err.el[aug_iter]>1e-6)
-							contact.lamN[contId].el[snid] = aug*relax ;
+							contact.lamN[contId].el[snid] = aug ;
 					//	}	
 
 						
 					//	if(maxLamT==0 ||Math.abs(slide.el[snid])/master_overal_size>aug_tol){
-							double augT =contact.lamT[contId].el[snid] +pslide.el[snid];
+							double augT =contact.lamT[contId].el[snid] +pslide.el[snid]*relax;
 
 						//	if(contact.lamT[contId].el[snid] *pslide.el[snid]>=0)
-							contact.lamT[contId].el[snid] = augT*f2;
+							contact.lamT[contId].el[snid] = augT;
 							
 						//}
 						

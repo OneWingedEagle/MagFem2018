@@ -66,7 +66,7 @@ public class MeshManipulator {
 		int Nr=1;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
-			regs0[i-1]=i+1;
+			regs0[i-1]=i;
 		}
 		//mf.extractReg(regs0);mf.dropUnusedNodes();
 		//mf.revolveLine(new Vect().linspace(.016, .05, Nr+1), regs0, 1, PI/8);
@@ -75,10 +75,10 @@ public class MeshManipulator {
 		String rot="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\rotFiner.txt";
 	//	mf.assemble(rot,stat);
 
-	//	mf.assemble();
+		mf.assemble();
 		//mf.rescale(new Vect(0.483873333333,0.483873333333,1));
 	//	mf.assemble(rot, body);
-	//	mf.translate(new Vect(.4,0));
+	//	mf.translate(new Vect(0,.024));
 	//	mf.rescale(1e-5);
 	//	mf.extractReg(0.,2.0,0,2*PI,-0.1285,-0.127);
 	//	String bun=util.getFile();
