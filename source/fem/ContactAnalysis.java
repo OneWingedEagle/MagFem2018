@@ -139,7 +139,7 @@ public class ContactAnalysis {
 			initialize();
 			initialized=true;
 			
-			calcPenaltyFactor();
+			calcPenaltyFactor(.5);
 			}
 
 			rhs =rhs_hat.deepCopy();
@@ -213,10 +213,12 @@ public class ContactAnalysis {
 						
 						assembleContactMatrices();
 						
+						
+						resetLamdasSparatedNodes();
+						
 						//util.pr(" here 666");
 						addMatrices();
-						
-						
+			
 						boolean mnr_converged =handleModifiedMNR(nr_iter,solver,direct);
 
 
@@ -287,11 +289,6 @@ public class ContactAnalysis {
 					if (plot_radial)
 						plotRadialDisp( xr, urs, xr_nids,  aug_iter);
 						
-						 
-					 if(gap_err.el[aug_iter]<aug_tol && (!contact.frictional ||aug_disp_err.el[aug_iter]<aug_tol))
-					 {
-				//	 break;
-					 }
 
 				}
 				
@@ -331,7 +328,6 @@ public class ContactAnalysis {
 		return disp;
 
 	}
-
 	private void assembleContactMatrices() {
 
 		int dof = model.Ks.nRow;
@@ -1823,7 +1819,7 @@ public class ContactAnalysis {
 	
 
 
-	private void calcPenaltyFactor() {
+	private void calcPenaltyFactor(double factor) {
 
 		penalMax = 0;
 
@@ -1854,7 +1850,7 @@ public class ContactAnalysis {
 
 
 				// double max=(val1+val2)/2;
-				double max = (val1+val2+val3);
+				double max = factor*(val1+val2+val3);
 				
 	
 			/////	if(model.dim==3) max/=10;
@@ -1941,6 +1937,29 @@ public class ContactAnalysis {
 		return false;
 	}
 	
+	private void resetLamdasSparatedNodes(){
+
+		for(int contId=0;contId<contact.numContacts;contId++){
+			
+
+			for (int count = 0; count < contact.slaveNodes[contId].length; count++) {
+			
+			int snid=contact.slaveNodes[contId][count].id;
+
+			if(!contact.contacting[contId][snid]){
+				contact.contacting[contId][snid]=false;
+				contact.lamN[contId].el[snid] = 0;
+				contact.lamT[contId].el[snid] = 0;
+				contact.stick[contId][snid]=false;
+			}
+			
+		}
+		}
+			
+
+	}
+	
+	
 	private void updateLambdas(){
 		for(int contId=0;contId<contact.numContacts;contId++){
 			
@@ -1949,8 +1968,6 @@ public class ContactAnalysis {
 
 			Vect weights=contact.weights[contId];
 
-
-		double relax=0.5; // it should be 1.0 ideally
 
 		Vect pgap = gap.deepCopy();
 		Vect pslide = slide.deepCopy();
@@ -1966,26 +1983,25 @@ public class ContactAnalysis {
 			
 			int snid=contact.slaveNodes[contId][count].id;
 
-
-			if(!contact.contacting[contId][snid]) continue;
-			
-			
-			if(gap.el[snid]>=0){
-				gap.el[snid]=0;
+		
+			if (gap.el[snid] >= 0) {
+				contact.lamN[contId].el[snid] = 0;
+				
 				contact.lamN[contId].el[snid] = 0;
 				contact.lamT[contId].el[snid] = 0;
 				contact.contacting[contId][snid]=false;
 				contact.stick[contId][snid]=false;
 				continue;
 			}
-			
+
+						
 
 			
 				double aug =contact.lamN[contId].el[snid] +pgap.el[snid]*relax;
 
 				contact.lamN[contId].el[snid] = aug ;
 			
-				double augT =contact.lamT[contId].el[snid] +pslide.el[snid]*relax;
+				double augT =contact.lamT[contId].el[snid] +pslide.el[snid];
 
 				contact.lamT[contId].el[snid] = augT;
 
@@ -2018,10 +2034,10 @@ public class ContactAnalysis {
 		if(contact.constraint_matrix_N_trp[contId]!=null)
 		aug_N = aug_N.add(contact.constraint_matrix_N_trp[contId].mul(lamN));
 		
-		if(contact.constraint_matrix_T_trp[contId]!=null){
-		aug_T =  aug_T.add(contact.constraint_matrix_T_trp[contId].mul(lamT));
-
-		}
+			if(contact.constraint_matrix_T_trp[contId]!=null){
+			aug_T =  aug_T.add(contact.constraint_matrix_T_trp[contId].mul(lamT));
+	
+			}
 		}
 	}
 	
