@@ -360,7 +360,8 @@ public class PressureLoad {
 	
 	public void setPressure(Model model){
 		
-		
+		boolean axi = (model.struc2D == 2);
+
 		
 		for (int k = 0; k < segments.length; k++) {
 
@@ -375,10 +376,18 @@ public class PressureLoad {
 			Vect v12 = v2.sub(v1);
 
 
+			double r=v1.add(v2).times(0.5).el[0];
 			v12 = v2.sub(v1);
 			double edgeLength = v12.norm();
 			
+
+			if (axi)
+				edgeLength *= r;
+			
 			Vect F=normal.times(0.5*pressure*edgeLength);
+			
+
+
 			
 			if(node1.F==null) node1.F=F.deepCopy();
 			else node1.F=node1.F.add(F);

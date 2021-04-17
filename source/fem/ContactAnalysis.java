@@ -88,7 +88,7 @@ public class ContactAnalysis {
 	double adh = 0e3;
 	double adhf = 0e8;
 
-	double relax =.5;
+	double relax =1;
 	
 	Vect top;
 	SpMat K_hat;
@@ -117,7 +117,7 @@ public class ContactAnalysis {
 
 
 
-		fr = .01;
+		fr = .02;
 
 
 
@@ -139,7 +139,7 @@ public class ContactAnalysis {
 			initialize();
 			initialized=true;
 			
-			calcPenaltyFactor(.5);
+			calcPenaltyFactor(1);
 			}
 
 			rhs =rhs_hat.deepCopy();
