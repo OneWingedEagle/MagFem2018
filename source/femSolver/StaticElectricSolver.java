@@ -384,8 +384,8 @@ public class StaticElectricSolver{
 
 			PhiCoil coil=model.phiCoils[coilIndices[ir]];
 			
-			int[] infaceNodes1=new int[model.numberOfNodes];
-			boolean[] nc=new boolean[model.numberOfNodes];
+			int[] infaceNodes1=new int[model.numberOfNodes+1];
+			boolean[] nc=new boolean[model.numberOfNodes+1];
 
 			int nx=0;
 			
@@ -407,7 +407,7 @@ public class StaticElectricSolver{
 
 					Vect coord=model.node[nodeNumber].getCoord();
 
-				
+
 					if(coord.el[0]>=coil.faceBox[0][0] &&coord.el[0]<=coil.faceBox[0][1]&&
 							coord.el[1]>=coil.faceBox[0][2] &&coord.el[1]<=coil.faceBox[0][3] &&
 							(model.dim==2 || coord.el[2]>=coil.faceBox[0][4] &&coord.el[2]<=coil.faceBox[0][5])){

@@ -75,7 +75,9 @@ public class MeshManipulator {
 		String rot="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\rotFiner.txt";
 	//	mf.assemble(rot,stat);
 
-		mf.assemble();
+	//	mf.cut2D(0.,0.001);
+	//	mf.reverseFace2D();
+	//	mf.assemble();
 		//mf.rescale(new Vect(0.483873333333,0.483873333333,1));
 	//	mf.assemble(rot, body);
 	//	mf.translate(new Vect(0,.024));
@@ -174,7 +176,7 @@ public class MeshManipulator {
 	//	mf.pileUpPrism(dhr,-0.03483);
 	//	util.show(dh);
 	//	mf.pileUpPrism(dh, -0.15);
-	//mf.pileUpPrism(4, 30e-3);
+	//mf.pileUpPrism(1, 1e-3);
 		
 	//	mf.pileHelic(6*8, PI/4, .0125*18);
 		
@@ -5170,8 +5172,10 @@ for(int i=0; i<dh.length; i++){
 			m2d.region[ir].setLastEl(m2d.region[ir].getFirstEl()+nex-1);
 
 		}
+		
+		String folder=new File(model.meshFilePath).getParentFile().getPath();
 
-		String bunFilePath = System.getProperty("user.dir") + "//ext2Dfrom3D.txt";
+		String bunFilePath = folder + "//ext2Dfrom3D.txt";
 
 		m2d.writeMesh(bunFilePath);
 	}

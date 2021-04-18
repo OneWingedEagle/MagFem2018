@@ -743,6 +743,7 @@ public class Loader {
 
 				int ib=0;
 				if(sp[0].equals("")) ib=1;
+				util.show(sp);
 				int nr=Integer.parseInt(sp[ib++]);
 				model.phiCoils[j]=new PhiCoil(nr);
 				model.phiCoils[j].index=j;
@@ -765,7 +766,10 @@ public class Loader {
 				
 				double[][] boxdata=new double[2][6];
 				
-				for(int k=0;k<2;k++){
+				int numFaces=2;
+				if(model.dim==2) numFaces=1;
+				
+				for(int k=0;k<numFaces;k++){
 				
 				line=getNextDataLine(br);
 				
@@ -787,11 +791,13 @@ public class Loader {
 					boxdata[k][3]=Double.parseDouble(sp[ib++]);
 					
 				}
+				if(model.dim==3){
 				ss=sp[ib++];
 				if(ss.equals("z"))
 				{
 					boxdata[k][4]=Double.parseDouble(sp[ib++]);
 					boxdata[k][5]=Double.parseDouble(sp[ib++]);
+				}
 				}
 				model.phiCoils[j].faceBox[k]=boxdata[k];
 				}

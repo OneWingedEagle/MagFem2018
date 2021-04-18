@@ -61,7 +61,6 @@ public class RunCLN {
 			return;
 		}
 
-
 		outputFolder=model.resultFolder;
 
 		CLNStaticMagSolver magsolver= new CLNStaticMagSolver(model);
@@ -255,7 +254,7 @@ public class RunCLN {
 		//model.writePhi(model.resultFolder+"\\phi.txt");
 
 
-		WriteImpedance(resistances,inductances,1e0,1e2,11);
+		WriteImpedance(resistances,inductances,1e0,1e6,61);
 
 		double f0=1e2;
 		//	Complex imp=ObtainImpedance(resistance,inductances,1e2);
@@ -683,7 +682,7 @@ else
 		//model.writePhi(model.resultFolder+"\\phi.txt");
 
 
-		WriteImpedance(resistances,inductances,1e0,1e2,11);
+		WriteImpedance(resistances,inductances,1e0,1e6,61);
 
 		double f0=1e2;
 		//	Complex imp=ObtainImpedance(resistance,inductances,1e2);

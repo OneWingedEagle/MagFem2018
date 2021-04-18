@@ -88,7 +88,7 @@ public class ContactAnalysis {
 	double adh = 0e3;
 	double adhf = 0e8;
 
-	double relax =1;
+	double relax =.5;
 	
 	Vect top;
 	SpMat K_hat;

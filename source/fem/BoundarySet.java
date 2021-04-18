@@ -1602,7 +1602,10 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 
 	private void detectFarboundaryEdges(Model model){
 
-		if(model.elCode<2)  return;
+		if(model.elCode<2)  {
+			detectFarboundaryEdges2D(model);
+			return;
+		}
 		
 		int nEdge=model.numberOfEdges;
 
@@ -1692,4 +1695,147 @@ if(model.hasTwoNodeNumb &&  !model.rotateConnect)
 }	
 
 
+	private void detectFarboundaryEdges2D(Model model){
+		
+		int nElVert=model.nElVert;
+		int nElEdge=model.nElEdge;
+
+		int[][] elEdge=new int[model.numberOfElements+1][nElVert];
+		int[][] edNode=getEdgeNodesXY(model,elEdge);
+		
+		int[] edeElCount=new int[model.nXYedges+1];
+		
+		for(int i=1;i<model.numberOfElements+1;i++){
+			
+			for(int j=0;j<nElVert;j++){
+				edeElCount[elEdge[i][j]]++;
+			}
+		}
+		
+		
+		boolean[] nodeOnHull=new boolean[model.numberOfNodes+1];
+		
+	
+		for(int i=1;i<model.nXYedges+1;i++){
+			if(edeElCount[i]==1){
+				for(int j=0;j<2;j++){
+					int n=edNode[i][j];
+					nodeOnHull[n]=true;
+
+				}
+			}
+		}
+		
+		int nx=0;
+
+		
+		for(int i=1;i<=model.numberOfEdges;i++){
+			int n0=model.edge[i].node[0].id;
+			if(nodeOnHull[n0]){
+				model.edge[i].setKnownA(0);
+				nx++;
+			}
+
+		}
+		
+		util.pr("Number of edges on far boundary = "+nx);
+
+	}
+	
+	public int[][] getEdgeNodesXY(Model model,int[][] elEdge ){
+		return getEdgeNodes(model, 1,model.numberOfRegions,elEdge);
+	}
+
+	public int[][] getEdgeNodes(Model model,int ir1, int ir2,int[][] elEdge ){
+		byte[][] arr0={{0,1},{1,2},{0,2}};
+		byte[][] arr1={{1,2},{0,3},{2,3},{1,0}};
+		byte[][] arr4={{6,7},{5,4},{2,3},{1,0},{6,5},{7,4},{2,1},{3,0},{6,2},{7,3},{5,1},{4,0}};
+		byte[][] edgeLocalNodes=new byte[1][1];
+
+		if(model.elCode==0){
+			edgeLocalNodes=arr0;;
+		}
+		else if(model.elCode==1){
+			edgeLocalNodes=arr1;
+		}
+
+		else if(model.elCode==4){
+			edgeLocalNodes=arr4;
+		}
+
+		boolean b=true;
+		if(elEdge.length==0) b=false;
+
+		IntVect[][] nodeNode=new IntVect[2][model.numberOfNodes+1];
+
+		int L=6;
+		int ext=4;
+
+		for(int i=1;i<=model.numberOfNodes;i++)
+		{
+			nodeNode[0][i]=new IntVect(L);
+			nodeNode[1][i]=new IntVect(L);
+		}
+
+		int[] nodeNodeIndex=new int[model.numberOfNodes+1];
+		int nEdge=0;
+		int n1,n2,m;
+		int numbOfEdges=2*model.numberOfNodes;
+		IntVect[] edgeNodes=new IntVect[2];
+		edgeNodes[0]=new IntVect(numbOfEdges);
+		edgeNodes[1]=new IntVect(numbOfEdges);
+
+		for(int ir=ir1;ir<=ir2;ir++)
+			for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
+				int[] vertNumb=model.element[i].getVertNumb();
+				for(int j=0;j<model.nElEdge;j++){
+					n1=vertNumb[edgeLocalNodes[j][0]];
+					n2=vertNumb[edgeLocalNodes[j][1]];
+					if(n2<n1) { int tmp=n1; n1=n2; n2=tmp;}
+					m=util.search(nodeNode[0][n1].el,n2);
+
+					if(m<0){
+						nEdge++;
+						if(nEdge==edgeNodes[0].length){
+							edgeNodes[0].extend(model.numberOfNodes/2);
+							edgeNodes[1].extend(model.numberOfNodes/2);
+						}
+						edgeNodes[0].el[nEdge]=n1;
+						edgeNodes[1].el[nEdge]=n2;
+
+						if(nodeNodeIndex[n1]==nodeNode[0][n1].length-1){
+							nodeNode[0][n1].extend(ext);
+							nodeNode[1][n1].extend(ext);
+						}
+						
+						nodeNode[0][n1].el[nodeNodeIndex[n1]]=n2;
+						nodeNode[1][n1].el[nodeNodeIndex[n1]++]=nEdge;
+						if(b)
+							elEdge[i][j]=nEdge;						
+					}
+					else{
+						if(b)
+							elEdge[i][j]=nodeNode[1][n1].el[m];
+					}
+
+				}
+
+			}
+
+		int[][] edgeNodes2=new int[nEdge+1][2];
+		double min=1e40;
+		double max=0;
+		for(int i=1;i<=nEdge;i++){
+			edgeNodes2[i][0]=edgeNodes[0].el[i];
+			edgeNodes2[i][1]=edgeNodes[1].el[i];
+			double length=model.node[edgeNodes2[i][0]].getCoord().sub(model.node[edgeNodes2[i][1]].getCoord()).norm();
+
+			if(max<length) max=length;
+			if(min>length) min=length;
+		}
+
+		model.minEdgeLength=min;
+		model.maxEdgeLength=max;
+		return edgeNodes2;
+	}
 }
