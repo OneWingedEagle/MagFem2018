@@ -78,7 +78,7 @@ public class MatNonAnalysis {
 
 
 		nLoads=1;
-		nr_itmax=3;
+		nr_itmax=10;
 		nr_tol=1e-3;
 		
 		KK = null;
@@ -283,11 +283,12 @@ public class MatNonAnalysis {
 		for(int ir=1;ir<=model.numberOfRegions;ir++){
 			
 			double yield0=model.region[ir].getYield();
-			
+			double pr=model.region[ir].getPois().el[0];
 			double E=model.region[ir].getYng().el[0];
 			double Et=model.region[ir].getTangYoung();
-			double hardening=Et/(1.-Et/E);
+			double H=Et/(1.-Et/E);
 			
+			double G=E/(2*(1+pr));
 		for(int i=model.region[ir].getFirstEl();i<=model.region[ir].getLastEl();i++){
 			
 			int[] vertNumb=model.element[i].getVertNumb();
@@ -332,35 +333,42 @@ public class MatNonAnalysis {
 				
 				gp_stresses[i][k]=gp_stresses[i][k].add(gp_delta_stress[k]);
 				
-				double seq=calcMises(gp_stresses[i][k]);
+			//	double seq=calcMises(gp_stresses[i][k]);
 				
+				Vect elastic_strain=gp_strains[i][k].sub(gp_pl_strains[i][k]);
 				
-				double yield =yield0+1*hardening*gp_pl_strains_eq_accum[i][k];
+				Vect s_trial=elastic_strain.times(2*G);
+				double q_trial=Math.sqrt(3./2*s_trial.dot(s_trial));
 				
-				if(seq>mm) mm=seq;
+				double yield =yield0+1*H*gp_pl_strains_eq_accum[i][k];
+				
+				if(q_trial>mm) mm=q_trial;
 			//	util.pr(seq+"  "+yield);
-				if(seq>yield){
+				if(q_trial>yield){
 					yield_states[i][k]=true;
 					double sx=gp_stresses[i][k].el[0];
 					double sy=gp_stresses[i][k].el[1];
 					double sxy=gp_stresses[i][k].el[2];
 				//	gp_stresses[i][k].hshow();
-					Vect dgds=new Vect(.5*(2*sx-sy)/seq,.5*(2*sy-sx)/seq,3.0*sxy/seq);
+				//	Vect dgds=new Vect(.5*(2*sx-sy)/seq,.5*(2*sy-sx)/seq,3.0*sxy/seq);
 					//dgds.show();
 			
-					double denum=D.mul(dgds).dot(dgds);
+				//	double denum=D.mul(dgds).dot(dgds);
 				//	util.pr(denum);
-					double dlam=(seq-yield)/denum;
+				//	double dlam=(seq-yield)/denum;
+					double dlam=(q_trial-yield)/(3*G+H);
 					
-					Vect pl_strain=dgds.times(dlam);
+				//	Vect pl_strain=new Vect(dlam,dlam,dlam);//dgds.times(dlam);
 					
-					double pls_eq=calcMises(pl_strain);
+					double pls_eq=dlam;//calcMises(pl_strain);
+					//util.pr(dlam);
+				//	util.pr(pls_eq);
 
 					gp_pl_strains_eq_accum[i][k]+=pls_eq;
 							
-					Vect stress_correction=D.mul(pl_strain);
+					Vect stress_correction=s_trial.times(1-dlam*3*G/q_trial);//.D.D.mul(pl_strain);
 				//	ps_correction.hshow();
-					gp_stresses[i][k]=gp_stresses[i][k].sub(stress_correction);
+					gp_stresses[i][k]=gp_stresses[i][k].add(stress_correction);
 			//		gp_stresses[i][k]=gp_stresses[i][k].times(.999);
 
 				}
@@ -497,7 +505,7 @@ public class MatNonAnalysis {
 			s1=sv.el[0];
 			s2=sv.el[1];
 			s12=sv.el[2];
-			s3=0.3*(s1+s2);
+			s3=0.3*(s1+s2);///???
 
 			se=pow(s1-s2,2)+pow(s2-s3,2)+pow(s1-s3,2)+6*pow(s12,2);
 		}

@@ -1639,6 +1639,11 @@ M.show();
 		System.out.println(a);
 
 	}
+	public static void prh(String a){
+
+		System.out.print(a);
+
+	}
 	public static void pr(int a){
 
 		System.out.println(a);

@@ -61,7 +61,8 @@ public class RunMech {
 
 		double tstart=System.currentTimeMillis();
 
-		if(model.modal)	model.modalAnalysis(20, 1e-5,true);
+		int nModes=model.nModes;
+		if(model.modal)	model.modalAnalysis(nModes, 1e-6,model.saveDisp);
 
 		util.pr("mech integ mode: "+model.timeIntegMode);
 

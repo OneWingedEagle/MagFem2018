@@ -65,7 +65,7 @@ public class ModalDecomp {
 		Mat Q=new Mat(L,D);
 
 		if(model.modal){
-			model.modalAnalysis(D, 1e-5,false);
+			model.modalAnalysis(D, 1e-6,false);
 			Q=model.eigVects;
 		}
 
@@ -121,7 +121,7 @@ public class ModalDecomp {
 			if(model.dim==3 && model.transfer2DTo3D){
 
 				//m2d.loadNodalField(file,1);
-				model.transfer2DTo3D(file, false,true);
+			//	model.transfer2DTo3D(file, false,true);
 				
 /*				for(int n=1;n<=model.numberOfNodes;n++)
 					if(model.node[n].F!=null)

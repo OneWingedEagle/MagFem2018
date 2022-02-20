@@ -18,9 +18,6 @@ public class ACMagSolver {
 	public Vect solve(Model model, int step ){
 
 
-		SpMat L=new SpMat();
-
-		Vect x=new Vect(model.numberOfUnknowns);
 
 		model.solver.terminate(false);
 

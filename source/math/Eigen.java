@@ -562,6 +562,7 @@ public class Eigen {
 		for(iter=0;iter<200;iter++){
 			X2=Ms.smul(X);
 			for(int j=0;j<q;j++){				
+				util.prh("[j = ] "+j);
 
 				if(!locked[j])
 				{
@@ -569,8 +570,10 @@ public class Eigen {
 					Vect xini=X.getColVect(index[j]).times(1/lamq.el[j]);
 					x.timesVoid(Ci);
 
-					//x=solver.errMixICCG(Ks,L,x,errMax,1e-10,itMax,xini.div(Ci),false);	
-					x=solver.CG(Ks,x,1e-6,itMax,xini.div(Ci),false);	
+					//x=solver.errMixICCG(Ks,L,x,errMax,1e-10,itMax,xini.div(Ci),true);
+					x=solver.ICCG(Ks,L,x,errMax,itMax,xini.div(Ci),false);
+					//ICCG(Ks,L, model.RHS,model.errCGmax,model.iterMax,x_init);
+					//x=solver.CG(Ks,x,1e-6,itMax,xini.div(Ci),false);	
 
 					x.timesVoid(Ci);
 

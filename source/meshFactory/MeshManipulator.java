@@ -63,12 +63,12 @@ public class MeshManipulator {
 	//	mf.rotate(PI/8);
 	//	Model model=mf.rotExtendNfold(7);
 	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\extenRot.txt");
-		int Nr=1;
+		int Nr=3;
 		int[] regs0=new  int[Nr];
 		for(int i=1;i<=Nr;i++){
 			regs0[i-1]=i;
 		}
-		//mf.extractReg(regs0);mf.dropUnusedNodes();
+	//	mf.extractReg(regs0);mf.dropUnusedNodes();
 		//mf.revolveLine(new Vect().linspace(.016, .05, Nr+1), regs0, 1, PI/8);
 		//int[] regs={3}; mf.extractReg(regs);mf.dropUnusedNodes();
 		String stat="D:\\JavaWorks\\FEM problems\\ipm_motor2D\\nonconformal\\statFF.txt";
@@ -107,7 +107,7 @@ public class MeshManipulator {
 		}*/
 	//	model.writeMesh("D:\\JavaWorks\\FEM problems\\ipm_motor2D\\compacted.txt");*/
 		//	mf.rotate(PI/2);
-	//	mf.pileUpHexa(1, 1);
+		//mf.pileUpHexa(10, .001);
 		double[] z0={-.15,-.135,-0.1285};
 		double[] hh0={-0.1285,-0.1265,-0.116,-0.1085,-0.1045};
 		double[] hh1={0.1045,0.1085,0.116,0.1265,0.1285};

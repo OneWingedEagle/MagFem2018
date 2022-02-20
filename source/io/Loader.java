@@ -1082,8 +1082,8 @@ public class Loader {
 		else if(line.startsWith("mec")) model.mechAnalysis=this.getBooleanData(line);
 		else if(line.startsWith("trans")) model.transfer2DTo3D=this.getBooleanData(line);
 		else if(line.startsWith("loadPrev")) model.loadPrevMech=this.getBooleanData(line);
-
 		else if(line.startsWith("modal")) model.modal=this.getBooleanData(line);
+		else if(line.startsWith("modes")) model.nModes=this.getIntData(line);
 		else if(line.startsWith("rayA")) model.rayAlpha=this.getScalarData(line);
 		else if(line.startsWith("rayB")) model.rayBeta=this.getScalarData(line);
 

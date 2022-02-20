@@ -630,7 +630,7 @@ public class SpMatSolver {
 		if(errType==0 || errType==2) error=resIni; 
 		else error=1;
 		
-	
+		if(echo)
 		report("ICCG",k,error, resIni);
 
 		for(k=1;(k<=N &&  error>errMax && !this.terminate) ;k++){
@@ -686,7 +686,7 @@ public class SpMatSolver {
 		}
 		
 		if(echo)
-		report("ICCG",k,error, res);
+		report("ICCGxxxxx",k,error, res);
 
 
 		return x;

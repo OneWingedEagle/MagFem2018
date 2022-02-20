@@ -25,6 +25,18 @@ public class ScalarPlayModelDataGen {
 
 	public static void main(String[] args)
 	{
+		
+		
+		ScalarPlayModelDataGen pm=new ScalarPlayModelDataGen();
+		
+
+		String file=System.getProperty("user.dir") + "\\hys_dataH.txt";
+	pm.createData(file);
+
+	}
+	
+	public static void main2(String[] args)
+	{
 
 		HysDataGraph pg=new HysDataGraph();
 		

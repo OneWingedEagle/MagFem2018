@@ -80,7 +80,7 @@ public class Model{
 	public boolean AC,motor,modal,hasTwoNodeNumb,rotateConnect,fullMotor,writeFiles,Tmethod,
 	circuit,stranded,wavePC,loadFlux,loadPotentioal,loadPrevMag,loadPrevMech,loadForce,loadDisp,saveFlux,saveForce,saveDisp,saveStress,
 	transfer2DTo3D,magAnalysis,mechAnalysis,rotateRotor,axiSym;
-	public int forceCalcMode=1,dataType,snapShot=0,POD=-1;
+	public int forceCalcMode=1,dataType,snapShot=0,POD=-1,nModes=10;
 	public double alpha1,alpha2,r1,r2,h1,h2,rm,TrqZ,height=1,gw=1e4,vNeutral,tet,tetp,tetpp,spwmLevel,rayAlpha, rayBeta;
 	public int[] PBCpair,threePhaseRegs=new int[3];
 	public int[][][] commonNodes;
@@ -3316,8 +3316,7 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 
 	public void modalAnalysis(int p, double er, double f0,boolean write){
 
-
-
+		util.pr(" Extracting "+p+" lowest modes.");
 
 
 		if(this.numberOfUnknownUcomp<200){
