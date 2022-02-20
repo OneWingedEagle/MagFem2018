@@ -174,7 +174,7 @@ public class Eigen {
 
 			//errv.hshow();
 
-			if( nconv==p || solver.terminate) {  break;}
+			if( nconv>=p || solver.terminate) {  break;}
 		}
 
 
@@ -191,7 +191,9 @@ public class Eigen {
 
 	}
 
-	public void eigSubspace(Mat K,Mat M,int p,double errMax){
+	public Vect subspace(Mat K,Mat M,int p,double errMax){
+
+		Eigen eg=new Eigen();
 
 		MatSolver solver=new MatSolver();
 		int n=K.nRow;
@@ -225,15 +227,39 @@ public class Eigen {
 		Mat M_hat=new Mat();
 		int iter;
 		int nconv=0;
-
+		//Vect Ci=K.scale(new Vect(n));
+		K.lu();
+		Mat X2;
+		
 		for(iter=0;iter<200;iter++){
-			X=M.mul(X);
-			X_hat=solver.gaussel(K,X);	
+			
+			X2=M.mul(X);
+			//X_hat=solver.gaussel(K,X);	
+			for(int j=0;j<q;j++){
+			
+			if(!locked[j]){
+				Vect v1=X2.getColVect(index[j]);
 
-			K_hat=X_hat.transp().mul(X);
+			v1=solver.solvelu(K,v1);
+			X_hat.setCol(v1,index[j]);
+
+			}else{
+				Vect v1=X.getColVect(index[j]);
+
+				if(lamq.el[j]!=0)
+					v1.timesVoid(1/lamq.el[j]);
+				X_hat.setCol(v1,index[j]);
+			}
+			
+			
+			}
+			K_hat=X_hat.transp().mul(X2);
 			M_hat=X_hat.transp().mul(M.mul(X_hat));		
-			K_hat.eigGenSym(M_hat,Q);
-			X=X_hat.mul(Q);
+			//K_hat.eigGenSym(M_hat,Q);
+		//	X=X_hat.mul(Q);
+			eg.generalSym(K_hat, M_hat);
+
+			X=X_hat.mul(eg.V);
 
 			lamqr=lamq.deepCopy();
 			lamq=K.mul(X).normCol().div0(M.mul(X).normCol());
@@ -241,18 +267,22 @@ public class Eigen {
 
 			errv=lamq.sub(lamqr).abs().div0(lamq);
 
-
-			for( int i=0;i<p;i++)
+		
+			//nconv=0;
+			for( int i=0;i<p;i++){
+		
 				if(!locked[i] && errv.el[i]<errMax){
 
 					locked[i]=true;
 					nconv++;
 
 				}
+			}
 
-			//errv.hshow();
+			errv.hshow();
+			System.out.println("Subs.Iter.: " +iter+   " | numb. of conv. eigenvalues: "+nconv+"  | error: "+errv.el[p-1]);
 
-			if( nconv==p || solver.terminate) {  break;}
+			if( nconv>=p || solver.terminate) {  break;}
 		}
 
 
@@ -267,6 +297,7 @@ public class Eigen {
 			V.setCol(X.getColVect(j), j);
 		this.lam=lam;	
 
+		return lam;
 
 	}
 
@@ -497,7 +528,7 @@ public class Eigen {
 			//errv.hshow();
 			System.out.println("Subspace Iteration: " +iter+"   | error: "+errv.el[p-1]+   "  |  Numver of converged eigenvalues: "+nconv);
 
-			if( nconv==p || solver.terminate) {  break;}
+			if( nconv>=p || solver.terminate) {  break;}
 
 		}
 
@@ -562,7 +593,7 @@ public class Eigen {
 		for(iter=0;iter<200;iter++){
 			X2=Ms.smul(X);
 			for(int j=0;j<q;j++){				
-				util.prh("[j = ] "+j);
+				util.pr("[j = ] "+j);
 
 				if(!locked[j])
 				{
@@ -621,7 +652,7 @@ public class Eigen {
 			errv.hshow();
 			System.out.println("Subs.Iter.: " +iter+   " | numb. of conv. eigenvalues: "+nconv+"  | error: "+errv.el[p-1]);
 
-			if( nconv==p || solver.terminate) {  break;}
+			if( nconv>=p || solver.terminate) {  break;}
 		}
 
 		Vect lam=new Vect(p);	

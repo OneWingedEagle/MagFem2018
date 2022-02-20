@@ -3323,10 +3323,10 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 			modalQR();
 			return;
 		}
+	
 
 
 		this.setStiffMat(true);
-
 
 		double shft=pow(2*PI*f0,2);
 		Eigen eg=new Eigen();
@@ -3349,8 +3349,14 @@ curr*=factor;//*(1+.2*(.5-Math.random()));
 		M1=null;
 
 		Mat Q=new Mat(K1.nRow,p);
-		Vect lam=eg.subspace(K1, Ms,p,Q, er,this.iterMax, solver);
-
+		//Vect lam=eg.subspace(K1, Ms,p,Q, er,this.iterMax, solver);
+		
+		Mat K=K1.matForm(true);
+		Mat M=Ms.matForm(true);
+//		
+//		M.eye();
+//	
+		Vect lam=eg.subspace(K, M,p,er);
 		lam=lam.times(1.0/cm);
 
 		lam=lam.add(-shft);
