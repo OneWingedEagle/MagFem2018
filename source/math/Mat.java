@@ -21,7 +21,34 @@ public class Mat {
 	public double[][] el=null;
 	public int nRow;
 	public int nCol;
-	public static void main(String[] Args){
+public static void main(String[] Args){
+		
+		int N=10;
+		Mat A=new Mat(N,N);
+		A=A.rand();
+		for(int i=0;i<N;i++)
+			for(int j=i+1;j<N;j++)
+				A.el[i][j]=A.el[j][i];
+		for(int i=0;i<N;i++)
+			for(int j=0;j<N;j++)
+				A.el[i][j]=1./((i-j)*(i-j)+1);
+				
+				
+		Vect lams=A.eigQR(1e-6);
+		
+		//lams.show();;
+		
+		//Mat B=A.tridiagHous();
+		
+		//for(int i=0;i<N;i++)
+			//for(int j=0;j<N;j++)
+				//if(Math.abs(B.el[i][j])<1e-9) B.el[i][j]=0;
+		
+		//B.show();
+		
+}
+
+	public static void main1(String[] Args){
 		
 		String file=System.getProperty("user.dir") + "\\mat.txt";
 		
